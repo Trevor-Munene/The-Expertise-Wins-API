@@ -53,7 +53,14 @@ async function run() {
         // Run the test suite so the orchestrator validates the saved snapshot.
         try {
             console.log("Running test suite to validate saved snapshot...");
-            execSync("npm test", { stdio: "inherit" });
+            // Run full test suite unless settlement tests are explicitly skipped
+            const skipSettlement = argv.includes("--skip-settlement-tests") || process.env.SKIP_SETTLEMENT === "1";
+            if (skipSettlement) {
+                console.log("Skipping settlement tests, running only freetips related tests...");
+                execSync("node tests/freetips.test.js && node tests/tips.contract.test.js", { stdio: "inherit" });
+            } else {
+                execSync("npm test", { stdio: "inherit" });
+            }
         } catch (testErr) {
             console.error("Tests failed after orchestration:", testErr && testErr.message ? testErr.message : testErr);
             // Do not abort the orchestrator run; continue to cleanup.

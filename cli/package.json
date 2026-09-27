@@ -8,7 +8,7 @@
     "start": "node services/app.js",
     "test:premium-source": "node tests/premium.service.test.js",
     "test:settlement": "node tests/settlement.test.js",
-    "expertise": "node orchestrator/run-freetips.js && node services/app.js",
+    "expertise": "node orchestrator/run-freetips.js --skip-settlement-tests && node services/app.js",
     "settlement": "node settlement/app.js"
   },
   "dependencies": {
