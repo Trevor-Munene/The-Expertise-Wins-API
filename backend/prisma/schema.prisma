@@ -1,0 +1,285 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ENUMS
+
+enum UserRole {
+  USER
+  ADMIN
+  TIPSTER
+  EDITOR
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  PENDING
+}
+
+enum ProductType {
+  FREE
+  VIP
+  MAXBET
+  API
+  CUSTOM
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum AccessTokenStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  REVOKED
+}
+
+enum TipStatus {
+  PENDING
+  PUBLISHED
+  LOCKED
+  SETTLED
+  CANCELLED
+  VOID
+}
+
+enum TipOutcome {
+  PENDING
+  WON
+  LOST
+  VOID
+  PUSH
+  HALF_WON
+  HALF_LOST
+  CANCELLED
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+  UNPUBLISHED
+  ARCHIVED
+}
+
+
+// USERS
+
+model User {
+  id                String      @id @default(cuid())
+
+  email             String?     @unique
+  username          String?     @unique
+  password          String?
+
+  firstName         String?
+  lastName          String?
+
+  role              UserRole    @default(USER)
+  status            UserStatus  @default(ACTIVE)
+
+  telegramUsername  String?
+  telegramUserId    String?     @unique
+
+  lastLoginAt       DateTime?
+  emailVerifiedAt   DateTime?
+
+  avatarUrl         String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  accessTokens      AccessToken[]
+  createdTips       Tip[]       @relation("TipCreator")
+  publishedTips     Tip[]       @relation("TipPublisher")
+
+  @@index([status])
+  @@index([role])
+}
+
+
+// PRODUCTS
+// Represents what the customer gets access to.
+// Examples:
+// Free
+// PikkBetter VIP
+// Pikk MaxBet VIP
+// Payments are handled manually for the MVP.
+// Access is granted by issuing an AccessToken.
+
+model Product {
+  id                String          @id @default(cuid())
+
+  name              String          @unique
+  slug              String          @unique
+
+  description       String?
+
+  type              ProductType
+  status            ProductStatus   @default(ACTIVE)
+
+  isPublic          Boolean         @default(false)
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  accessTokens      AccessToken[]
+  publications      TipPublication[]
+
+  @@index([type])
+  @@index([status])
+}
+
+
+// ACCESS TOKENS
+//
+// Admin manually generates a token after confirming payment.
+// Example:
+// PIKK-7F82-X92K
+// The user enters the token on the website and receives access
+// to the associated product.
+// Payment processing is deliberately outside the application
+// for the first MVP.
+
+model AccessToken {
+  id                String             @id @default(cuid())
+
+  tokenHash         String             @unique
+  tokenPrefix       String?
+
+  productId         String
+  product            Product           @relation(fields: [productId], references: [id])
+
+  assignedUserId    String?
+  assignedUser      User?              @relation(fields: [assignedUserId], references: [id])
+
+  status            AccessTokenStatus  @default(ACTIVE)
+
+  expiresAt         DateTime?
+  usedAt            DateTime?
+
+  notes             String?
+
+  createdAt         DateTime           @default(now())
+
+  @@index([productId])
+  @@index([assignedUserId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+
+// TIPS
+//
+// This is the central business object.
+//
+// Tips are scraped, normalized, stored, curated, published,
+// displayed and eventually settled with a result.
+//
+// The source contract is intentionally represented closely
+// instead of prematurely normalizing every football concept
+// into separate database tables.
+
+model Tip {
+  id                String       @id @default(cuid())
+
+  source            String
+  externalId        String?
+
+  sport             String
+  competition       String?
+  league            String?
+  country           String?
+
+  homeTeam          String?
+  awayTeam          String?
+
+  kickoff           String?
+
+  market            String
+  selection         String
+
+  odds              Decimal?     @db.Decimal(10, 3)
+  stakeUnits        Decimal?     @db.Decimal(8, 2)
+
+  previewTitle      String?
+  preview           String?
+  verdict           String?
+
+  tips              Json?
+  analytics         Json?
+  confidenceIndex   Decimal?     @db.Decimal(8, 3)
+  predictedScore    String?
+
+  detailsUrl        String?
+
+  status            TipStatus    @default(PENDING)
+  result            String?
+  outcome           TipOutcome   @default(PENDING)
+
+  extraTips         Json?
+
+  scrapedAt         DateTime?
+  publishedAt       DateTime?
+  settledAt         DateTime?
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  createdById       String?
+  createdBy         User?        @relation("TipCreator", fields: [createdById], references: [id])
+
+  publishedById     String?
+  publishedBy       User?        @relation("TipPublisher", fields: [publishedById], references: [id])
+
+  publications      TipPublication[]
+
+  @@index([source])
+  @@index([sport])
+  @@index([status])
+  @@index([outcome])
+  @@index([kickoff])
+  @@index([publishedAt])
+}
+
+
+// TIP PUBLICATIONS
+// Determines which product can see a particular tip.
+// A single tip can be published to multiple products.
+// Example:
+// Tip #123
+//   → Free
+//   → VIP
+//   → MaxBet
+//
+// This keeps the Tip itself independent from the access tier.
+
+model TipPublication {
+  id                String             @id @default(cuid())
+
+  tipId             String
+  tip               Tip                @relation(fields: [tipId], references: [id], onDelete: Cascade)
+
+  productId         String
+  product            Product            @relation(fields: [productId], references: [id])
+
+  status            PublicationStatus  @default(DRAFT)
+
+  publishedAt       DateTime?
+  unpublishedAt     DateTime?
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([tipId, productId])
+  @@index([productId])
+  @@index([status])
+}

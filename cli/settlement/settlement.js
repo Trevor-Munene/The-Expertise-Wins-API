@@ -22,14 +22,10 @@ function resolveJsonPath(dateIso) {
     const dated = path.join(jsonDir, `freetips-${formattedDate}.json`);
     if (fs.existsSync(dated)) return dated;
 
-    // Fall back to the most recent dump available so a bare `npm run settlement`
-    // settles the latest scraped batch without needing --date.
-    if (!fs.existsSync(jsonDir)) return dated;
-    const candidates = fs.readdirSync(jsonDir)
-        .filter((name) => /^freetips-.*\.json$/i.test(name))
-        .map((name) => ({ name, time: fs.statSync(path.join(jsonDir, name)).mtimeMs }))
-        .sort((a, b) => b.time - a.time);
-    return candidates.length > 0 ? path.join(jsonDir, candidates[0].name) : dated;
+    // Require a JSON dump for the specified date; do not fallback to most recent.
+    if (fs.existsSync(dated)) return dated;
+    // If the exact date file does not exist, return the path (will trigger error later).
+    return dated;
 }
 
 function processSettlement(dateIso, txtFilePath) {
