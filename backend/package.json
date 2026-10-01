@@ -8,7 +8,9 @@
     "dev": "nodemon app.js",
     "start": "node app.js",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "seed": "node scripts/seed.js",
+    "seed:check": "node scripts/seed.js --dry-run"
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",

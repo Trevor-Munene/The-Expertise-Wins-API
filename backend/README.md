@@ -1,21 +1,21 @@
 # The Expertise Wins — Express Backend API
 
-The `backend` directory contains the production Node.js / Express REST API server and Prisma ORM database pipeline powering **The Expertise Wins**.
+The `backend` directory contains the Express API and Prisma schema for **The Expertise Wins**. The source is not currently launch-ready; see the readiness notes below.
 
 ## 📌 Features & Responsibilities
 
-- **Authentication & Authorization**: Passport Local strategy, JWT stateless session authentication, password hashing with bcrypt, and role-based access control (`USER`, `TIPSTER`, `EDITOR`, `ADMIN`).
-- **Tips & Curation Engine**: Exposes endpoints for public free tips, protected VIP predictions, single tip detail views, and full CRUD curation.
+- **Authentication**: Passport Local and JWT authentication are implemented in source. Admin routes currently authenticate but do not enforce the `ADMIN` role.
+- **Tips & Curation Engine**: Includes free and token-gated VIP/MaxBet endpoints, tip details, and management. Public list/detail visibility and write authorization still need stricter checks.
 - **Performance & Analytics Engine**: Calculates real-time win rates, estimated ROI, average odds, sport breakdowns, market performance, and time-based reports (today, week, 14 days, month, year, all-time).
-- **Products & Subscriptions**: Manages free & premium product tiers (`Free`, `VIP Channel`, `MaxBet VIP Platinum`), access token generation, token redemption, and active subscription verification.
-- **Admin Management API**: Restricted administration endpoints for bulk tip publication/unsettlement, access token generation (single & bulk), user role management, and status suspension.
-- **Media Uploads**: Multer static file handler storing user avatar uploads under `/public/profiles`.
+- **Products & Access**: Manages products and access-token issuance/redemption. Access is represented by tokens; there is no separate `Subscription` database model.
+- **Admin Management API**: Endpoints for tip publication/settlement, access tokens, user roles, and products. Current routes authenticate requests but do not enforce the admin role.
+- **Media Uploads**: Avatar upload handling is present, but the upload path currently does not align with the configured static-file path.
 
 ## 🛠 Tech Stack
 
 - **Runtime**: Node.js
 - **Framework**: Express.js
-- **Database ORM**: Prisma ORM (SQLite / PostgreSQL)
+- **Database ORM**: Prisma ORM with PostgreSQL
 - **Authentication**: Passport.js & JWT (`jsonwebtoken`)
 - **Validation**: Joi validation schemas
 
@@ -28,9 +28,30 @@ The `backend` directory contains the production Node.js / Express REST API serve
 - `/api/subscriptions`: Active subscriptions, token redemption (`/redeem`), token verification, and subscription history.
 - `/api/admin`: Isolated admin endpoints for user role management, bulk tip publication/settlement, single/bulk access token generation, and product management.
 
-## 🚀 Running the Backend API
+## Setup and Readiness
 
-From the project root:
+## Current Blockers
+
+The API currently fails to load because `middleware/authentication.js` contains duplicate top-level declarations. Admin routes do not enforce the `ADMIN` role, authenticated tip-management routes lack role/ownership checks, and the public tip list/detail queries do not consistently restrict records to published product access. Fix and verify these issues before exposing the API.
+
+## Local PostgreSQL Setup
+
+From the repository root, copy the example environment file, fill in the local PostgreSQL URL and a strong JWT secret, then install and initialize the backend:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+npm install --prefix backend
+npm run --prefix backend prisma:generate
+npm run --prefix backend prisma:migrate
+npm run --prefix backend seed:check
+npm run --prefix backend seed
+```
+
+The seed command imports tips from `cli/settlement/previous-day-results`; it does not modify the CLI files or dumps. Run `seed:check` first to validate the dump data without writing to PostgreSQL.
+
+## Running the Backend API
+
+From the repository root:
 
 ```bash
 # Start backend in development mode with nodemon
@@ -40,7 +61,7 @@ npm run dev:backend
 npm run start:backend
 ```
 
-From inside `backend`:
+Alternatively, from inside `backend`:
 
 ```bash
 npm run dev

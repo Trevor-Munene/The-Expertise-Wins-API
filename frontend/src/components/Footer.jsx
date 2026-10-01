@@ -1,82 +1,255 @@
 // frontend/src/components/Footer.jsx
+
 import Link from "next/link";
-import { Send, ShieldCheck, Trophy, Crown } from "lucide-react";
+import Image from "next/image";
+import {
+  BookOpen,
+  Coffee,
+  Github,
+  Mail,
+  Send,
+  Twitter,
+} from "lucide-react";
+
+const footerGroups = [
+  {
+    title: "Explore",
+    links: [
+      { label: "Home", href: "/" },
+      { label: "Free Tips", href: "/tips" },
+      { label: "Blog & Insights", href: "/blog" },
+      { label: "Results & Stats", href: "/stats" },
+      { label: "Products", href: "/products" },
+      { label: "About", href: "/about" },
+    ],
+  },
+  {
+    title: "Premium",
+    links: [
+      { label: "Pikk Better VIP", href: "/products" },
+      { label: "Pikk MaxBet VIP", href: "/products" },
+      { label: "Access Tokens", href: "/products" },
+      { label: "VIP Access", href: "/products" },
+    ],
+  },
+  {
+    title: "Platform",
+    links: [
+      { label: "How It Works", href: "/about" },
+      { label: "Results & Analytics", href: "/stats" },
+      { label: "The Technology", href: "/about" },
+      { label: "API & Partnerships", href: "/about" },
+    ],
+  },
+];
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-950 border-t border-slate-900 text-slate-400 text-sm mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand Info */}
-          <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-bold">
-                <Trophy className="w-4 h-4" />
+    <footer className="mt-auto border-t border-slate-900 bg-slate-950 text-slate-400">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        {/* Main footer */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+          {/* Brand */}
+          <div className="max-w-md space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 overflow-hidden rounded-xl border border-emerald-500/30">
+                <Image
+                  src="/app-icon.png"
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="h-full w-full object-cover"
+                />
               </div>
-              <span className="font-extrabold text-white text-base">The Expertise Wins</span>
+
+              <div>
+                <p className="font-extrabold tracking-tight text-white">
+                  The Expertise Wins
+                </p>
+
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-400">
+                  Sports Intelligence
+                </p>
+              </div>
             </div>
-            <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
-              Data-driven sports predictions, normalized odds curation, transparent performance tracking, and direct VIP channel integration.
+
+            <p className="text-sm font-semibold leading-6 text-slate-200">
+              Curated sports intelligence, disciplined analysis and
+              transparent performance tracking.
             </p>
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+
+            <p className="text-xs leading-6 text-slate-500">
+              The Expertise Wins collects and organizes predictions from
+              trusted sources, curates selections and delivers them through
+              free and premium channels. The platform is built around a
+              simple idea: turn a repeatable process into reliable,
+              measurable infrastructure.
+            </p>
+
+            <div className="flex flex-wrap gap-2 pt-1">
               <a
                 href="https://t.me/+D_jIXFB807E0NmRk"
                 target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 text-xs font-semibold transition-all"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-xs font-semibold text-sky-400 transition-colors hover:bg-sky-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
               >
-                <Send className="w-3.5 h-3.5" />
-                <span>Join Official Telegram</span>
+                <Send className="h-3.5 w-3.5" aria-hidden="true" />
+                Official Telegram
               </a>
+
               <a
                 href="https://t.me/pikkbetter"
                 target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 text-xs font-semibold transition-all"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-400 transition-colors hover:bg-amber-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
               >
-                <Crown className="w-3.5 h-3.5" />
-                <span>DM @PIKKBETTER</span>
+                <Send className="h-3.5 w-3.5" aria-hidden="true" />
+                VIP Support
               </a>
+
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-400 transition-colors hover:bg-emerald-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              >
+                <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
+                Blog & Insights
+              </Link>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">Navigation</h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link href="/" className="hover:text-emerald-400 transition-colors">Home Overview</Link>
-              </li>
-              <li>
-                <Link href="/tips" className="hover:text-emerald-400 transition-colors">Free & VIP Tips</Link>
-              </li>
-              <li>
-                <Link href="/stats" className="hover:text-emerald-400 transition-colors">Win Rate & Analytics</Link>
-              </li>
-              <li>
-                <Link href="/products" className="hover:text-emerald-400 transition-colors">Subscriptions & Access Tokens</Link>
-              </li>
-            </ul>
-          </div>
+          {/* Navigation groups */}
+          {footerGroups.map((group) => (
+            <div key={group.title}>
+              <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-200">
+                {group.title}
+              </h4>
 
-          {/* Legal / Info */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">System Information</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              All tips are generated and verified via standard normalization engines. Responsible betting only (18+).
+              <ul className="space-y-3">
+                {group.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-xs transition-colors hover:text-emerald-400 focus:outline-none focus-visible:text-emerald-400"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Connect */}
+        <div className="mt-12 flex flex-col gap-6 rounded-2xl border border-slate-900 bg-slate-900/30 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-white">
+              Follow the operation.
             </p>
-            <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Verified Curation Engine</span>
-            </div>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Follow daily picks, results, updates and new products.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="https://x.com/munene254_"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="The Expertise Wins on X"
+              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            >
+              <Twitter className="h-3.5 w-3.5" aria-hidden="true" />
+              X
+            </a>
+
+            <a
+              href="https://github.com/john-walter-munene/The-Expertise-Wins-API"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="The Expertise Wins on GitHub"
+              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            >
+              <Github className="h-3.5 w-3.5" aria-hidden="true" />
+              GitHub
+            </a>
+
+            <a
+              href="mailto:midwaymaster10@gmail.com"
+              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            >
+              <Mail className="h-3.5 w-3.5" aria-hidden="true" />
+              Contact
+            </a>
+
+            <Link
+              href="/coffee"
+              className="inline-flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300 transition-colors hover:bg-amber-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            >
+              <Coffee className="h-3.5 w-3.5" aria-hidden="true" />
+              Support
+            </Link>
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
-          <p>© {new Date().getFullYear()} The Expertise Wins. All rights reserved.</p>
-          <p className="flex items-center gap-1">
-            <span>Powered by Next.js & Express API</span>
-          </p>
+        {/* Bottom */}
+        <div className="mt-10 flex flex-col gap-5 border-t border-slate-900 pt-6 text-xs sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="font-semibold text-slate-300">
+              The Expertise Wins
+            </p>
+
+            <p className="mt-1 text-slate-600">
+              © {new Date().getFullYear()} The Expertise Wins. All rights
+              reserved.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-slate-500">
+            <Link
+              href="/about"
+              className="transition-colors hover:text-emerald-400 focus:outline-none focus-visible:text-emerald-400"
+            >
+              About
+            </Link>
+
+            <Link
+              href="/blog"
+              className="transition-colors hover:text-emerald-400 focus:outline-none focus-visible:text-emerald-400"
+            >
+              Blog
+            </Link>
+
+            <Link
+              href="/privacy"
+              className="transition-colors hover:text-emerald-400 focus:outline-none focus-visible:text-emerald-400"
+            >
+              Privacy
+            </Link>
+
+            <Link
+              href="/terms"
+              className="transition-colors hover:text-emerald-400 focus:outline-none focus-visible:text-emerald-400"
+            >
+              Terms
+            </Link>
+
+            <Link
+              href="/responsible-betting"
+              className="transition-colors hover:text-emerald-400 focus:outline-none focus-visible:text-emerald-400"
+            >
+              Responsible Betting
+            </Link>
+          </div>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="mt-6 text-[11px] leading-5 text-slate-600">
+          Sports predictions and betting tips are inherently uncertain and
+          are not guarantees of financial outcomes. Past performance does
+          not guarantee future results. Please make informed decisions and
+          bet responsibly.
         </div>
       </div>
     </footer>

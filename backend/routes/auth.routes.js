@@ -13,7 +13,8 @@ authRouter.post("/logout", authController.logoutUser);
 // Protected routes
 const upload = require("../middleware/imageHandler");
 
-// Avatar upload route
+// Current user profile & avatar upload route
+authRouter.get("/me", authenticateJWT, authController.getCurrentUser);
 authRouter.patch("/me/avatar", authenticateJWT, upload.single("avatar"), authController.updateAvatar);
 authRouter.patch("/password", authenticateJWT, authController.updatePassword);
 

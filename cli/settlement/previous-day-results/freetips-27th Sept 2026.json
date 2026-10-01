@@ -84,7 +84,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.224Z"
+    "scrapedAt": "2026-09-27T09:09:04.742Z"
   },
   {
     "source": "freetips",
@@ -139,7 +139,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.224Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -205,7 +205,7 @@
     "country": null,
     "homeTeam": "South Africa",
     "awayTeam": "Australia 2nd ODI",
-    "kickoff": "1h 30m",
+    "kickoff": "23m",
     "market": "Score Over 29.5 Runs",
     "selection": "Mitchell Marsh",
     "odds": 1.83,
@@ -281,7 +281,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.224Z"
+    "scrapedAt": "2026-09-27T07:38:11.042Z"
   },
   {
     "source": "freetips",
@@ -292,7 +292,7 @@
     "country": null,
     "homeTeam": "India",
     "awayTeam": "West Indies 1st ODI",
-    "kickoff": "2h",
+    "kickoff": "53m",
     "market": "Score Over 28.5 Runs",
     "selection": "Shai Hope",
     "odds": 1.83,
@@ -368,7 +368,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.224Z"
+    "scrapedAt": "2026-09-27T07:38:11.042Z"
   },
   {
     "source": "freetips",
@@ -379,7 +379,7 @@
     "country": null,
     "homeTeam": "Leylah Fernandez",
     "awayTeam": "Talia Gibson",
-    "kickoff": "2h 30m",
+    "kickoff": "1h 23m",
     "market": "Total Games",
     "selection": "Over 20.5",
     "odds": 1.68,
@@ -423,7 +423,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T07:38:11.042Z"
   },
   {
     "source": "freetips",
@@ -434,7 +434,7 @@
     "country": null,
     "homeTeam": "Lloyd Harris",
     "awayTeam": "Hubert Hurkacz",
-    "kickoff": "3h",
+    "kickoff": "22m",
     "market": "Winner",
     "selection": "Lloyd Harris Win",
     "odds": 2.63,
@@ -478,7 +478,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -489,7 +489,7 @@
     "country": null,
     "homeTeam": "England",
     "awayTeam": "Sri Lanka 3rd ODI",
-    "kickoff": "3h",
+    "kickoff": "22m",
     "market": "Take Over 1.5 Wickets",
     "selection": "Will Jacks",
     "odds": 1.83,
@@ -565,7 +565,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -576,7 +576,7 @@
     "country": null,
     "homeTeam": "100 Thieves",
     "awayTeam": "T1",
-    "kickoff": "3h 30m",
+    "kickoff": "52m",
     "market": "Map Handicap",
     "selection": "100 Thieves -1.5 Maps",
     "odds": 2.2,
@@ -603,7 +603,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -614,7 +614,7 @@
     "country": null,
     "homeTeam": "Takuma Inoue",
     "awayTeam": "Tenshin Nasukawa 2",
-    "kickoff": "4h 30m",
+    "kickoff": "1h 52m",
     "market": "Method Of Victory",
     "selection": "Inoue by Decision",
     "odds": 1.83,
@@ -641,7 +641,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -652,7 +652,7 @@
     "country": null,
     "homeTeam": "JD Gaming",
     "awayTeam": "FUT Esports",
-    "kickoff": "6h 30m",
+    "kickoff": "3h 52m",
     "market": "Moneyline",
     "selection": "JD Gaming To Win",
     "odds": 3.3,
@@ -679,7 +679,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -690,7 +690,7 @@
     "country": null,
     "homeTeam": "Denmark",
     "awayTeam": "Wales",
-    "kickoff": "9h 30m",
+    "kickoff": "6h 52m",
     "market": "Full Time Result",
     "selection": "Denmark Win",
     "odds": 1.5,
@@ -711,8 +711,8 @@
       {
         "bookmaker": "Stake.com",
         "selection": "Mikkel Damsgaard",
-        "market": "First Goalscorer",
-        "odds": 9,
+        "market": "Anytime Goalscorer",
+        "odds": 3.9,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
         "outcome": null
@@ -720,8 +720,8 @@
       {
         "bookmaker": "Stake.com",
         "selection": "Mikkel Damsgaard",
-        "market": "Anytime Goalscorer",
-        "odds": 3.9,
+        "market": "First Goalscorer",
+        "odds": 9,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
         "outcome": null
@@ -737,20 +737,20 @@
     "extraTips": [
       {
         "selection": "Mikkel Damsgaard",
-        "market": "First Goalscorer",
-        "odds": 9,
+        "market": "Anytime Goalscorer",
+        "odds": 3.9,
         "stakeUnits": 1,
         "outcome": null
       },
       {
         "selection": "Mikkel Damsgaard",
-        "market": "Anytime Goalscorer",
-        "odds": 3.9,
+        "market": "First Goalscorer",
+        "odds": 9,
         "stakeUnits": 1,
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -761,7 +761,7 @@
     "country": null,
     "homeTeam": "Serbia",
     "awayTeam": "Netherlands",
-    "kickoff": "9h 30m",
+    "kickoff": "6h 52m",
     "market": "To Win to Nil",
     "selection": "Netherlands",
     "odds": 2.4,
@@ -821,7 +821,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -832,7 +832,7 @@
     "country": null,
     "homeTeam": "Austria",
     "awayTeam": "Kosovo",
-    "kickoff": "9h 30m",
+    "kickoff": "6h 52m",
     "market": "Total Goals",
     "selection": "Under 2.5 Goals",
     "odds": 2,
@@ -876,7 +876,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -887,7 +887,7 @@
     "country": null,
     "homeTeam": "Yemen",
     "awayTeam": "Qatar",
-    "kickoff": "10h 25m",
+    "kickoff": "7h 47m",
     "market": "Result/Total Goals",
     "selection": "Qatar/Over 1.5",
     "odds": 1.44,
@@ -931,7 +931,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -942,7 +942,7 @@
     "country": null,
     "homeTeam": "NE Patriots",
     "awayTeam": "JAX Jaguars",
-    "kickoff": "10h 30m",
+    "kickoff": "7h 52m",
     "market": "Spread",
     "selection": "Jacksonville -3.0",
     "odds": 1.9,
@@ -986,7 +986,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -997,7 +997,7 @@
     "country": null,
     "homeTeam": "CIN Bengals",
     "awayTeam": "PIT Steelers",
-    "kickoff": "10h 30m",
+    "kickoff": "7h 52m",
     "market": "Spread",
     "selection": "Cincinnati -3.5",
     "odds": 1.9,
@@ -1041,7 +1041,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -1052,7 +1052,7 @@
     "country": null,
     "homeTeam": "LA Chargers",
     "awayTeam": "BUF Bills",
-    "kickoff": "10h 30m",
+    "kickoff": "7h 52m",
     "market": "Spread",
     "selection": "Buffalo -7.0",
     "odds": 1.86,
@@ -1096,7 +1096,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -1107,7 +1107,7 @@
     "country": null,
     "homeTeam": "Israel",
     "awayTeam": "Rep of Ireland",
-    "kickoff": "12h 15m",
+    "kickoff": "9h 37m",
     "market": "Total Goals",
     "selection": "Under 2.5 Goals",
     "odds": 1.85,
@@ -1134,7 +1134,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   },
   {
     "source": "freetips",
@@ -1145,7 +1145,7 @@
     "country": null,
     "homeTeam": "Germany",
     "awayTeam": "Greece",
-    "kickoff": "12h 15m",
+    "kickoff": "9h 37m",
     "market": "Result/Both to Score",
     "selection": "Germany Win & BTTS",
     "odds": 2.62,
@@ -1189,6 +1189,192 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-09-27T06:30:20.225Z"
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Football",
+    "league": "Football",
+    "country": null,
+    "homeTeam": "Bahrain",
+    "awayTeam": "United Arab Emirates",
+    "kickoff": "9h 52m",
+    "market": "Result/Total Goals",
+    "selection": "UAE/Over 1.5",
+    "odds": 1.72,
+    "stakeUnits": 3,
+    "previewTitle": "Bahrain vs United Arab Emirates Predictions & Tips - UAE Backed to Beat Gulf Cup Holders",
+    "preview": "Bahrain have endured a poor run of results in the last 18 months, and they could struggle against a UAE side buoyed by their easy win against Yemen.I have my take on the United Arab Emirates to win with over 1.5 match goals.",
+    "verdict": "Bahrain have endured a poor run of results in the last 18 months, and they could struggle against a UAE side buoyed by their easy win against Yemen.I have my take on the United Arab Emirates to win with over 1.5 match goals.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "UAE/Over 1.5",
+        "market": "Result/Total Goals",
+        "odds": 1.72,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/bahrain-vs-united-arab-emirates-predictions-20260926-0022/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Rugby Union",
+    "competition": "Rugby Union",
+    "league": "Rugby Union",
+    "country": null,
+    "homeTeam": "Toulouse",
+    "awayTeam": "Montpellier",
+    "kickoff": "9h 57m",
+    "market": "Handicap",
+    "selection": "Toulouse -24.5",
+    "odds": 1.91,
+    "stakeUnits": 3,
+    "previewTitle": "Toulouse vs Montpellier Betting Tips - Toulouse to dominate at home in Top 14",
+    "preview": "Toulouse have consistently had success against Montpellier in the Top 14 in recent seasons and are tipped to cover the -24.5 handicap.",
+    "verdict": "Toulouse have consistently had success against Montpellier in the Top 14 in recent seasons and are tipped to cover the -24.5 handicap.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Toulouse -24.5",
+        "market": "Handicap",
+        "odds": 1.91,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/rugby-union/toulouse-vs-montpellier-betting-tips-20260926-0003/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "American Football",
+    "competition": "San Francisco 49ers Betting Tips",
+    "league": "San Francisco 49ers Betting Tips",
+    "country": null,
+    "homeTeam": "ARZ Cardinals",
+    "awayTeam": "SF 49ers",
+    "kickoff": "10h 57m",
+    "market": "Spread",
+    "selection": "San Francisco -8.5",
+    "odds": 1.9,
+    "stakeUnits": 4,
+    "previewTitle": "Arizona Cardinals at San Francisco 49ers Betting Tips – 49ers To Cover In NFL Division Win",
+    "preview": "Arizona came crashing back down to Earth last Sunday, and it is unlikely to get any better for them here.San Francisco are healthy and off to a strong start, and we are backing the Niners to cover as they go 3-0.",
+    "verdict": "Arizona came crashing back down to Earth last Sunday, and it is unlikely to get any better for them here.San Francisco are healthy and off to a strong start, and we are backing the Niners to cover as they go 3-0.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "San Francisco -8.5",
+        "market": "Spread",
+        "odds": 1.9,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 47.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/nfl/arizona-cardinals-at-san-francisco-49ers-nfl-betting-tips-20260923-0022/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Under 47.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "stakeUnits": 2,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "American Football",
+    "competition": "New Orleans Saints Betting Tips",
+    "league": "New Orleans Saints Betting Tips",
+    "country": null,
+    "homeTeam": "LV Raiders",
+    "awayTeam": "NO Saints",
+    "kickoff": "11h 17m",
+    "market": "Spread",
+    "selection": "New Orleans -3.0",
+    "odds": 1.83,
+    "stakeUnits": 4,
+    "previewTitle": "Las Vegas Raiders at New Orleans Saints Betting Tips – Saints To Win NFL Home Opener",
+    "preview": "Both teams are off to a perfect start, but we are sold more on New Orleans than Las Vegas.That victory over Baltimore raised a few eyebrows, and the Saints can build on that success with victory in their home opener.",
+    "verdict": "Both teams are off to a perfect start, but we are sold more on New Orleans than Las Vegas.That victory over Baltimore raised a few eyebrows, and the Saints can build on that success with victory in their home opener.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "New Orleans -3.0",
+        "market": "Spread",
+        "odds": 1.83,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 43.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/nfl/las-vegas-raiders-at-new-orleans-saints-nfl-betting-tips-20260923-0029/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Under 43.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "stakeUnits": 2,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-09-27T09:09:04.743Z"
   }
 ]

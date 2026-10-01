@@ -17,10 +17,10 @@ productsRouter.get("/vip", productsController.getVipProduct);
 // MaxBet product information
 productsRouter.get("/maxbet", productsController.getMaxbetProduct);
 
-// Single product
-productsRouter.get("/:id", productsController.getProductById);
-
 // Authenticated user's available products
 productsRouter.get("/my-access", authenticateJWT, productsController.getMyProducts);
+
+// Single product
+productsRouter.get("/:id", productsController.getProductById);
 
 module.exports = productsRouter;

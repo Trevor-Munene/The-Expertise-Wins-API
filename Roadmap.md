@@ -6,17 +6,9 @@ This roadmap reflects the **current state and architectural milestones** of **Th
 
 ---
 
-## 📌 Overall Project Status (September 2026)
+## 📌 Overall Project Status (October 2026)
 
-The project has evolved from a CLI-only pipeline into a **full-stack monorepo web platform**:
-
-```text
-The-Expertise-Wins-API/
-├── cli/              # Scraping, market normalization & daily settlement engine
-├── backend/          # Express REST API, Prisma ORM database & JWT authentication
-├── frontend/         # Next.js 14 Web UI, Markdown Blog & Isolated Admin Dashboard
-└── package.json      # Dual start commands for concurrent backend & frontend development
-```
+The repository contains a working CLI workflow, backend API source, and Next.js frontend. The API and database setup are not yet launch-ready locally: no local database has been configured, and the backend currently has a startup syntax error plus incomplete admin authorization.
 
 ---
 
@@ -64,7 +56,7 @@ The-Expertise-Wins-API/
 * [x] Build CLI orchestrator (`cli/orchestrator/run-freetips.js`)
 * [x] Run scraper + normalization as a repeatable workflow
 * [x] Export JSON snapshots into `settlement/previous-day-results/`
-* [x] Fallback to newest dated JSON dumps automatically
+* [x] Use explicitly dated JSON dumps for settlement; no automatic latest-dump fallback
 
 ---
 
@@ -98,13 +90,14 @@ The-Expertise-Wins-API/
 
 # Phase 5.5 — Settlement & Result Evaluation
 
-**Goal:** Evaluate match results and record accurate win/loss outcomes.
+**Goal:** Apply manually supplied result markers to a dated dump.
 
-* [x] Build settlement evaluator (`cli/settlement/settlement.js`)
-* [x] Match tips by fixture and selection (incl. `WON`, `LOST`, `VOID`, `HALF_WON`, `HALF_LOST`)
-* [x] Require explicit markers for featured / VIP tips
-* [x] Write annotated results back to disk
-* [x] Print settled reports via CLI (`cli/settlement/app.js`)
+* [x] Build the settlement evaluator (`cli/settlement/settlement.js`)
+* [x] Match fixture selections against pasted text using `✅✅` and `❎❎` markers
+* [x] Leave featured tips without explicit markers unsettled; unmarked regular tips default to losses
+* [x] Write annotated outcomes back to the exact dated dump
+* [x] Print formatted reports through the local CLI consumer
+* [ ] Integrate live scores or automatic result verification
 
 ---
 
@@ -122,22 +115,24 @@ The-Expertise-Wins-API/
 
 # Phase 7 — Persistent Database (Prisma ORM)
 
-**Goal:** Store users, tips, subscriptions, access tokens, and publications in a relational database.
+**Goal:** Define relational storage for users, tips, products, access tokens, and publications.
 
-* [x] Configure Prisma ORM database models (`User`, `Tip`, `Product`, `Subscription`, `AccessToken`, `TipPublication`)
-* [x] Define user roles (`USER`, `TIPSTER`, `EDITOR`, `ADMIN`) and account status (`ACTIVE`, `SUSPENDED`)
+* [x] Define Prisma models (`User`, `Tip`, `Product`, `AccessToken`, `TipPublication`); there is no separate `Subscription` model
+* [x] Define user roles (`USER`, `TIPSTER`, `EDITOR`, `ADMIN`) and account statuses
 * [x] Model single and bulk access token redemption codes
-* [x] Enable static avatar file uploads (`/public/profiles`)
+* [x] Add avatar upload handling
+* [ ] Configure and migrate a local PostgreSQL database
+* [ ] Import historical CLI dumps with the backend seed script
 
 ---
 
 # Phase 8 — Express REST API Backend
 
-**Goal:** Expose secure HTTP endpoints powering the web interface and external clients.
+**Goal:** Expose HTTP endpoints powering the web interface and external clients.
 
-* [x] Build Express API server (`backend/app.js`)
-* [x] Stateless Passport.js & JWT authentication middleware
-* [x] Role-based access control guards
+* [x] Build Express API source (`backend/app.js`)
+* [ ] Repair duplicate declarations in authentication middleware so the server can load
+* [ ] Enforce role authorization on admin and tip-management routes
 * [x] `/api/auth`: Register, Login, Logout, Profile, Password Update, Avatar Upload
 * [x] `/api/tips`: Free, VIP, MaxBet, single detail views, CRUD curation
 * [x] `/api/stats`: Overview, time-based analytics, ROI, sport/market breakdowns
@@ -152,18 +147,11 @@ The-Expertise-Wins-API/
 **Goal:** Provide an SEO-optimized, responsive web application and isolated Admin module.
 
 * [x] **Next.js 14 App Router in Pure JavaScript / JSX**: Built without TypeScript complexity.
-* [x] **Photo-Inspired Cyan Theme**: Electric Cyan (`#00f0ff`), Sapphire Blue, and Midnight Dark backdrop featuring the brand badge avatar silhouette.
-* [x] **Full SEO Optimization**:
-  * Dynamic XML sitemap (`/sitemap.xml`) indexing all pages and blog posts.
-  * Dynamic `robots.txt` (`/robots.txt`).
-  * Structured JSON-LD schema markup (`WebSite`, `BlogPosting`).
-  * OpenGraph and Twitter card metadata tags.
-* [x] **Markdown Blog Engine (`content/blog/`)**:
-  * Drop any `.md` file into `frontend/content/blog/`.
-  * Parsed automatically via `gray-matter` & `marked`.
-  * Blog index (`/blog`) & article reader (`/blog/[slug]`).
-* [x] **Isolated Admin Dashboard Module (`/admin`)**:
-  * Dedicated route hierarchy with client-side role guards (`/admin`, `/admin/users`, `/admin/tips`, `/admin/tokens`, `/admin/products`).
+* [x] Responsive branded UI with light/dark theme preference.
+* [x] **SEO foundations**:
+  * Dynamic XML sitemap (`/sitemap.xml`) for configured public routes and blog posts.
+* [x] **Admin Dashboard UI (`/admin`)**:
+  * Admin pages use client-side role checks; API-side role authorization remains to be completed.
 * [x] **Responsive Across Devices**: Mobile drawer menu, tablet layouts, and desktop support.
 * [x] **Dual Start Commands**: `npm run dev` launches backend (port 3000) and frontend (port 3001) concurrently.
 
@@ -191,8 +179,7 @@ The-Expertise-Wins-API/
 | **Phase 4** | Card Consumption & Formatting | ✅ Completed |
 | **Phase 5** | Pricing & Multi-Currency Tiers | ✅ Completed |
 | **Phase 5.5** | Settlement Engine | ✅ Completed |
-| **Phase 6** | Performance Analytics & ROI Engine | ✅ Completed |
+| **Phase 6** | Performance Analytics & ROI Engine | ⚠️ Implemented in source; blocked by API readiness |
 | **Phase 7** | Prisma ORM Database Models | ✅ Completed |
-| **Phase 8** | Express REST API & JWT Auth | ✅ Completed |
-| **Phase 9** | Next.js 14 Frontend, SEO & Markdown Blog | ✅ Completed |
-| **Phase 10** | Telegram Bot Automation & Cron Scheduling | ⏳ Next Up |
+| **Phase 8** | Express REST API & JWT Auth | ⚠️ Source exists; startup and authorization fixes remain |
+| **Phase 9** | Next.js 14 Frontend, SEO & Markdown Blog | ⚠️ Implemented; sitemap covers configured routes, not every page |
