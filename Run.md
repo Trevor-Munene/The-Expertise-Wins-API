@@ -1,6 +1,6 @@
 # 🏃 Running The Expertise Wins API
 
-This is the **operator's runbook** — everything needed to run and interact with the project *as it currently is*: a terminal CLI that prints channel-ready cards and accepts manual settlement input.
+This is the **CLI operator's runbook**. The repository also contains a backend API and a frontend; their setup is documented in `backend/README.md` and `frontend/README.md`.
 
 > **Where this fits:** `README.md` explains *what* the project is and *why*. `Roadmap.md` explains *where it's going*. **This file explains how to actually run it.**
 
@@ -8,22 +8,22 @@ This is the **operator's runbook** — everything needed to run and interact wit
 
 ## What the app is (right now)
 
-A **CLI**, not a server. There is no database, no frontend, and no automated Telegram bot. It has two jobs:
+The CLI has two jobs:
 
 1. **Produce** today's tips as channel-ready text you copy into the channels.
 2. **Settle** yesterday's/today's results from input you paste in.
 
-That's the whole loop: **produce → paste → settle → repeat.**
+The current CLI loop is **produce → publish manually → paste marked results → settle**. It writes local JSON; it does not publish to Telegram or send data to the API.
 
 ---
 
 ## Requirements
 
 * **Node.js** (the scripts are plain `.js`; no build step)
-* Dependencies installed once:
+* Node dependencies installed in each package you plan to run (`cli`, `backend`, and `frontend`). For this runbook, install the CLI package:
 
 ```bash
-npm install
+npm install --prefix cli
 ```
 
 > On Windows, if `node`/`npm` aren't on your `PATH`, invoke them from `C:\Program Files\nodejs\`.
@@ -35,10 +35,10 @@ npm install
 | Command | What it does |
 |---|---|
 | `npm run expertise` | **Full daily run** — scrape → normalize → save → print cards |
-| `npm start` | Print cards from the **existing** snapshot (no scraping) |
+| `npm run --prefix cli start` | Print cards from the **existing** snapshot (no scraping) |
 | `npm run settlement` | **Settle results** from the pasted template and print the settled report |
-| `npm test` | Run all tests (freetips + contract + settlement) |
-| `npm run test:settlement` | Run only the settlement tests |
+| `npm run --prefix cli test` | Run the CLI FreeTips, contract, and settlement tests |
+| `npm run --prefix cli test:settlement` | Run only the CLI settlement tests |
 
 ---
 
@@ -52,7 +52,7 @@ npm run expertise
 
 This runs, in order:
 
-1. `orchestrator/run-freetips.js` — scrapes FreeTips, normalizes to the 26-field contract, saves the snapshot, exports a dated dump, cleans up transient HTML, and runs the test suite.
+1. `orchestrator/run-freetips.js` — scrapes FreeTips, normalizes records, saves the snapshot and dated dump, cleans up transient HTML, and runs the FreeTips/contract tests. Test errors are logged and do not necessarily stop the run.
 2. `services/app.js` — prints the day's channel-ready cards.
 
 Output sections (copy these into your channels):
@@ -67,23 +67,23 @@ Output sections (copy these into your channels):
 
 ### Just print (no scraping)
 
-If you already scraped and only want the cards again:
+If you already scraped and only want to print the cards again:
 
 ```bash
-npm start
+npm run --prefix cli start
 ```
 
 ### Scrape for a specific date
 
 ```bash
-npm run expertise --date=2026-09-17
+npm run --prefix cli expertise -- --date=2026-09-17
 ```
 
 ---
 
 ## 2. Settling results (manual input)
 
-Results are **not** scraped automatically. You paste them in, and the CLI marks them.
+Results are **not** fetched from sports scores. Paste result text containing the supported markers, and the CLI applies those markers to the matching dated dump.
 
 ### Step 1 — paste the results into the template
 
@@ -108,8 +108,8 @@ Besiktas Win @1.75 - 4 Units ✅✅
 Dusan Vlahovic Anytime Goalscorer @2.10 - 2 Units ❎❎
 ```
 
-* **`✅`** → win
-* **`❎`** → loss
+* **`✅✅`** → win
+* **`❎❎`** → loss
 
 ### Step 2 — run the settlement
 
@@ -117,22 +117,22 @@ Dusan Vlahovic Anytime Goalscorer @2.10 - 2 Units ❎❎
 npm run settlement
 ```
 
-By default this settles the **latest** dated dump using the template above.
+By default this uses today's UTC date and requires the exact matching dated dump. It does not fall back to the latest available dump. Paste the results into the template first.
 
 To be explicit:
 
 ```bash
-npm run settlement --date=2026-09-17
-npm run settlement --date=2026-09-17 path/to/results.txt
-npm run settlement path/to/results.txt
+npm run --prefix cli settlement -- --date=2026-09-17
+npm run --prefix cli settlement -- --date=2026-09-17 path/to/results.txt
+npm run --prefix cli settlement -- path/to/results.txt
 ```
 
 ### What the settlement does
 
 ```text
-Read dated dump  (settlement/previous-day-results/freetips-<date>.json)
+Read exact-date dump  (settlement/previous-day-results/freetips-<date>.json)
         ↓
-Match each tip's fixture + selection against your pasted text
+Match each tip's fixture + selection against your pasted text and doubled markers
         ↓
 Mark outcomes  (win / lose, status = settled) — including nested tips & extraTips
         ↓
@@ -151,10 +151,10 @@ In the printed report:
 
 | Situation | Result |
 |---|---|
-| A tip's line shows `✅` | **win** |
-| A tip's line shows `❎` | **lose** |
+| A tip's line shows `✅✅` | **win** |
+| A tip's line shows `❎❎` | **lose** |
 | A **free** tip is **not present** in your pasted text | **loss** (a free tip you never marked as won is accounted as a loss on your end) |
-| A **featured / VIP** tip is not present | left **unsettled** (needs an explicit marker) |
+| A featured tip (`isFeatured` or Bet of the Day) has no marker | left **unsettled** (needs an explicit marker) |
 
 > ⚠️ **Match the text carefully.** The matcher finds the **first** line in a fixture's block that contains the selection text. If one selection is a substring of another on the same fixture, put the more specific line in the position you want it matched — otherwise the wrong marker can be applied.
 
@@ -187,8 +187,8 @@ This is deliberate: **a tip is only a win if you mark it as won in the public ch
 ## 4. Tests
 
 ```bash
-npm test                 # freetips + contract + settlement
-npm run test:settlement  # settlement layer only
+npm run --prefix cli test                 # freetips + contract + settlement
+npm run --prefix cli test:settlement      # settlement layer only
 ```
 
 The settlement tests run against a self-contained throwaway dump and clean up after themselves.
@@ -208,7 +208,7 @@ npm run expertise
 npm run settlement
 
 # 3. Sanity check
-npm test
+npm run --prefix cli test
 ```
 
 ---
@@ -217,7 +217,7 @@ npm test
 
 | Symptom | Likely cause / fix |
 |---|---|
-| `JSON dump not found for date ...` | No dump matches the date and none exists to fall back to. Run `npm run expertise` first to create one, or pass a valid `--date=`. |
+| `JSON dump not found for date ...` | Settlement requires the exact dated dump. Create it with `npm run --prefix cli expertise -- --date=YYYY-MM-DD`, or pass a date that already has a dump. |
 | `Text file not found ...` | Your `settlement-template.txt` (or the path you passed) doesn't exist. |
 | Settlement marks the wrong outcome | Matcher hit a substring line first — reorder the lines for that fixture (most specific first). |
 | `node` / `npm` not found | Use the full path, e.g. `"C:\Program Files\nodejs\npm.cmd" run settlement`. |
@@ -227,11 +227,10 @@ npm test
 
 ## Not built yet (by design)
 
-These are **not** part of the current CLI and are deferred until the daily workflow is proven:
+These are **not** automated in the current workflow:
 
-* a database
-* a frontend UI
-* an automated Telegram publisher
-* automated result scraping
+* scheduled daily scraping
+* direct Telegram bot publishing
+* automatic result verification from live scores
 
-See `Roadmap.md` for where these sit.
+The backend and frontend exist in this repository; see their package READMEs for setup and current limitations. See `Roadmap.md` for planned work.

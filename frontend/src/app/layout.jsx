@@ -1,23 +1,87 @@
 // frontend/src/app/layout.jsx
 import "./globals.css";
+import Script from "next/script";
+
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ToastProvider from "../components/ToastProvider";
 
 export const metadata = {
-  title: "The Expertise Wins — Verified Daily Sports Betting Tips & Analytics",
+  metadataBase: new URL("https://theexpertisewins.com"),
+
+  title: {
+    default: "The Expertise Wins — Sports Tips & Analytics",
+    template: "%s | The Expertise Wins",
+  },
+
   description:
-    "Data-driven betting tips, odds normalization engine, transparent ROI stats, and dedicated VIP access channels.",
-  keywords: ["betting tips", "free tips", "VIP tips", "football predictions", "odds normalization", "sports stats"],
+    "Daily sports betting tips, transparent performance analytics, curated selections, and dedicated VIP access from The Expertise Wins.",
+
+  keywords: [
+    "betting tips",
+    "free betting tips",
+    "VIP betting tips",
+    "football predictions",
+    "sports predictions",
+    "sports betting analytics",
+    "betting statistics",
+  ],
+
+  applicationName: "The Expertise Wins",
+
+  authors: [
+    {
+      name: "The Expertise Wins",
+    },
+  ],
+
+  creator: "The Expertise Wins",
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+
+  openGraph: {
+    title: "The Expertise Wins — Sports Tips & Analytics",
+    description:
+      "Daily sports tips, transparent performance analytics, curated selections, and VIP access.",
+    type: "website",
+    siteName: "The Expertise Wins",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "The Expertise Wins — Sports Tips & Analytics",
+    description:
+      "Daily sports tips, transparent performance analytics, curated selections, and VIP access.",
+  },
+
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-slate-950 text-slate-100 flex flex-col min-h-screen antialiased selection:bg-emerald-500 selection:text-slate-950">
+    <html lang="en" suppressHydrationWarning>
+      <body className="flex min-h-screen flex-col bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-slate-950">
+        <Script id="theme-preference" strategy="beforeInteractive">
+          {`try {
+  var savedTheme = localStorage.getItem("tew-theme");
+  var preferredTheme = savedTheme || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+  document.documentElement.classList.remove("light", "dark");
+  document.documentElement.classList.add(preferredTheme);
+} catch (_) {}`}
+        </Script>
         <ToastProvider />
+
         <Navbar />
-        <main className="flex-1 flex flex-col">{children}</main>
+
+        <main className="flex flex-1 flex-col">
+          {children}
+        </main>
+
         <Footer />
       </body>
     </html>

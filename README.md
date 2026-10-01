@@ -1,90 +1,58 @@
-# The Expertise Wins — Monorepo Architecture
+# The Expertise Wins
 
-> 📣 **Live Channel:** [The Expertise Wins — Telegram](https://t.me/+D_jIXFB807E0NmRk)
+> [The Expertise Wins on Telegram](https://t.me/+D_jIXFB807E0NmRk)
 
-**The Expertise Wins** is a complete data pipeline, Express REST backend, and Next.js web application designed for sports prediction collection, market normalization, transparent ROI tracking, and VIP channel access management.
+The Expertise Wins is a monorepo containing a sports-tip CLI, an Express/Prisma API, and a Next.js frontend. The CLI currently writes local JSON snapshots and formatted cards; channel publication and result settlement are manual.
 
----
+## Project Structure
 
-## 🏗 Project Architecture & Modules
+- `cli/` collects and normalizes FreeTips records, writes local snapshots, formats cards, and applies manually pasted settlement markers.
+- `backend/` contains the Express API, PostgreSQL Prisma schema, and a seed importer for the dated CLI dumps.
+- `frontend/` contains the Next.js public site, blog, account pages, and admin dashboard UI.
 
-The repository is organized into three decoupled, complementary applications:
+See the [CLI guide](./cli/README.md), [backend guide](./backend/README.md), and [frontend guide](./frontend/README.md) for package-specific details.
 
-```text
-The-Expertise-Wins-API/
-├── cli/              # Scraping, market normalization & daily settlement engine
-├── backend/          # Express REST API, Prisma ORM database & JWT authentication
-├── frontend/         # Next.js 14 Web UI & Isolated Admin Dashboard (JavaScript/JSX)
-├── package.json      # Monorepo configuration with dual start & dev commands
-└── README.md         # Main project documentation
-```
+## Current Readiness
 
-### 1. ⚙️ CLI Engine (`/cli`) — [*Read CLI Documentation*](./cli/README.md)
-- **Scrapers**: Automated Puppeteer/Cheerio scrapers collecting raw tipster predictions.
-- **Normalizers**: Converts market strings into uniform types (`1X2`, `OVER_UNDER_2_5`, `BOTH_TEAMS_TO_SCORE`).
-- **Settlement Engine**: Evaluates tips against actual match results and outputs channel-ready markdown summaries.
+The backend is not ready to launch: `backend/middleware/authentication.js` currently fails JavaScript parsing, and admin/tip-management authorization needs server-side role checks. A local PostgreSQL database and `backend/.env` must also be configured before migrations and seeding. The backend guide documents the setup sequence and known issues.
 
-### 2. 🔌 Backend API (`/backend`) — [*Read Backend Documentation*](./backend/README.md)
-- **Express REST API**: Serves JSON endpoints for tips, statistics, products, subscriptions, and administration.
-- **Prisma ORM**: Relational schema storing users, tips, tip publications, subscription tokens, and analytics records.
-- **Security**: Passport.js & JWT stateless authentication with role-based authorization (`USER`, `TIPSTER`, `EDITOR`, `ADMIN`).
+The CLI can run independently of the backend. It does not send data to the API or publish directly to Telegram; settlement uses manually pasted result markers and an exact-date JSON dump.
 
-### 3. 🌐 Frontend Application (`/frontend`) — [*Read Frontend Documentation*](./frontend/README.md)
-- **Next.js 14 App Router**: SEO-optimized web application built in JavaScript / JSX.
-- **Dedicated Request API Layer (`src/api`)**: Dedicated modules mapping all backend API routes exhaustively (`auth`, `tips`, `stats`, `products`, `subscriptions`, `admin`).
-- **Authentication State (`src/lib/auth.js`)**: JWT token management and role helpers.
-- **Public Application**: Home overview, Tips Hub, Tip details, Stats & Analytics, Products & Token redemption, User Profile.
-- **Isolated Admin Dashboard Module (`/admin`)**: Dedicated administration area accessible only to authorized roles for tip curation, bulk settlement, token generation, and user management.
+## Quick Start
 
----
-
-## ⚡ Quick Start & Dual Commands
-
-You can start both the Express Backend API and the Next.js Frontend App concurrently using a single command:
+Install dependencies separately for each package you plan to run:
 
 ```bash
-# Start both Backend (Port 3000) and Frontend (Port 3001) concurrently
+npm install --prefix cli
+npm install --prefix backend
+npm install --prefix frontend
+```
+
+After the backend is fixed, configured, and migrated, the root development command starts the API and frontend together:
+
+```bash
 npm run dev
 ```
 
-### Starting Applications Independently
+Run the CLI workflows from the repository root:
 
 ```bash
-# Start Express Backend API independently
-npm run dev:backend
-
-# Start Next.js Frontend UI independently
-npm run dev:frontend
-
-# Execute CLI tip collection & normalization
 npm run expertise
-
-# Execute CLI tip settlement orchestrator
 npm run settlement
 ```
 
----
+## API Areas
 
-## 📊 Endpoints & Feature Mapping
+| Area | Current purpose |
+|---|---|
+| Authentication | Registration, login, profiles, password changes, and avatar upload |
+| Tips | Public and product-filtered queries, tip details, and management; public visibility and write authorization need tightening |
+| Statistics | Performance summaries and time-filtered analytics calculated from tips |
+| Products and access | Product information and access-token redemption/verification |
+| Administration | User, tip, publication, access-token, and product management; role enforcement remains to be fixed |
 
-| Application Module | Responsibilities & Coverage |
-| :--- | :--- |
-| **Authentication** | Sign up, sign in, logout, user profile, password change, avatar upload |
-| **Tips Hub** | Public free tips, VIP channel tips, MaxBet tips, individual tip detail views |
-| **Analytics & ROI** | Overall win rate, ROI percentages, sport/market breakdowns, time-period filtering |
-| **Subscriptions** | Access token redemption, token verification, active membership checks |
-| **Admin Module** | User role editing, bulk tip publishing/settling, single/bulk access token generation |
+Subscription-style access is represented by access tokens; the Prisma schema has no separate `Subscription` or analytics-record model.
 
----
-
-## 📜 Sub-Application Documentation Links
-
-- 📖 [CLI Application Documentation](./cli/README.md)
-- 📖 [Backend API Documentation](./backend/README.md)
-- 📖 [Frontend App Documentation](./frontend/README.md)
-
----
-
-## 🛡 License
+## License
 
 MIT License.

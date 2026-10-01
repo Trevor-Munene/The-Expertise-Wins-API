@@ -18,13 +18,13 @@ export const subscriptionsApi = {
   },
 
   async redeemAccessToken(tokenCode) {
-    const { data } = await apiClient.post("/subscriptions/redeem", { tokenCode });
+    const { data } = await apiClient.post("/subscriptions/redeem", { token: tokenCode });
     return data;
   },
 
   async verifyAccessToken(tokenCode) {
-    const { data } = await apiClient.post("/subscriptions/verify", { tokenCode });
-    return data;
+    const { data } = await apiClient.post("/subscriptions/verify", { token: tokenCode });
+    return data?.access ?? data;
   },
 
   async getMyAccess() {

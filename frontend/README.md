@@ -5,17 +5,17 @@ The `frontend` directory contains the Next.js 14 Web Application (App Router, Ja
 ## 📌 Features & Modules
 
 - **SEO & Server-Side Structure**: Built with Next.js 14 App Router, semantic metadata, and dynamic routing for optimal search engine visibility.
-- **Dedicated Request API Layer (`src/api`)**: Dedicated modules defining API client calls for every backend endpoint:
+- **Request API Layer (`src/api`)**: Modules for the backend workflows used by the frontend:
   - `auth.api.js` — Register, Login, Logout, Profile, Password Update, Avatar Upload
   - `tips.api.js` — Free, VIP, MaxBet, Single Tip Detail, Tip Creation & Result Updates
   - `stats.api.js` — Overview, Time-based Stats, Win Rate, ROI, Sport & Market Analytics
   - `products.api.js` — Free & Premium VIP Tier Offerings
   - `subscriptions.api.js` — Active Subscriptions, Token Redemption, Access Verification
   - `admin.api.js` — Full Admin Operations (Users, Tips, Bulk Settle/Publish, Tokens, Products)
-- **Authentication & Token State (`src/lib/auth.js`)**: Manages JWT tokens in `localStorage` and `js-cookie`, exposes role helper functions (`isAdmin`, `isSuperAdmin`).
+- **Authentication & Token State (`src/lib/auth.js`)**: Stores JWTs in `localStorage` and `js-cookie`, with client-side role helper functions. These checks are UI behavior, not server-side authorization.
 - **Axios HTTP Client (`src/lib/axios.js`)**: Configured Axios instance automatically attaching Bearer JWT tokens and handling 401 unauthenticated redirects.
 - **Isolated Admin Dashboard Module (`/admin`)**:
-  - Secure route isolation with client-side role guards
+  - Client-side role checks for navigation; the backend must enforce authorization independently
   - Admin Overview (`/admin`)
   - User Accounts & Roles (`/admin/users`)
   - Tips & Curation Engine (`/admin/tips`) with bulk publish/settle options
@@ -27,7 +27,7 @@ The `frontend` directory contains the Next.js 14 Web Application (App Router, Ja
   - Tip Detail (`/tips/[id]`) — Match info, market, odds, status, and outcome
   - Stats & Analytics (`/stats`) — Win rate, ROI, sport/market performance charts
   - Products & Membership (`/products`) — Tier breakdown and token redemption modal
-  - User Profile (`/profile`) — Avatar upload, password security, active subscriptions history
+  - User Profile (`/profile`) — Avatar upload, password security, and access-token/subscription history
 
 ## 🛠 Tech Stack
 
@@ -40,20 +40,4 @@ The `frontend` directory contains the Next.js 14 Web Application (App Router, Ja
 
 ## 🚀 Running the Frontend
 
-From the root directory:
-
-```bash
-# Start frontend dev server on port 3001
-npm run dev:frontend
-
-# Build frontend for production
-npm run --prefix frontend build
-```
-
-From inside `frontend`:
-
-```bash
-npm run dev
-npm run build
-npm run start
-```
+The frontend uses `NEXT_PUBLIC_API_URL` for the backend URL and `NEXT_PUBLIC_SITE_URL` for sitemap URLs. The latter defaults to `https://expertise-wins.com` in the sitemap implementation; set it for the intended deployment domain. Copy `frontend/.env.example` to `frontend/.env.local` for local overrides. The backend must be running separately for API-backed workflows.
