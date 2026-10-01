@@ -36,7 +36,7 @@ The API currently fails to load because `middleware/authentication.js` contains 
 
 ## Local PostgreSQL Setup
 
-From the repository root, copy the example environment file, fill in the local PostgreSQL URL and a strong JWT secret, then install and initialize the backend:
+For host-based development, copy the backend example environment file and fill in a local PostgreSQL URL and a strong JWT secret, then install and initialize the backend:
 
 ```powershell
 Copy-Item backend/.env.example backend/.env
@@ -48,6 +48,18 @@ npm run --prefix backend seed
 ```
 
 The seed command imports tips from `cli/settlement/previous-day-results`; it does not modify the CLI files or dumps. Run `seed:check` first to validate the dump data without writing to PostgreSQL.
+
+### Docker development
+
+The root Compose setup provides PostgreSQL as the `db` service and injects its connection URL into the app container. Do not use `localhost` as the database host from inside a container. After opening the workspace with **Dev Containers: Reopen in Container**, use the integrated terminal to initialize the database and seed the historical tips:
+
+```bash
+npm run --prefix backend prisma:migrate
+npm run --prefix backend seed:check
+npm run --prefix backend seed
+```
+
+The Dockerized frontend is available at `http://localhost:3181`; the API is intended for `http://localhost:3180` once the current authentication syntax error is fixed. See the root README for Compose ports and volume behavior.
 
 ## Running the Backend API
 

@@ -19,6 +19,23 @@ The backend is not ready to launch: `backend/middleware/authentication.js` curre
 The CLI can run independently of the backend. It does not send data to the API or publish directly to Telegram; settlement uses manually pasted result markers and an exact-date JSON dump.
 
 ## Quick Start
+## Docker Development
+
+Install Docker Desktop with its WSL 2 backend enabled. In VS Code, install the Dev Containers extension, open this repository, and choose **Dev Containers: Reopen in Container**. VS Code and Compose run the Node.js environment and PostgreSQL in Linux containers, leaving host .NET installations separate.
+
+The Compose setup exposes the frontend at `http://localhost:3181`, the API at `http://localhost:3180`, and PostgreSQL at `localhost:55432`. App dependencies and the database live in Docker volumes. `docker compose down` stops the services while preserving database data; do not use `docker compose down -v` unless you intend to delete that data.
+
+The API still has the known syntax error in `backend/middleware/authentication.js`, so it will not become available until that code issue is fixed. The frontend and PostgreSQL can start independently.
+
+To start the stack without opening VS Code in the container:
+
+```bash
+docker compose up --build
+```
+
+Optional port and local database overrides can be placed in a root `.env` file (ignored by Git): `API_HOST_PORT`, `FRONTEND_HOST_PORT`, `POSTGRES_HOST_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `JWT_SECRET`. Defaults are intended only for local development.
+
+## Quick Start
 
 Install dependencies separately for each package you plan to run:
 
