@@ -1,0 +1,22 @@
+{
+  "name": "The Expertise Wins (Docker)",
+  "dockerComposeFile": "../compose.yaml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [3180, 3181, 55432],
+  "portsAttributes": {
+    "3180": { "label": "Backend API" },
+    "3181": { "label": "Frontend" },
+    "55432": { "label": "PostgreSQL" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "Prisma.prisma"
+      ]
+    }
+  },
+  "postCreateCommand": "npm run --prefix backend prisma:generate"
+}

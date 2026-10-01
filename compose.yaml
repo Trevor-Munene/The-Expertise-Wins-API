@@ -1,0 +1,55 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    working_dir: /workspace
+    command: ["npm", "run", "dev"]
+    init: true
+    volumes:
+      - .:/workspace
+      - root_node_modules:/workspace/node_modules
+      - backend_node_modules:/workspace/backend/node_modules
+      - frontend_node_modules:/workspace/frontend/node_modules
+      - frontend_next_cache:/workspace/frontend/.next
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tew}:${POSTGRES_PASSWORD:-tew_local_dev}@db:5432/${POSTGRES_DB:-expertise_wins}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-local-docker-dev-secret-change-before-use}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      PORT: 3000
+      CORS_ORIGIN: http://localhost:${FRONTEND_HOST_PORT:-3181}
+      NEXT_PUBLIC_API_URL: http://localhost:${API_HOST_PORT:-3180}/api
+      NEXT_PUBLIC_APP_URL: http://localhost:${FRONTEND_HOST_PORT:-3181}
+      NEXT_PUBLIC_SITE_URL: http://localhost:${FRONTEND_HOST_PORT:-3181}
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "${API_HOST_PORT:-3180}:3000"
+      - "${FRONTEND_HOST_PORT:-3181}:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-expertise_wins}
+      POSTGRES_USER: ${POSTGRES_USER:-tew}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tew_local_dev}
+    ports:
+      - "${POSTGRES_HOST_PORT:-55432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  root_node_modules:
+  backend_node_modules:
+  frontend_node_modules:
+  frontend_next_cache:
+  postgres_data:
