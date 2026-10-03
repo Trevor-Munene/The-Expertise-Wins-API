@@ -42,11 +42,16 @@ const REPORT_OPTIONS = [
 ];
 
 const getResponseData = (response) =>
-  response?.data ?? response ?? null;
+  response?.stats ?? response?.data ?? response ?? null;
 
-const getArrayData = (response) => {
+const getArrayData = (response, key) => {
   const data = getResponseData(response);
-  return Array.isArray(data) ? data : [];
+  if (Array.isArray(data)) return data;
+  if (!data || typeof data !== "object") return [];
+  return Object.entries(data).map(([name, value]) => ({
+    [key]: name,
+    ...(value && typeof value === "object" ? value : { value }),
+  }));
 };
 
 const formatMetricPercent = (value) =>
@@ -81,8 +86,8 @@ export default function StatsPage() {
   const [sportStats, setSportStats] = useState([]);
   const [marketStats, setMarketStats] = useState([]);
   const [competitionStats, setCompetitionStats] = useState([]);
-  const [sourceStats, setSourceStats] = useState([]);
   const [volumeStats, setVolumeStats] = useState(null);
+  const [scrapedStats, setScrapedStats] = useState(null);
   const [reportData, setReportData] = useState(null);
   const [winRateData, setWinRateData] = useState(null);
   const [roiData, setRoiData] = useState(null);
@@ -143,8 +148,8 @@ export default function StatsPage() {
         statsApi.getSportStats(),
         statsApi.getMarketStats(),
         statsApi.getCompetitionStats(),
-        statsApi.getSourceStats(),
         statsApi.getVolumeStats(),
+        statsApi.getScrapedStats(),
         reportRequest,
         statsApi.getWinRate(),
         statsApi.getRoi(),
@@ -158,8 +163,8 @@ export default function StatsPage() {
         sportRes,
         marketRes,
         competitionRes,
-        sourceRes,
         volumeRes,
+        scrapedRes,
         reportRes,
         winRateRes,
         roiRes,
@@ -179,23 +184,24 @@ export default function StatsPage() {
       }
 
       if (sportRes.status === "fulfilled") {
-        setSportStats(getArrayData(sportRes.value));
+        setSportStats(getArrayData(sportRes.value, "sport"));
       }
 
       if (marketRes.status === "fulfilled") {
-        setMarketStats(getArrayData(marketRes.value));
+        setMarketStats(getArrayData(marketRes.value, "market"));
       }
 
       if (competitionRes.status === "fulfilled") {
-        setCompetitionStats(getArrayData(competitionRes.value));
+        setCompetitionStats(getArrayData(competitionRes.value, "competition"));
       }
 
-      if (sourceRes.status === "fulfilled") {
-        setSourceStats(getArrayData(sourceRes.value));
-      }
 
       if (volumeRes.status === "fulfilled") {
         setVolumeStats(getResponseData(volumeRes.value));
+      }
+
+      if (scrapedRes.status === "fulfilled") {
+        setScrapedStats(getResponseData(scrapedRes.value));
       }
 
       if (reportRes.status === "fulfilled") {
@@ -236,6 +242,7 @@ export default function StatsPage() {
     overview?.roi;
 
   const averageOdds =
+    oddsData?.average ??
     oddsData?.avgOdds ??
     periodStats?.avgOdds ??
     overview?.avgOdds;
@@ -243,15 +250,15 @@ export default function StatsPage() {
   const totalVolume =
     volumeStats?.totalVolume ??
     volumeStats?.count ??
+    volumeStats?.total ??
     overview?.totalCount;
 
-  const scrapedCount =
-    volumeStats?.scrapedCount ??
-    volumeStats?.scraped;
+  const scrapedCount = scrapedStats?.scrapedTips;
 
   const publishedCount =
     volumeStats?.publishedCount ??
     volumeStats?.published;
+  const reportOverview = reportData?.overview ?? reportData;
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -269,7 +276,7 @@ export default function StatsPage() {
 
           <p className="text-slate-400 text-sm max-w-2xl">
             Track tip performance across periods, sports, markets,
-            competitions, products, and publishing sources.
+            competitions, and products.
           </p>
         </div>
 
@@ -425,7 +432,7 @@ export default function StatsPage() {
                     )}
 
                     <div className="text-[11px] text-slate-400">
-                      Tips analyzed: {item.count ?? "—"}
+                      Tips analyzed: {item.totalTips ?? item.count ?? "—"}
                     </div>
                   </div>
                 );
@@ -480,7 +487,7 @@ export default function StatsPage() {
                     )}
 
                     <div className="text-[11px] text-slate-400">
-                      Selections: {item.count ?? "—"}
+                      Selections: {item.totalTips ?? item.count ?? "—"}
                     </div>
                   </div>
                 );
@@ -521,7 +528,7 @@ export default function StatsPage() {
                     </span>
 
                     <span className="text-[10px] text-slate-400 block mt-0.5">
-                      {competition.count ?? "—"} Matches
+                      {competition.totalTips ?? competition.count ?? "—"} Matches
                     </span>
                   </div>
 
@@ -538,47 +545,6 @@ export default function StatsPage() {
           )}
         </div>
 
-        {/* Sources */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-          <h2 className="font-bold text-slate-100 text-base flex items-center gap-2">
-            <Target
-              className="w-4 h-4 text-emerald-400"
-              aria-hidden="true"
-            />
-            Tip Sources
-          </h2>
-
-          {sourceStats.length > 0 ? (
-            <div className="space-y-2.5 text-xs">
-              {sourceStats.map((source, index) => {
-                const accuracy = source.accuracy ?? source.winRate;
-
-                return (
-                  <div
-                    key={source.id || source.source || source.name || index}
-                    className="flex items-center justify-between gap-4 bg-slate-950 p-3 rounded-xl border border-slate-800"
-                  >
-                    <div className="min-w-0">
-                      <span className="font-bold text-slate-200 block truncate">
-                        {source.source || source.name || "Unknown Source"}
-                      </span>
-
-                      <span className="text-[10px] text-slate-400 block mt-0.5">
-                        {source.count ?? "—"} Curated Tips
-                      </span>
-                    </div>
-
-                    <span className="shrink-0 font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20">
-                      {accuracy != null ? `${accuracy}%` : "—"}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyBreakdown message="No source performance data available yet." />
-          )}
-        </div>
       </section>
 
       {/* Reports */}
@@ -634,26 +600,26 @@ export default function StatsPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-slate-300">
             <ReportMetric
               label="Total Predictions"
-              value={reportData?.totalTips ?? reportData?.count}
+              value={reportOverview?.totalTips ?? reportOverview?.count}
             />
 
             <ReportMetric
               label="Wins Recorded"
-              value={reportData?.wins}
+              value={reportOverview?.wins}
               valueClassName="text-emerald-400"
             />
 
             <ReportMetric
               label="Losses Recorded"
-              value={reportData?.losses}
+              value={reportOverview?.losses}
               valueClassName="text-rose-400"
             />
 
             <ReportMetric
               label="Win Rate"
               value={
-                reportData?.winRate != null
-                  ? `${reportData.winRate}%`
+                reportOverview?.winRate != null
+                  ? `${reportOverview.winRate}%`
                   : null
               }
               valueClassName="text-cyan-400"

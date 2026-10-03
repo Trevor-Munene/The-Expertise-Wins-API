@@ -8,7 +8,11 @@ This roadmap reflects the **current state and architectural milestones** of **Th
 
 ## 📌 Overall Project Status (October 2026)
 
-The repository contains a working CLI workflow, backend API source, and Next.js frontend. The API and database setup are not yet launch-ready locally: no local database has been configured, and the backend currently has a startup syntax error plus incomplete admin authorization.
+The repository contains three distinct applications: a local-file CLI workflow, an Express/Prisma API, and a Next.js frontend. The local Docker database is migrated and seeded; the API and frontend have both been started and checked in this workspace. This is a development baseline, not production approval.
+
+**Verified locally on 2026-10-03:** PostgreSQL is healthy; Prisma reports the schema in sync; the seed imports 271 tips from nine dated dumps; API health, current-day tier-aware archive visibility, source redaction, admin login, and protected profile access respond; the frontend serves archive and preview pages. Frontend lint has one `<img>` optimization warning. The CLI remains a separate manual publish/settle workflow.
+
+**Release blockers:** Tip mutations do not enforce server-side role/ownership checks, and frontend client-side role checks are not security controls. The backend has no automated test script, and end-to-end UI-to-API workflows still need coverage. Source identifiers and URLs are withheld from public tip responses; source analytics and admin operations require the admin role.
 
 ---
 
@@ -121,8 +125,8 @@ The repository contains a working CLI workflow, backend API source, and Next.js 
 * [x] Define user roles (`USER`, `TIPSTER`, `EDITOR`, `ADMIN`) and account statuses
 * [x] Model single and bulk access token redemption codes
 * [x] Add avatar upload handling
-* [ ] Configure and migrate a local PostgreSQL database
-* [ ] Import historical CLI dumps with the backend seed script
+* [x] Configure and migrate the local Compose PostgreSQL database in the development workspace
+* [x] Import nine historical CLI dumps (271 tips at this update) with the backend seed script
 
 ---
 
@@ -131,10 +135,15 @@ The repository contains a working CLI workflow, backend API source, and Next.js 
 **Goal:** Expose HTTP endpoints powering the web interface and external clients.
 
 * [x] Build Express API source (`backend/app.js`)
-* [ ] Repair duplicate declarations in authentication middleware so the server can load
-* [ ] Enforce role authorization on admin and tip-management routes
+* [x] Repair duplicate declarations in authentication middleware so the server can load
+* [x] Enforce `ADMIN` role authorization on admin routes
+* [ ] Enforce role/ownership authorization on tip-management mutations
+* [x] Restrict public tip list to active public product publications
+* [x] Restrict public tip detail to published product access
+* [x] Add a current-day-by-default tier-aware archive with a selected-day picker and sport/outcome/search filters
+* [x] Remove source identifiers/URLs from public tip payloads; restrict source analytics to admins
 * [x] `/api/auth`: Register, Login, Logout, Profile, Password Update, Avatar Upload
-* [x] `/api/tips`: Free, VIP, MaxBet, single detail views, CRUD curation
+* [x] `/api/tips`: Free, VIP, MaxBet, tier-aware archive, detail previews, CRUD curation
 * [x] `/api/stats`: Overview, time-based analytics, ROI, sport/market breakdowns
 * [x] `/api/products`: Available product tier details
 * [x] `/api/subscriptions`: Active access check, token redemption, subscription history
@@ -149,9 +158,11 @@ The repository contains a working CLI workflow, backend API source, and Next.js 
 * [x] **Next.js 14 App Router in Pure JavaScript / JSX**: Built without TypeScript complexity.
 * [x] Responsive branded UI with light/dark theme preference.
 * [x] **SEO foundations**:
-  * Dynamic XML sitemap (`/sitemap.xml`) for configured public routes and blog posts.
+  * Dynamic XML sitemap (`/sitemap.xml`) for a configured subset of public routes and blog posts.
+  * [ ] Align sitemap/robots URLs with the metadata canonical domain and include remaining public pages.
 * [x] **Admin Dashboard UI (`/admin`)**:
-  * Admin pages use client-side role checks; API-side role authorization remains to be completed.
+  * Admin UI checks roles client-side; admin endpoints enforce roles server-side, while tip mutation ownership checks remain open.
+* [x] Historical tip archive (`/archive`) with detail previews and recorded outcomes.
 * [x] **Responsive Across Devices**: Mobile drawer menu, tablet layouts, and desktop support.
 * [x] **Dual Start Commands**: `npm run dev` launches backend (port 3000) and frontend (port 3001) concurrently.
 
@@ -179,7 +190,7 @@ The repository contains a working CLI workflow, backend API source, and Next.js 
 | **Phase 4** | Card Consumption & Formatting | ✅ Completed |
 | **Phase 5** | Pricing & Multi-Currency Tiers | ✅ Completed |
 | **Phase 5.5** | Settlement Engine | ✅ Completed |
-| **Phase 6** | Performance Analytics & ROI Engine | ⚠️ Implemented in source; blocked by API readiness |
-| **Phase 7** | Prisma ORM Database Models | ✅ Completed |
-| **Phase 8** | Express REST API & JWT Auth | ⚠️ Source exists; startup and authorization fixes remain |
-| **Phase 9** | Next.js 14 Frontend, SEO & Markdown Blog | ⚠️ Implemented; sitemap covers configured routes, not every page |
+| **Phase 6** | Performance Analytics & ROI Engine | ✅ Implemented; seeded local data is available for route checks |
+| **Phase 7** | Prisma ORM, Local PostgreSQL & Historical Seed | ✅ Complete in this development workspace; fresh setups must follow the database guide |
+| **Phase 8** | Express REST API, Archive & JWT Auth | ⚠️ Archive and source privacy work locally; tip mutation authorization and automated backend tests remain |
+| **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | ⚠️ Lint passes with one warning; sitemap/domain alignment and automated end-to-end workflows remain |

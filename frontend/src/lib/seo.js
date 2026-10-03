@@ -34,7 +34,7 @@ export function generateStructuredData({ type = "WebSite", title, description, u
     "@type": "WebSite",
     name: "The Expertise Wins",
     url: SITE_URL,
-    description: "Data-driven sports betting predictions, normalized odds, and VIP membership channels.",
+    description: "The Expertise Wins is a Kenyan-curated sports data pipeline with transparent Free, VIP, and MaxBet tip archives, normalized markets, and performance tracking.",
     potentialAction: {
       "@type": "SearchAction",
       target: `${SITE_URL}/tips?q={search_term_string}`,

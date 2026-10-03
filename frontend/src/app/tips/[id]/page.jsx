@@ -167,12 +167,6 @@ export default function TipDetailPage() {
                     )}
                   </span>
 
-                  {tip.externalId && (
-                    <span className="inline-flex items-center gap-1.5">
-                      <Target className="w-3.5 h-3.5 text-indigo-400" />
-                      External ID: {tip.externalId}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
@@ -288,6 +282,23 @@ export default function TipDetailPage() {
             </section>
           )}
 
+          {(tip.verdict || tip.preview) && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
+                  <Target className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-slate-100">Match Preview</h2>
+                  <p className="text-[10px] uppercase text-slate-500">Selection analysis</p>
+                </div>
+              </div>
+              <p className="whitespace-pre-line rounded-xl border border-dark-border bg-dark-bg p-5 text-sm leading-7 text-slate-300">
+                {tip.verdict || tip.preview}
+              </p>
+            </section>
+          )}
+
           {/* Operator Notes */}
           {tip.notes && (
             <section className="space-y-3">
@@ -341,22 +352,6 @@ export default function TipDetailPage() {
             </section>
           )}
 
-          {/* Footer Metadata */}
-          <div className="pt-5 border-t border-dark-border grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
-            <div className="flex items-center justify-between gap-4 bg-dark-bg rounded-lg px-3 py-2.5">
-              <span className="text-slate-500">Source</span>
-              <span className="text-slate-300 font-semibold">
-                {tip.source || "Expertise Engine"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-4 bg-dark-bg rounded-lg px-3 py-2.5">
-              <span className="text-slate-500">Tip ID</span>
-              <span className="text-slate-300 font-mono">
-                {tip.id || id}
-              </span>
-            </div>
-          </div>
         </div>
       </div>
 

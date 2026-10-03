@@ -1,7 +1,7 @@
 const { Router } = require("express");
 
 const subscriptionsController = require("../controllers/subscription.controller");
-const { authenticateJWT } = require("../middleware/authentication");
+const { authenticateJWT, optionalAuthenticateJWT } = require("../middleware/authentication");
 
 const subscriptionsRouter = Router();
 
@@ -13,7 +13,7 @@ subscriptionsRouter.get("/active", authenticateJWT, subscriptionsController.getA
 subscriptionsRouter.get("/history", authenticateJWT, subscriptionsController.getSubscriptionHistory);
 
 // Access token redemption
-subscriptionsRouter.post("/redeem", authenticateJWT, subscriptionsController.redeemAccessToken);
+subscriptionsRouter.post("/redeem", optionalAuthenticateJWT, subscriptionsController.redeemAccessToken);
 
 // Check an access token
 subscriptionsRouter.post("/verify", subscriptionsController.verifyAccessToken);

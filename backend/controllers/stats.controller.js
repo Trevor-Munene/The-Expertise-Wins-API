@@ -12,6 +12,15 @@ const getOverview = async (req, res, next) => {
     }
 };
 
+const getUsageStats = async (req, res, next) => {
+    try {
+        const stats = await statsService.getUsageStats();
+        res.status(200).json({ stats });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getTodayStats = async (req, res, next) => {
     try {
         const stats = await statsService.getTodayStats();
@@ -99,7 +108,8 @@ const getFreeStats = async (req, res, next) => {
 const getVipStats = async (req, res, next) => {
     try {
         const stats = await statsService.getVipStats(
-            req.user.id
+            req.user.id,
+            req.user.role === "ADMIN"
         );
 
         res.status(200).json({
@@ -113,7 +123,8 @@ const getVipStats = async (req, res, next) => {
 const getMaxbetStats = async (req, res, next) => {
     try {
         const stats = await statsService.getMaxbetStats(
-            req.user.id
+            req.user.id,
+            req.user.role === "ADMIN"
         );
 
         res.status(200).json({
@@ -151,7 +162,8 @@ const getFreeMonthlyStats = async (req, res, next) => {
 const getVipWeeklyStats = async (req, res, next) => {
     try {
         const stats = await statsService.getVipWeeklyStats(
-            req.user.id
+            req.user.id,
+            req.user.role === "ADMIN"
         );
 
         res.status(200).json({
@@ -165,7 +177,8 @@ const getVipWeeklyStats = async (req, res, next) => {
 const getVipMonthlyStats = async (req, res, next) => {
     try {
         const stats = await statsService.getVipMonthlyStats(
-            req.user.id
+            req.user.id,
+            req.user.role === "ADMIN"
         );
 
         res.status(200).json({
@@ -179,7 +192,8 @@ const getVipMonthlyStats = async (req, res, next) => {
 const getMaxbetWeeklyStats = async (req, res, next) => {
     try {
         const stats = await statsService.getMaxbetWeeklyStats(
-            req.user.id
+            req.user.id,
+            req.user.role === "ADMIN"
         );
 
         res.status(200).json({
@@ -193,7 +207,8 @@ const getMaxbetWeeklyStats = async (req, res, next) => {
 const getMaxbetMonthlyStats = async (req, res, next) => {
     try {
         const stats = await statsService.getMaxbetMonthlyStats(
-            req.user.id
+            req.user.id,
+            req.user.role === "ADMIN"
         );
 
         res.status(200).json({
@@ -448,6 +463,7 @@ const getMyAccessStats = async (req, res, next) => {
 
 module.exports = {
     getOverview,
+    getUsageStats,
     getTodayStats,
     getWeeklyStats,
     getFourteenDayStats,

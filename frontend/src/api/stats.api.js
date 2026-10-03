@@ -7,6 +7,11 @@ export const statsApi = {
     return data;
   },
 
+  async getUsageStats() {
+    const { data } = await apiClient.get("/stats/usage");
+    return data;
+  },
+
   async getTodayStats() {
     const { data } = await apiClient.get("/stats/today");
     return data;
@@ -134,11 +139,6 @@ export const statsApi = {
 
   async getCompetitionStats() {
     const { data } = await apiClient.get("/stats/competitions");
-    return data;
-  },
-
-  async getSourceStats() {
-    const { data } = await apiClient.get("/stats/sources");
     return data;
   },
 

@@ -65,17 +65,19 @@ export default function AdminOverviewPage() {
   const [userCount, setUserCount] = useState(0);
   const [tipCount, setTipCount] = useState(0);
   const [tokenCount, setTokenCount] = useState(0);
+  const [usage, setUsage] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadAdminSummary() {
       try {
-        const [usersRes, tipsRes, tokensRes, statsRes] =
+        const [usersRes, tipsRes, tokensRes, statsRes, usageRes] =
           await Promise.allSettled([
             adminApi.getUsers({ limit: 1 }),
             adminApi.getTips({ limit: 1 }),
             adminApi.getAccessTokens({ limit: 1 }),
             statsApi.getOverview(),
+            statsApi.getUsageStats(),
           ]);
 
         if (usersRes.status === "fulfilled") {
@@ -114,12 +116,16 @@ export default function AdminOverviewPage() {
         if (statsRes.status === "fulfilled") {
           setStats(statsRes.value?.data || statsRes.value);
         }
+        if (usageRes.status === "fulfilled") {
+          setUsage(usageRes.value?.stats || usageRes.value?.data || usageRes.value);
+        }
 
         const failures = [
           usersRes,
           tipsRes,
           tokensRes,
           statsRes,
+          usageRes,
         ].filter((result) => result.status === "rejected");
 
         if (failures.length > 0) {
@@ -209,6 +215,14 @@ export default function AdminOverviewPage() {
         />
 
         <StatCard
+          title="Usage Events (30d)"
+          value={loading ? "..." : usage?.totalEvents ?? "—"}
+          subtitle={`${usage?.uniqueUsers ?? 0} identified users`}
+          color="blue"
+          icon={Activity}
+        />
+
+        <StatCard
           title="Overall Win Rate"
           value={loading ? "..." : winRate}
           subtitle="Tracked tip performance"
@@ -216,6 +230,25 @@ export default function AdminOverviewPage() {
           icon={Activity}
         />
       </div>
+
+      <section className="rounded-2xl border-slate-800 bg-slate-900 p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-100">Application Usage</h2>
+            <p className="mt-1 text-xs text-slate-500">Admin-only activity tracking from the last 30 days.</p>
+          </div>
+          <Activity className="h-5 w-5 text-blue-400" />
+        </div>
+        <div className="mt-5 space-y-2">
+          {(usage?.topPaths || []).slice(0, 6).map((item) => (
+            <div key={item.path || "unknown"} className="flex items-center justify-between rounded-lg bg-slate-950 px-3 py-2 text-xs">
+              <span className="truncate text-slate-300">{item.path || "unknown"}</span>
+              <span className="font-bold text-blue-300">{item._count?._all ?? 0}</span>
+            </div>
+          ))}
+          {!usage?.topPaths?.length && <p className="text-xs text-slate-500">Usage data will appear as visitors use the application.</p>}
+        </div>
+      </section>
 
       {/* Management Sections */}
       <div>

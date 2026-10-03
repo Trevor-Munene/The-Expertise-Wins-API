@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { tipsApi } from "../../api/tips.api";
 import TipCard from "../../components/TipCard";
+import { formatTipChannelCard } from "../../lib/tipChannelFormatter";
 import {
   Search,
   Lock,
@@ -32,19 +33,24 @@ export default function TipsPage() {
         let res;
 
         if (activeTab === "free") {
-          res = await tipsApi.getFreeTips();
+          res = await tipsApi.getFreeTips({ day: new Date().toISOString().slice(0, 10) });
         } else if (activeTab === "vip") {
-          res = await tipsApi.getVipTips();
+          res = await tipsApi.getVipTips({ day: new Date().toISOString().slice(0, 10) });
         } else if (activeTab === "maxbet") {
-          res = await tipsApi.getMaxbetTips();
+          res = await tipsApi.getMaxbetTips({ day: new Date().toISOString().slice(0, 10) });
         } else {
           res = await tipsApi.getTips();
         }
 
-        const data = res?.tips || res?.data || res || [];
+        const data =
+          res?.tips?.data ??
+          res?.tips ??
+          res?.data?.data ??
+          res?.data ??
+          res;
         setTips(Array.isArray(data) ? data : []);
       } catch (err) {
-        if (err.response?.status === 401) {
+        if ([401, 403].includes(err.response?.status)) {
           setRequiresAuth(true);
         }
 
@@ -310,11 +316,29 @@ export default function TipsPage() {
           </div>
         </div>
       ) : filteredTips.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTips.map((tip) => (
-            <TipCard key={tip.id || tip._id} tip={tip} />
-          ))}
-        </div>
+        activeTab === "vip" || activeTab === "maxbet" ? (
+          <div className="mx-auto max-w-3xl space-y-4">
+            {filteredTips.map((tip, index) => (
+              <article
+                key={tip.id || tip._id}
+                className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900"
+              >
+                <div className="border-b border-slate-800 px-5 py-3 text-[11px] font-bold uppercase text-slate-400">
+                  Card {index + 1}
+                </div>
+                <pre className="whitespace-pre-wrap break-words px-5 py-5 font-mono text-sm leading-7 text-slate-100">
+                  {formatTipChannelCard(tip)}
+                </pre>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredTips.map((tip) => (
+              <TipCard key={tip.id || tip._id} tip={tip} />
+            ))}
+          </div>
+        )
       ) : (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
           <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto">

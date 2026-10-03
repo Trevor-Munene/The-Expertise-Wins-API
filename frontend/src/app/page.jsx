@@ -27,24 +27,34 @@ export default function HomePage() {
     let mounted = true;
 
     async function fetchData() {
-      const [tipsRes, statsRes] = await Promise.allSettled([
-        tipsApi.getFreeTips(),
+      const [tipsRes, statsRes, oddsRes] = await Promise.allSettled([
+        tipsApi.getArchive({
+          tier: "free",
+          day: new Date().toISOString().slice(0, 10),
+          limit: 6,
+        }),
         statsApi.getOverview(),
+        statsApi.getOddsStats(),
       ]);
 
       if (!mounted) return;
 
       if (tipsRes.status === "fulfilled") {
         const tipsData =
-          tipsRes.value?.tips ?? tipsRes.value?.data ?? tipsRes.value ?? [];
+          tipsRes.value?.tips?.data ??
+          tipsRes.value?.data ??
+          tipsRes.value ??
+          [];
 
         setFreeTips(Array.isArray(tipsData) ? tipsData.slice(0, 6) : []);
       }
 
       if (statsRes.status === "fulfilled") {
-        setOverviewStats(
-          statsRes.value?.data ?? statsRes.value ?? null
-        );
+        const overview = statsRes.value?.stats ?? statsRes.value?.data ?? statsRes.value ?? null;
+        const odds = oddsRes.status === "fulfilled"
+          ? oddsRes.value?.stats?.average ?? oddsRes.value?.stats?.avgOdds
+          : null;
+        setOverviewStats(overview ? { ...overview, avgOdds: odds } : null);
       } else {
         setOverviewStats(null);
       }
@@ -66,9 +76,8 @@ export default function HomePage() {
       : "—";
 
   const totalTips =
-    overviewStats?.totalTips ??
-    overviewStats?.totalCount ??
     overviewStats?.settledTips ??
+    overviewStats?.settled ??
     "—";
 
   const averageOdds =

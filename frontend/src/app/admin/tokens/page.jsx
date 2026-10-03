@@ -21,6 +21,7 @@ const initialSingleForm = {
   productId: "",
   durationDays: 30,
   note: "",
+  assignedUserId: "",
 };
 
 const initialBulkForm = {
@@ -43,7 +44,8 @@ function getList(response, key) {
 }
 
 function getTokenStatus(token) {
-  if (token.isUsed) {
+  const status = String(token.status || "ACTIVE").toUpperCase();
+  if (status === "USED" || token.usedAt) {
     return {
       label: "USED",
       className:
@@ -52,11 +54,19 @@ function getTokenStatus(token) {
     };
   }
 
-  if (token.isRevoked) {
+  if (status === "REVOKED") {
     return {
       label: "REVOKED",
       className:
         "border-rose-500/20 bg-rose-500/10 text-rose-400",
+      icon: ShieldAlert,
+    };
+  }
+
+  if (status === "EXPIRED" || (token.expiresAt && Date.parse(token.expiresAt) <= Date.now())) {
+    return {
+      label: "EXPIRED",
+      className: "border-rose-500/20 bg-rose-500/10 text-rose-400",
       icon: ShieldAlert,
     };
   }
@@ -72,6 +82,7 @@ function getTokenStatus(token) {
 export default function AdminTokensPage() {
   const [tokens, setTokens] = useState([]);
   const [products, setProducts] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [singleModalOpen, setSingleModalOpen] = useState(false);
@@ -83,17 +94,20 @@ export default function AdminTokensPage() {
   const [creatingSingle, setCreatingSingle] = useState(false);
   const [creatingBulk, setCreatingBulk] = useState(false);
   const [revokingId, setRevokingId] = useState(null);
+  const [generatedTokens, setGeneratedTokens] = useState([]);
+  const [generatedModalOpen, setGeneratedModalOpen] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
 
-    const [tokenResult, productResult] = await Promise.allSettled([
+    const [tokenResult, productResult, userResult] = await Promise.allSettled([
       adminApi.getAccessTokens(),
       productsApi.getProducts(),
+      adminApi.getUsers({ limit: 100 }),
     ]);
 
     if (tokenResult.status === "fulfilled") {
-      setTokens(getList(tokenResult.value, "tokens"));
+      setTokens(getList(tokenResult.value, "accessTokens"));
     } else {
       console.error("Failed loading access tokens", tokenResult.reason);
       toast.error("Failed to load access tokens");
@@ -104,6 +118,10 @@ export default function AdminTokensPage() {
     } else {
       console.error("Failed loading products", productResult.reason);
       toast.error("Failed to load products");
+    }
+
+    if (userResult.status === "fulfilled") {
+      setUsers(getList(userResult.value, "users"));
     }
 
     setLoading(false);
@@ -160,7 +178,10 @@ export default function AdminTokensPage() {
         response?.message || "Access token created successfully"
       );
 
-      closeSingleModal();
+      setGeneratedTokens(response?.token ? [response.token] : []);
+      setGeneratedModalOpen(Boolean(response?.token));
+      setSingleModalOpen(false);
+      setSingleForm(initialSingleForm);
       await loadData();
     } catch (error) {
       console.error("Failed creating access token", error);
@@ -203,7 +224,10 @@ export default function AdminTokensPage() {
         response?.message || `Generated ${count} access tokens`
       );
 
-      closeBulkModal();
+      setGeneratedTokens(Array.isArray(response?.tokens) ? response.tokens : []);
+      setGeneratedModalOpen(Boolean(response?.tokens?.length));
+      setBulkModalOpen(false);
+      setBulkForm(initialBulkForm);
       await loadData();
     } catch (error) {
       console.error("Failed generating access tokens", error);
@@ -218,7 +242,7 @@ export default function AdminTokensPage() {
   };
 
   const handleRevoke = async (token) => {
-    const code = token.tokenCode || token.code;
+    const code = token.tokenPrefix || token.id;
 
     const confirmed = window.confirm(
       `Revoke access token ${code}?\n\nThis action cannot be used to redeem the token again.`
@@ -319,13 +343,13 @@ export default function AdminTokensPage() {
               <thead className="border-b border-slate-800 bg-slate-950 text-[10px] uppercase tracking-wider text-slate-500">
                 <tr>
                   <th className="px-4 py-3 font-semibold">
-                    Token Code
+                    Token Prefix
                   </th>
                   <th className="px-4 py-3 font-semibold">
                     Product
                   </th>
                   <th className="px-4 py-3 font-semibold">
-                    Validity
+                    Expires
                   </th>
                   <th className="px-4 py-3 font-semibold">
                     Status
@@ -341,11 +365,12 @@ export default function AdminTokensPage() {
 
               <tbody className="divide-y divide-slate-800/60">
                 {tokens.map((token) => {
-                  const code = token.tokenCode || token.code;
+                  const code = token.tokenPrefix;
                   const status = getTokenStatus(token);
                   const StatusIcon = status.icon;
                   const canRevoke =
-                    !token.isUsed && !token.isRevoked;
+                    token.status === "ACTIVE" &&
+                    (!token.expiresAt || Date.parse(token.expiresAt) > Date.now());
                   const isRevoking = revokingId === token.id;
 
                   return (
@@ -359,17 +384,6 @@ export default function AdminTokensPage() {
                             {code || "—"}
                           </code>
 
-                          {code && (
-                            <button
-                              type="button"
-                              onClick={() => copyCode(code)}
-                              aria-label={`Copy token ${code}`}
-                              title="Copy token code"
-                              className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-1 focus:ring-slate-600"
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </button>
-                          )}
                         </div>
                       </td>
 
@@ -378,9 +392,7 @@ export default function AdminTokensPage() {
                       </td>
 
                       <td className="px-4 py-3 text-slate-400">
-                        {token.durationDays
-                          ? `${token.durationDays} days`
-                          : "—"}
+                        {token.expiresAt ? formatDate(token.expiresAt) : "No expiry"}
                       </td>
 
                       <td className="px-4 py-3">
@@ -455,7 +467,7 @@ export default function AdminTokensPage() {
                 .filter((product) => product.status !== "INACTIVE")
                 .map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} — ${product.price}
+                    {product.name} — {product.type}
                   </option>
                 ))}
             </select>
@@ -484,6 +496,24 @@ export default function AdminTokensPage() {
               }
               className={inputClassName}
             />
+          </div>
+
+              <div>
+            <label
+              htmlFor="single-user"
+              className="mb-1.5 block text-xs font-semibold text-slate-400"
+            >
+              Link to registered user (optional)
+            </label>
+            <select
+              id="single-user"
+              value={singleForm.assignedUserId || ""}
+              onChange={(event) => setSingleForm((current) => ({ ...current, assignedUserId: event.target.value || null }))}
+              className={inputClassName}
+            >
+              <option value="">Redeemable without login</option>
+              {users.map((user) => <option key={user.id} value={user.id}>{user.email || user.username || user.id}</option>)}
+            </select>
           </div>
 
           <div>
@@ -568,7 +598,7 @@ export default function AdminTokensPage() {
                 .filter((product) => product.status !== "INACTIVE")
                 .map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} — ${product.price}
+                    {product.name} — {product.type}
                   </option>
                 ))}
             </select>
@@ -654,6 +684,31 @@ export default function AdminTokensPage() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={generatedModalOpen}
+        onClose={() => {
+          setGeneratedModalOpen(false);
+          setGeneratedTokens([]);
+        }}
+        title="New Access Codes"
+      >
+        <div className="space-y-4">
+          <p className="text-xs leading-5 text-slate-400">
+            Copy and distribute these codes now. The full codes are not stored in the token list.
+          </p>
+          <div className="max-h-72 space-y-2 overflow-y-auto">
+            {generatedTokens.map((code) => (
+              <div key={code} className="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2">
+                <code className="break-all font-mono text-xs text-amber-300">{code}</code>
+                <button type="button" onClick={() => copyCode(code)} aria-label="Copy access code" className="shrink-0 rounded p-2 text-slate-400 hover:bg-slate-800 hover:text-white">
+                  <Copy className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       </Modal>
     </div>
   );

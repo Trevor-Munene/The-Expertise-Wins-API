@@ -14,6 +14,17 @@ const statsRouter = require("./routes/stats.routes");
 const productsRouter = require("./routes/products.routes");
 const subscriptionsRouter = require("./routes/subscriptions.routes");
 const adminRouter = require("./routes/admin.routes");
+const prisma = require("./lib/prisma");
+
+const appUsageTracker = (req, res, next) => {
+  res.on("finish", () => {
+    if (!req.path.startsWith("/api")) return;
+    prisma.usageEvent.create({
+      data: { event: `${req.method} ${req.path}`, path: req.path, userId: req.user?.id || null, metadata: { statusCode: res.statusCode } },
+    }).catch(() => {});
+  });
+  next();
+};
 
 const app = express();
 
@@ -51,6 +62,7 @@ app.get("/", (req, res) =>
 );
 
 // API routes – all prefixed with /api
+app.use(appUsageTracker);
 app.use("/api/auth", authRouter);
 app.use("/api/tips", tipsRouter);
 app.use("/api/stats", statsRouter);

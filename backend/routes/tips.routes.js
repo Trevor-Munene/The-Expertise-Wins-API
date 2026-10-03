@@ -1,7 +1,7 @@
 const { Router } = require("express");
 
 const tipsController = require("../controllers/tips.controller");
-const { authenticateJWT } = require("../middleware/authentication");
+const { authenticateJWT, optionalAuthenticateJWT } = require("../middleware/authentication");
 
 const tipsRouter = Router();
 
@@ -13,8 +13,11 @@ tipsRouter.get("/free", tipsController.getFreeTips);
 tipsRouter.get("/vip", authenticateJWT, tipsController.getVipTips);
 tipsRouter.get("/maxbet", authenticateJWT, tipsController.getMaxbetTips);
 
+// Historical previews, public tiers for guests and entitled tiers for members
+tipsRouter.get("/archive", optionalAuthenticateJWT, tipsController.getArchive);
+
 // Individual tip
-tipsRouter.get("/:id", tipsController.getTipById);
+tipsRouter.get("/:id", optionalAuthenticateJWT, tipsController.getTipById);
 
 // Tip management
 tipsRouter.post("/", authenticateJWT, tipsController.createTip);

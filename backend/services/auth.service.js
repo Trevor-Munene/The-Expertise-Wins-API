@@ -1,6 +1,6 @@
 // backend/services/auth.service.js
 const prisma = require("../lib/prisma");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 // Helper to create HTTP‑style errors

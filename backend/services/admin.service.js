@@ -407,7 +407,7 @@ const parseExpiry = (expiresAt) => {
 };
 
 const createAccessToken = async (tokenData) => {
-  const { productId, expiresAt, notes } = tokenData;
+  const { productId, expiresAt, notes, assignedUserId } = tokenData;
   if (!productId) throw createError("Product ID is required.");
   const product = await prisma.product.findUnique({ where: { id: productId }, select: { id: true, status: true } });
   if (!product) throw createError("Product not found.", 404);
@@ -415,7 +415,7 @@ const createAccessToken = async (tokenData) => {
   const rawToken = generateRawAccessToken();
   const tokenHash = hashAccessToken(rawToken);
   const accessToken = await prisma.accessToken.create({
-    data: { tokenHash, tokenPrefix: getTokenPrefix(rawToken), productId, expiresAt: parseExpiry(expiresAt), notes: notes ?? null },
+    data: { tokenHash, tokenPrefix: getTokenPrefix(rawToken), productId, assignedUserId: assignedUserId || null, expiresAt: parseExpiry(expiresAt), notes: notes ?? null },
     select: ACCESS_TOKEN_SELECT,
   });
   return { token: rawToken, accessToken: formatAccessToken(accessToken) };
@@ -461,7 +461,7 @@ const getAccessTokenById = async (accessTokenId) => {
 };
 
 const updateAccessToken = async (accessTokenId, tokenData) => {
-  const allowedFields = ["notes", "status", "expiresAt"];
+  const allowedFields = ["notes", "status", "expiresAt", "assignedUserId"];
   const data = {};
   for (const field of allowedFields) {
     if (tokenData[field] !== undefined) data[field] = field === "expiresAt" ? parseExpiry(tokenData[field]) : tokenData[field];
