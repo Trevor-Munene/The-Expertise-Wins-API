@@ -38,7 +38,7 @@ export default function LoginPage() {
     const password = formData.password;
 
     if (!identifier || !password) {
-      toast.error("Please enter your email or username and password.");
+      toast.error("Please enter your email and password.");
       return;
     }
 
@@ -62,9 +62,9 @@ export default function LoginPage() {
 
       router.push(auth.isAdmin(response.user) ? "/admin" : "/profile");
     } catch (error) {
-      const message =
-        error?.response?.data?.message ||
-        "Invalid credentials. Please try again.";
+      const message = error?.response
+        ? error.response.data?.message || "Unable to sign in. Please try again."
+        : "Cannot reach the API. Check that it is running and NEXT_PUBLIC_API_URL is correct.";
 
       toast.error(message);
     } finally {
@@ -103,15 +103,15 @@ export default function LoginPage() {
               htmlFor="login-identifier"
               className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5"
             >
-              Email or Username
+              Email
             </label>
 
             <div className="relative">
               <input
                 id="login-identifier"
                 name="email"
-                type="text"
-                autoComplete="username"
+                type="email"
+                autoComplete="email"
                 required
                 disabled={loading}
                 value={formData.email}

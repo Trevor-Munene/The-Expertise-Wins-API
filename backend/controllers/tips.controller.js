@@ -32,7 +32,7 @@ const getFreeTips = async (req, res, next) => {
 const getVipTips = async (req, res, next) => {
   try {
     const { userId, query } = getRequestData(req);
-    const tips = await tipsService.getVipTips(userId, query);
+    const tips = await tipsService.getVipTips(userId, query, req.user?.role === "ADMIN");
     res.status(200).json({ tips });
   } catch (error) {
     next(error);
@@ -42,7 +42,17 @@ const getVipTips = async (req, res, next) => {
 const getMaxbetTips = async (req, res, next) => {
   try {
     const { userId, query } = getRequestData(req);
-    const tips = await tipsService.getMaxbetTips(userId, query);
+    const tips = await tipsService.getMaxbetTips(userId, query, req.user?.role === "ADMIN");
+    res.status(200).json({ tips });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getArchive = async (req, res, next) => {
+  try {
+    const { query, userId } = getRequestData(req);
+    const tips = await tipsService.getArchive(query, userId, req.user?.role === "ADMIN");
     res.status(200).json({ tips });
   } catch (error) {
     next(error);
@@ -52,7 +62,7 @@ const getMaxbetTips = async (req, res, next) => {
 const getTipById = async (req, res, next) => {
   try {
     const { id } = req.params; // single param, destructure for consistency
-    const tip = await tipsService.getTipById(id);
+    const tip = await tipsService.getTipById(id, req.user?.id, req.user?.role === "ADMIN");
     res.status(200).json({ tip });
   } catch (error) {
     next(error);
@@ -116,6 +126,7 @@ module.exports = {
   getFreeTips,
   getVipTips,
   getMaxbetTips,
+  getArchive,
   getTipById,
   createTip,
   updateTip,

@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   BarChart3,
+  History,
   Crown,
   Sparkles,
   BookOpen,
@@ -72,6 +73,11 @@ export default function Navbar() {
     {
       label: "Tips",
       href: "/tips",
+    },
+    {
+      label: "Archive",
+      href: "/archive",
+      icon: History,
     },
     {
       label: "Stats",

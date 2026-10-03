@@ -7,18 +7,23 @@ export const tipsApi = {
     return data;
   },
 
-  async getFreeTips() {
-    const { data } = await apiClient.get("/tips/free");
+  async getFreeTips(params = {}) {
+    const { data } = await apiClient.get("/tips/free", { params });
     return data;
   },
 
-  async getVipTips() {
-    const { data } = await apiClient.get("/tips/vip");
+  async getVipTips(params = {}) {
+    const { data } = await apiClient.get("/tips/vip", { params });
     return data;
   },
 
-  async getMaxbetTips() {
-    const { data } = await apiClient.get("/tips/maxbet");
+  async getMaxbetTips(params = {}) {
+    const { data } = await apiClient.get("/tips/maxbet", { params });
+    return data;
+  },
+
+  async getArchive(params = {}) {
+    const { data } = await apiClient.get("/tips/archive", { params });
     return data;
   },
 

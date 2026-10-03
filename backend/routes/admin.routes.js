@@ -2,11 +2,12 @@ const { Router } = require("express");
 
 const adminController = require("../controllers/admin.controller");
 const { authenticateJWT } = require("../middleware/authentication");
+const authorizeAdmin = require("../middleware/authorize");
 
 const adminRouter = Router();
 
 // Admin access
-adminRouter.use(authenticateJWT);
+adminRouter.use(authenticateJWT, authorizeAdmin);
 
 // Users
 adminRouter.get("/users", adminController.getUsers);

@@ -67,6 +67,14 @@ export default function AboutPage() {
             markets, performance tracking, and practical betting education in
             one place.
           </p>
+
+          <p className="text-base leading-7 text-slate-400">
+            We are a data pipeline curated by top tipsters in Kenya: collecting
+            sports information, normalizing markets, preserving daily records,
+            and turning expert judgment into clear, trackable selections. Our
+            goal is to make the journey from raw signals to responsible insight
+            easier to understand and evaluate.
+          </p>
         </div>
 
         {/* Principles */}
@@ -99,9 +107,9 @@ export default function AboutPage() {
             </h2>
 
             <p className="text-sm leading-relaxed text-slate-300">
-              Our selections are independently curated from sports information
-              and specialist sources, then organized and presented through The
-              Expertise Wins platform.
+              Our selections are independently curated by experienced tipsters
+              in Kenya from sports information and specialist sources, then
+              organized and presented through The Expertise Wins data pipeline.
             </p>
 
             <p className="text-sm leading-relaxed text-slate-300">

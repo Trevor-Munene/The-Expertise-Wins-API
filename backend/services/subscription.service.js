@@ -110,6 +110,7 @@ const getSubscriptionHistory = async (userId) => {
 };
 
 const redeemAccessToken = async (userId, token) => {
+    if (!token || typeof token !== "string") throw new Error("Access token is required.");
     const tokenHash = hashAccessToken(token);
 
     const accessToken = await prisma.accessToken.findUnique({
@@ -136,8 +137,21 @@ const redeemAccessToken = async (userId, token) => {
         throw new Error("This access token is no longer available.");
     }
 
-    if (accessToken.assignedUserId) {
-        throw new Error("This access token has already been redeemed.");
+    if (accessToken.assignedUserId && userId && accessToken.assignedUserId !== userId) {
+        throw new Error("This access token is linked to another registered user.");
+    }
+
+    if (accessToken.assignedUserId && !userId) {
+        return {
+            accessToken: {
+                id: accessToken.id,
+                product: accessToken.product,
+                status: accessToken.status,
+                expiresAt: accessToken.expiresAt,
+                usedAt: accessToken.usedAt,
+            },
+            sessionAccessToken: token,
+        };
     }
 
     if (
@@ -152,7 +166,7 @@ const redeemAccessToken = async (userId, token) => {
             id: accessToken.id,
         },
         data: {
-            assignedUserId: userId,
+            ...(userId ? { assignedUserId: userId } : {}),
             usedAt: new Date(),
         },
         include: {
@@ -176,6 +190,20 @@ const redeemAccessToken = async (userId, token) => {
             usedAt: updatedToken.usedAt,
         },
     };
+};
+
+const getAccessByToken = async (token, productSlug) => {
+    if (!token) return false;
+    const accessToken = await prisma.accessToken.findUnique({
+        where: { tokenHash: hashAccessToken(token) },
+        select: {
+            productId: true,
+            status: true,
+            expiresAt: true,
+            product: { select: { slug: true } },
+        },
+    });
+    return Boolean(accessToken && accessToken.status === "ACTIVE" && accessToken.product.slug === productSlug && (!accessToken.expiresAt || accessToken.expiresAt > new Date()));
 };
 
 const verifyAccessToken = async (token) => {
@@ -407,6 +435,7 @@ module.exports = {
     getSubscriptionHistory,
     redeemAccessToken,
     verifyAccessToken,
+    getAccessByToken,
     getMyAccess,
     cancelSubscription,
     renewSubscription,

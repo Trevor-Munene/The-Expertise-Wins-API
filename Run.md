@@ -17,15 +17,73 @@ The current CLI loop is **produce → publish manually → paste marked results 
 
 ---
 
-## Requirements
+## Run and test in Docker
 
-* **Node.js** (the scripts are plain `.js`; no build step)
-* Node dependencies installed in each package you plan to run (`cli`, `backend`, and `frontend`). For this runbook, install the CLI package:
+Docker keeps Node.js, npm dependencies, and PostgreSQL in containers instead of using host-installed project tools. Install Docker Desktop with Linux container support enabled, then run these commands from the repository root in PowerShell:
 
-```bash
-npm install --prefix cli
+```powershell
+docker compose config --quiet
+docker compose up -d db
+docker compose ps
 ```
 
+PostgreSQL is exposed on `localhost:55432`. The app container talks to PostgreSQL using the Compose service name `db`; do not change that URL to `localhost` from inside a container.
+
+### Initialize the API database
+
+From the repository root, copy `backend/.env.example` to `backend/.env`. Keep the admin password in this ignored local file; do not commit it. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` there. Then initialize the schema and check the historical dump files:
+
+```powershell
+if (-not (Test-Path backend/.env)) { Copy-Item backend/.env.example backend/.env }
+docker compose run --rm app npm run --prefix backend prisma:generate
+docker compose run --rm app npm run --prefix backend prisma:migrate -- --name init
+docker compose run --rm app npm run --prefix backend seed:check
+docker compose up -d app
+```
+
+The first `docker compose run app` builds the shared development image, including frontend dependencies; that initial build can take a few minutes. Subsequent commands reuse the image. Once the API is running at `http://localhost:3180`, sign up the configured email through `POST /api/auth/register` with a username and the password from `backend/.env`. Then import the nine dated dumps and promote that account:
+
+```powershell
+docker compose run --rm app npm run --prefix backend seed
+```
+
+The seed imports 271 historical tips from the current nine dated dumps, creates missing Free/VIP/MaxBet products, and assigns each tip to a published tier based on the CLI classification rules. Free football is public; VIP and MaxBet lists require access. The seed is safe to rerun and preserves already-settled outcomes. It promotes the existing `ADMIN_EMAIL` account without changing its password. If no account exists, it creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. The seeded database remains in the named `postgres_data` volume when containers stop.
+
+The API health endpoint is `http://localhost:3180/`; the frontend is at `http://localhost:3181` after the app service starts. See [backend/README.md](backend/README.md) for host-based PostgreSQL setup and known API authorization gaps.
+
+The first time you run the CLI, install its dependencies into the persistent Docker volume, then run its tests:
+
+```powershell
+docker compose run --rm --no-deps app npm ci --prefix cli
+docker compose run --rm --no-deps app npm run --prefix cli test
+```
+
+Other CLI commands can run the same way, for example:
+
+```powershell
+docker compose run --rm --no-deps app npm run expertise
+docker compose run --rm --no-deps app npm run settlement
+```
+
+The repository is bind-mounted, so CLI JSON snapshots and settlement updates remain in the workspace. Installed dependencies and PostgreSQL data are kept in named Docker volumes.
+
+Stop the app and database while preserving their data:
+
+```powershell
+docker compose down
+```
+
+To also erase PostgreSQL data and dependency/cache volumes, use `docker compose down --volumes`. This is destructive and resets the isolated environment.
+
+Do not expose the API publicly yet: admin routes currently authenticate requests without enforcing the `ADMIN` role, and several tip routes still need stricter access controls. This does not prevent local route testing. See [backend/README.md](backend/README.md) for the current readiness notes.
+
+## Host-based CLI (alternative)
+
+If you prefer not to use Docker for the CLI, install Node.js and npm on the host, then install CLI dependencies:
+
+```powershell
+npm ci --prefix cli
+```
 > On Windows, if `node`/`npm` aren't on your `PATH`, invoke them from `C:\Program Files\nodejs\`.
 
 ---

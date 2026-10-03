@@ -56,22 +56,26 @@ export const adminApi = {
   },
 
   async publishTipsBulk(tipIds) {
-    const { data } = await apiClient.post("/admin/tips/bulk/publish", { tipIds });
+    const { data } = await apiClient.post("/admin/tips/bulk/publish", { ids: tipIds });
     return data;
   },
 
   async unpublishTipsBulk(tipIds) {
-    const { data } = await apiClient.post("/admin/tips/bulk/unpublish", { tipIds });
+    const { data } = await apiClient.post("/admin/tips/bulk/unpublish", { ids: tipIds });
     return data;
   },
 
   async settleTipsBulk(payload) {
-    const { data } = await apiClient.post("/admin/tips/bulk/settle", payload);
+    const { tipIds, ...settlement } = payload;
+    const { data } = await apiClient.post("/admin/tips/bulk/settle", {
+      ...settlement,
+      ids: settlement.ids ?? tipIds,
+    });
     return data;
   },
 
   async cancelTipsBulk(tipIds) {
-    const { data } = await apiClient.post("/admin/tips/bulk/cancel", { tipIds });
+    const { data } = await apiClient.post("/admin/tips/bulk/cancel", { ids: tipIds });
     return data;
   },
 

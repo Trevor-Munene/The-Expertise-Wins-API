@@ -25,7 +25,9 @@ export function formatDate(date) {
 /** Format datetime string */
 export function formatDateTime(date) {
   if (!date) return "—";
-  return new Date(date).toLocaleString("en-GB", {
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) return String(date);
+  return parsedDate.toLocaleString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",

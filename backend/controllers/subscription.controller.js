@@ -42,7 +42,7 @@ const getSubscriptionHistory = async (req, res, next) => {
 const redeemAccessToken = async (req, res, next) => {
     try {
         const result = await subscriptionsService.redeemAccessToken(
-            req.user.id,
+            req.user?.id,
             req.body.token
         );
 

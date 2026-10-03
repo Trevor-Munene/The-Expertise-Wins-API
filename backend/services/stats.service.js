@@ -175,6 +175,18 @@ const getTimeStats = async (startDate) => {
     });
 };
 
+const getUsageStats = async () => {
+    const since = new Date();
+    since.setDate(since.getDate() - 30);
+    const [totalEvents, uniqueUsers, topPaths, daily] = await Promise.all([
+        prisma.usageEvent.count({ where: { createdAt: { gte: since } }),
+        prisma.usageEvent.findMany({ where: { createdAt: { gte: since }, userId: { not: null } }, distinct: ["userId"], select: { userId: true } }),
+        prisma.usageEvent.groupBy({ by: ["path"], where: { createdAt: { gte: since } }, _count: { _all: true }, orderBy: { _count: { path: "desc" } }, take: 10 }),
+        prisma.usageEvent.groupBy({ by: ["event"], where: { createdAt: { gte: since } }, _count: { _all: true }, orderBy: { _count: { event: "desc" } }, take: 10 }),
+    ]);
+    return { periodDays: 30, totalEvents, uniqueUsers: uniqueUsers.length, topPaths, daily };
+};
+
 const getOverview = async () => {
     const [
         totalTips,
@@ -258,14 +270,14 @@ const getFreeStats = async () => {
     return getProductStats("free");
 };
 
-const getVipStats = async (userId) => {
-    await verifyProductAccess(userId, "vip");
+const getVipStats = async (userId, isAdmin = false) => {
+    await verifyProductAccess(userId, "vip", isAdmin);
 
     return getProductStats("vip");
 };
 
-const getMaxbetStats = async (userId) => {
-    await verifyProductAccess(userId, "maxbet");
+const getMaxbetStats = async (userId, isAdmin = false) => {
+    await verifyProductAccess(userId, "maxbet", isAdmin);
 
     return getProductStats("maxbet");
 };
@@ -286,8 +298,8 @@ const getFreeMonthlyStats = async () => {
     });
 };
 
-const getVipWeeklyStats = async (userId) => {
-    await verifyProductAccess(userId, "vip");
+const getVipWeeklyStats = async (userId, isAdmin = false) => {
+    await verifyProductAccess(userId, "vip", isAdmin);
 
     return getProductStats("vip", {
         createdAt: {
@@ -296,8 +308,8 @@ const getVipWeeklyStats = async (userId) => {
     });
 };
 
-const getVipMonthlyStats = async (userId) => {
-    await verifyProductAccess(userId, "vip");
+const getVipMonthlyStats = async (userId, isAdmin = false) => {
+    await verifyProductAccess(userId, "vip", isAdmin);
 
     return getProductStats("vip", {
         createdAt: {
@@ -306,8 +318,8 @@ const getVipMonthlyStats = async (userId) => {
     });
 };
 
-const getMaxbetWeeklyStats = async (userId) => {
-    await verifyProductAccess(userId, "maxbet");
+const getMaxbetWeeklyStats = async (userId, isAdmin = false) => {
+    await verifyProductAccess(userId, "maxbet", isAdmin);
 
     return getProductStats("maxbet", {
         createdAt: {
@@ -316,8 +328,8 @@ const getMaxbetWeeklyStats = async (userId) => {
     });
 };
 
-const getMaxbetMonthlyStats = async (userId) => {
-    await verifyProductAccess(userId, "maxbet");
+const getMaxbetMonthlyStats = async (userId, isAdmin = false) => {
+    await verifyProductAccess(userId, "maxbet", isAdmin);
 
     return getProductStats("maxbet", {
         createdAt: {
@@ -448,12 +460,9 @@ const getStakeStats = async () => {
 };
 
 const getGroupedStats = async (field) => {
+    const where = field === "competition" ? { [field]: { not: null } } : {};
     const tips = await prisma.tip.findMany({
-        where: {
-            [field]: {
-                not: null,
-            },
-        },
+        where,
         select: {
             [field]: true,
             outcome: true,
@@ -562,11 +571,7 @@ const getVolumeStats = async () => {
 };
 
 const getScrapedStats = async () => {
-    const [
-        total,
-        withScrapedAt,
-        sources,
-    ] = await Promise.all([
+    const [total, withScrapedAt] = await Promise.all([
         prisma.tip.count(),
         prisma.tip.count({
             where: {
@@ -575,22 +580,12 @@ const getScrapedStats = async () => {
                 },
             },
         }),
-        prisma.tip.groupBy({
-            by: ["source"],
-            _count: {
-                _all: true,
-            },
-        }),
     ]);
 
     return {
         totalTips: total,
         scrapedTips: withScrapedAt,
         manualTips: total - withScrapedAt,
-        sources: sources.map((source) => ({
-            source: source.source,
-            count: source._count._all,
-        })),
     };
 };
 
@@ -654,13 +649,11 @@ const getPerformanceReport = async () => {
         products,
         sports,
         markets,
-        sources,
     ] = await Promise.all([
         getAllTimeStats(),
         getProductReports(),
         getSportStats(),
         getMarketStats(),
-        getSourceStats(),
     ]);
 
     return {
@@ -668,7 +661,6 @@ const getPerformanceReport = async () => {
         products,
         sports,
         markets,
-        sources,
     };
 };
 
@@ -714,10 +706,10 @@ const getProductReports = async () => {
     );
 };
 
-const verifyProductAccess = async (userId, productSlug) => {
+const verifyProductAccess = async (userId, productSlug, isAdmin = false) => {
     const product = await getProduct(productSlug);
 
-    if (product.slug === "free") {
+    if (product.slug === "free" || isAdmin) {
         return product;
     }
 
@@ -743,7 +735,9 @@ const verifyProductAccess = async (userId, productSlug) => {
     });
 
     if (!accessToken) {
-        throw new Error("You do not have access to this product.");
+        const error = new Error("You do not have access to this product.");
+        error.status = 403;
+        throw error;
     }
 
     return product;
@@ -801,6 +795,7 @@ const getMyAccessStats = async (userId) => {
 
 module.exports = {
     getOverview,
+    getUsageStats,
     getTodayStats,
     getWeeklyStats,
     getFourteenDayStats,
@@ -837,3 +832,4 @@ module.exports = {
     getYearlyReport,
     getMyAccessStats,
 };
+

@@ -2,11 +2,15 @@ const { Router } = require("express");
 
 const statsController = require("../controllers/stats.controller");
 const { authenticateJWT } = require("../middleware/authentication");
+const authorizeAdmin = require("../middleware/authorize");
 
 const statsRouter = Router();
 
 // Overall API performance
 statsRouter.get("/", statsController.getOverview);
+
+// Admin application usage
+statsRouter.get("/usage", authenticateJWT, authorizeAdmin, statsController.getUsageStats);
 
 // Time-based performance
 statsRouter.get("/today", statsController.getTodayStats);
@@ -46,7 +50,7 @@ statsRouter.get("/stakes", statsController.getStakeStats);
 statsRouter.get("/sports", statsController.getSportStats);
 statsRouter.get("/markets", statsController.getMarketStats);
 statsRouter.get("/competitions", statsController.getCompetitionStats);
-statsRouter.get("/sources", statsController.getSourceStats);
+statsRouter.get("/sources", authenticateJWT, authorizeAdmin, statsController.getSourceStats);
 
 // API activity and tip volume
 statsRouter.get("/volume", statsController.getVolumeStats);

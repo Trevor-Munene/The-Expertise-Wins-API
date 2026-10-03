@@ -18,35 +18,12 @@ const initialForm = {
   name: "",
   slug: "",
   description: "",
-  price: "",
-  interval: "MONTHLY",
+  type: "VIP",
+  isPublic: false,
 };
 
 const inputClassName =
   "w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none transition-colors placeholder:text-slate-600 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30";
-
-function formatPrice(price) {
-  const amount = Number(price);
-
-  if (!Number.isFinite(amount)) {
-    return "$0.00";
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(amount);
-}
-
-function formatInterval(interval) {
-  if (!interval) return "One-time";
-
-  return interval
-    .toLowerCase()
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
@@ -102,10 +79,9 @@ export default function AdminProductsPage() {
       return;
     }
 
-    const price = Number(form.price);
-
-    if (!Number.isFinite(price) || price < 0) {
-      toast.error("Enter a valid product price");
+    const slug = form.slug.trim() || form.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    if (!slug) {
+      toast.error("A URL-friendly product slug is required");
       return;
     }
 
@@ -115,9 +91,8 @@ export default function AdminProductsPage() {
       await adminApi.createProduct({
         ...form,
         name: form.name.trim(),
-        slug: form.slug.trim(),
+        slug,
         description: form.description.trim(),
-        price,
       });
 
       toast.success("Product created successfully");
@@ -253,15 +228,9 @@ export default function AdminProductsPage() {
                     )}
                   </div>
 
-                  {/* Pricing */}
-                  <div>
-                    <div className="text-2xl font-black text-slate-100">
-                      {formatPrice(product.price)}
-                    </div>
-
-                    <div className="mt-1 text-xs font-medium text-slate-500">
-                      {formatInterval(product.interval)}
-                    </div>
+                  <div className="flex flex-wrap gap-2 text-xs text-slate-400">
+                    <span className="rounded border border-slate-700 px-2 py-1">{product.type}</span>
+                    <span className="rounded border border-slate-700 px-2 py-1">{product.isPublic ? "Public" : "Access controlled"}</span>
                   </div>
                 </div>
 
@@ -360,58 +329,45 @@ export default function AdminProductsPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div>
             <div>
               <label
-                htmlFor="product-price"
+                htmlFor="product-type"
                 className="mb-1.5 block text-xs font-semibold text-slate-400"
               >
-                Price (USD)
-              </label>
-
-              <input
-                id="product-price"
-                type="number"
-                min="0"
-                step="0.01"
-                inputMode="decimal"
-                placeholder="55.00"
-                value={form.price}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    price: event.target.value,
-                  }))
-                }
-                className={inputClassName}
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="product-interval"
-                className="mb-1.5 block text-xs font-semibold text-slate-400"
-              >
-                Billing Interval
+                Product Type *
               </label>
 
               <select
-                id="product-interval"
-                value={form.interval}
+                id="product-type"
+                required
+                value={form.type}
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    interval: event.target.value,
+                    type: event.target.value,
                   }))
                 }
                 className={inputClassName}
               >
-                <option value="MONTHLY">Monthly</option>
-                <option value="YEARLY">Yearly</option>
-                <option value="ONE_TIME">One-time</option>
+                <option value="FREE">Free</option>
+                <option value="VIP">VIP</option>
+                <option value="MAXBET">MaxBet</option>
+                <option value="API">API</option>
+                <option value="CUSTOM">Custom</option>
               </select>
             </div>
           </div>
+
+          <label className="flex items-center gap-2 text-xs text-slate-300">
+            <input
+              type="checkbox"
+              checked={form.isPublic}
+              onChange={(event) => setForm((current) => ({ ...current, isPublic: event.target.checked }))}
+              className="h-4 w-4 accent-emerald-500"
+            />
+            Make this product publicly accessible
+          </label>
 
           <div>
             <label

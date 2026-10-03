@@ -16,6 +16,7 @@ export default function sitemap() {
   const routes = [
     "",
     "/tips",
+    "/archive",
     "/stats",
     "/products",
     "/blog",

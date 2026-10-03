@@ -11,7 +11,6 @@ ENV DATABASE_URL="postgresql://tew:tew_local_dev@db:5432/expertise_wins?schema=p
 RUN cd backend && npm install && npx prisma generate
 
 COPY frontend/package.json frontend/package-lock.json ./frontend/
-COPY app.js ./app.js
 RUN cd frontend && npm ci
 
 CMD ["sleep", "infinity"]
