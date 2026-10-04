@@ -147,3 +147,5 @@ vite.config.ts.timestamp-*
 # Local dev-server logs
 fe.out
 fe.err
+b.out
+b.err
