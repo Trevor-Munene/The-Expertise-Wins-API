@@ -43,8 +43,14 @@ const inputStyles = `min-h-[44px] w-full min-w-0 rounded-xl border border-slate-
 
 const buttonStyles = `inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${focusStyles}`;
 
-// Get the current calendar date in Nairobi.
-function getTodayDate() {
+/**
+ * Get a calendar date in Nairobi.
+ *
+ * offsetDays:
+ *   0  = today
+ *  -1  = yesterday
+ */
+function getNairobiDate(offsetDays = 0) {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Africa/Nairobi",
     year: "numeric",
@@ -55,14 +61,41 @@ function getTodayDate() {
   const getPart = (type) =>
     parts.find((part) => part.type === type)?.value;
 
-  return `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+  const year = Number(getPart("year"));
+  const month = Number(getPart("month"));
+  const day = Number(getPart("day"));
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  date.setUTCDate(date.getUTCDate() + offsetDays);
+
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * The archive is strictly historical.
+ *
+ * Today is NEVER an allowed archive date.
+ */
+function getLatestArchiveDate() {
+  return getNairobiDate(-1);
+}
+
+function isArchiveDateAllowed(value) {
+  const latestAllowedDate = getLatestArchiveDate();
+
+  return (
+    typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    value <= latestAllowedDate
+  );
 }
 
 function createInitialFilters() {
   return {
     sport: "",
     tier: "free",
-    day: getTodayDate(),
+    day: getLatestArchiveDate(),
     search: "",
     outcome: "",
   };
@@ -71,7 +104,11 @@ function createInitialFilters() {
 function createEmptyArchive() {
   return {
     data: [],
-    pagination: { page: 1, pages: 0, total: 0 },
+    pagination: {
+      page: 1,
+      pages: 0,
+      total: 0,
+    },
     sports: [],
     tierSports: {},
     day: null,
@@ -88,7 +125,10 @@ function normalizeCount(value, fallback = 0) {
 
 function normalizeDay(value) {
   if (typeof value !== "string") return null;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return null;
+  }
 
   const date = new Date(`${value}T00:00:00Z`);
 
@@ -111,35 +151,102 @@ function formatDay(value) {
     : null;
 }
 
-// Normalize the existing archive response contract.
-function normalizeArchive(response) {
+/**
+ * Normalize and validate the archive API response.
+ *
+ * The archive must never render:
+ *   - today
+ *   - a future date
+ *   - a different date from the requested date
+ */
+function normalizeArchive(response, requestedDay) {
   const source = response?.tips;
 
   if (!source || !Array.isArray(source.data)) {
     throw new Error("Unexpected archive response");
   }
 
+  const responseDay = normalizeDay(source.day);
+  const normalizedRequestedDay = normalizeDay(requestedDay);
+  const latestAllowedDate = getLatestArchiveDate();
+
+  /*
+   * Hard frontend protection:
+   * today and future dates can never be displayed.
+   */
+  if (
+    responseDay &&
+    responseDay > latestAllowedDate
+  ) {
+    throw new Error(
+      `Archive returned ${formatDay(
+        responseDay
+      )}, which is not an allowed historical date.`
+    );
+  }
+
+  /*
+   * If the backend tells us which day it served,
+   * it must match the day the frontend requested.
+   */
+  if (
+    normalizedRequestedDay &&
+    responseDay &&
+    responseDay !== normalizedRequestedDay
+  ) {
+    throw new Error(
+      `Archive returned ${formatDay(
+        responseDay
+      )} instead of the requested ${formatDay(
+        normalizedRequestedDay
+      )}.`
+    );
+  }
+
   return {
     data: source.data.filter(
       (tip) => tip && typeof tip === "object"
     ),
+
     pagination: {
-      page: Math.max(1, normalizeCount(source.pagination?.page, 1)),
-      pages: normalizeCount(source.pagination?.pages),
-      total: normalizeCount(source.pagination?.total),
+      page: Math.max(
+        1,
+        normalizeCount(source.pagination?.page, 1)
+      ),
+      pages: normalizeCount(
+        source.pagination?.pages
+      ),
+      total: normalizeCount(
+        source.pagination?.total
+      ),
     },
-    sports: Array.isArray(source.sports) ? source.sports : [],
+
+    sports: Array.isArray(source.sports)
+      ? source.sports
+      : [],
+
     tierSports:
-      source.tierSports && typeof source.tierSports === "object"
+      source.tierSports &&
+      typeof source.tierSports === "object"
         ? source.tierSports
         : {},
-    day: normalizeDay(source.day),
+
+    day:
+      responseDay ||
+      normalizedRequestedDay ||
+      null,
   };
 }
 
-// Prefer explicit tier membership over a default free assignment.
+/**
+ * Prefer explicit tier membership over a default
+ * free assignment.
+ */
 function belongsToTier(tip, tier) {
-  if (Array.isArray(tip.tiers) && tip.tiers.length > 0) {
+  if (
+    Array.isArray(tip.tiers) &&
+    tip.tiers.length > 0
+  ) {
     return tip.tiers.includes(tier);
   }
 
@@ -147,28 +254,53 @@ function belongsToTier(tip, tier) {
 }
 
 export default function ArchivePage() {
-  const [archive, setArchive] = useState(createEmptyArchive);
-  const [filters, setFilters] = useState(createInitialFilters);
+  const [archive, setArchive] = useState(
+    createEmptyArchive
+  );
+
+  const [filters, setFilters] = useState(
+    createInitialFilters
+  );
+
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [retryCount, setRetryCount] = useState(0);
-  const [fallbackNotice, setFallbackNotice] = useState("");
 
-  const allowInitialFallbackRef = useRef(true);
   const requestIdRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
+
     const requestId = ++requestIdRef.current;
 
     const isCurrentRequest = () =>
-      !cancelled && requestId === requestIdRef.current;
+      !cancelled &&
+      requestId === requestIdRef.current;
 
     async function loadArchive() {
       setLoading(true);
       setError("");
+
+      /*
+       * Defensive protection:
+       * never allow an invalid archive date to
+       * reach the API.
+       */
+      if (
+        filters.day &&
+        !isArchiveDateAllowed(filters.day)
+      ) {
+        if (!isCurrentRequest()) return;
+
+        setArchive(createEmptyArchive());
+        setError(
+          "Today's and future tips are not available in the archive."
+        );
+        setLoading(false);
+        return;
+      }
 
       try {
         const response = await tipsApi.getArchive({
@@ -179,70 +311,28 @@ export default function ArchivePage() {
 
         if (!isCurrentRequest()) return;
 
-        let nextArchive = normalizeArchive(response);
-
-        // Only the initial view may fall back to the latest available day.
-        if (
-          allowInitialFallbackRef.current &&
-          page === 1 &&
-          filters.day &&
-          nextArchive.data.length === 0 &&
-          nextArchive.pagination.total === 0
-        ) {
-          try {
-            const latestResponse = await tipsApi.getArchive({
-              sport: filters.sport,
-              tier: filters.tier,
-              search: filters.search,
-              outcome: filters.outcome,
-              page: 1,
-              limit: PAGE_SIZE,
-            });
-
-            if (!isCurrentRequest()) return;
-
-            const latestArchive = normalizeArchive(latestResponse);
-
-            if (
-              latestArchive.day &&
-              latestArchive.day !== filters.day &&
-              latestArchive.data.length > 0
-            ) {
-              allowInitialFallbackRef.current = false;
-              setArchive(latestArchive);
-              setFallbackNotice(
-                `No records were returned for ${formatDay(
-                  filters.day
-                )}. Showing the latest available day for this tier: ${formatDay(
-                  latestArchive.day
-                )}.`
-              );
-              setFilters((current) => ({
-                ...current,
-                day: latestArchive.day,
-              }));
-              return;
-            }
-          } catch {
-            // Preserve the successful empty result if the fallback fails.
-          }
-        }
+        const nextArchive = normalizeArchive(
+          response,
+          filters.day
+        );
 
         if (!isCurrentRequest()) return;
 
-        allowInitialFallbackRef.current = false;
         setArchive(nextArchive);
       } catch (requestError) {
         if (!isCurrentRequest()) return;
 
         setArchive(createEmptyArchive());
 
-        const message = requestError?.response?.data?.message;
+        const message =
+          requestError?.response?.data?.message;
 
         setError(
-          typeof message === "string" && message.trim()
+          typeof message === "string" &&
+            message.trim()
             ? message
-            : "Unable to load the tip archive. Please try again."
+            : requestError?.message ||
+                "Unable to load the tip archive. Please try again."
         );
       } finally {
         if (isCurrentRequest()) {
@@ -258,31 +348,47 @@ export default function ArchivePage() {
     };
   }, [filters, page, retryCount]);
 
-  // Invalidate pending results immediately when the view changes.
+  /**
+   * Invalidate pending results immediately when
+   * the view changes.
+   */
   const prepareRequest = () => {
     requestIdRef.current += 1;
+
     setLoading(true);
     setError("");
     setArchive(createEmptyArchive());
   };
 
   const changeFilter = (key, value) => {
-    allowInitialFallbackRef.current = false;
+    /*
+     * Hard frontend guard:
+     * today and future dates cannot become the
+     * selected archive date.
+     */
+    if (
+      key === "day" &&
+      !isArchiveDateAllowed(value)
+    ) {
+      return;
+    }
+
     prepareRequest();
-    setFallbackNotice("");
+
     setPage(1);
 
     setFilters((current) => ({
       ...current,
       [key]: value,
-      ...(key === "tier" ? { sport: "" } : {}),
+      ...(key === "tier"
+        ? { sport: "" }
+        : {}),
     }));
   };
 
   const clearFilters = () => {
-    allowInitialFallbackRef.current = false;
     prepareRequest();
-    setFallbackNotice("");
+
     setSearchInput("");
     setFilters(createInitialFilters());
     setPage(1);
@@ -302,31 +408,52 @@ export default function ArchivePage() {
     (tier) => tier.id === filters.tier
   );
 
-  const tierSports = archive.tierSports?.[filters.tier];
+  const tierSports =
+    archive.tierSports?.[filters.tier];
 
   const availableSports = Array.from(
     new Set(
-      (Array.isArray(tierSports) ? tierSports : archive.sports).filter(
-        (sport) => typeof sport === "string" && sport.trim()
+      (
+        Array.isArray(tierSports)
+          ? tierSports
+          : archive.sports
+      ).filter(
+        (sport) =>
+          typeof sport === "string" &&
+          sport.trim()
       )
     )
   );
 
-  // Keep the selected value visible if a filtered response omits it.
-  if (filters.sport && !availableSports.includes(filters.sport)) {
+  /*
+   * Keep the selected value visible if a filtered
+   * response omits it.
+   */
+  if (
+    filters.sport &&
+    !availableSports.includes(filters.sport)
+  ) {
     availableSports.unshift(filters.sport);
   }
 
   const groupedTips = TIERS.filter(
-    (tier) => !filters.tier || tier.id === filters.tier
+    (tier) =>
+      !filters.tier ||
+      tier.id === filters.tier
   )
     .map((tier) => ({
       ...tier,
-      tips: archive.data.filter((tip) => belongsToTier(tip, tier.id)),
+      tips: archive.data.filter((tip) =>
+        belongsToTier(tip, tier.id)
+      ),
     }))
-    .filter((group) => group.tips.length > 0);
+    .filter(
+      (group) => group.tips.length > 0
+    );
 
-  const servedDayLabel = formatDay(archive.day);
+  const servedDayLabel = formatDay(
+    archive.day
+  );
 
   return (
     <main
@@ -339,14 +466,20 @@ export default function ArchivePage() {
           href="/tips"
           className={`${buttonStyles} px-0 text-slate-400 hover:text-emerald-400`}
         >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          <ArrowLeft
+            className="h-4 w-4"
+            aria-hidden="true"
+          />
           Back to Tips
         </Link>
 
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400">
-              <CalendarDays className="h-4 w-4" aria-hidden="true" />
+              <CalendarDays
+                className="h-4 w-4"
+                aria-hidden="true"
+              />
               Historical record
             </p>
 
@@ -358,8 +491,10 @@ export default function ArchivePage() {
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
-              Browse recorded Free, VIP, and MaxBet selections by day,
-              sport, and outcome.
+              Browse recorded Free, VIP, and MaxBet
+              selections by day, sport, and outcome.
+              Today&apos;s active tips are intentionally
+              excluded from this historical view.
             </p>
           </div>
 
@@ -375,7 +510,11 @@ export default function ArchivePage() {
                 ? "Archive unavailable"
                 : `${archive.pagination.total.toLocaleString(
                     "en-GB"
-                  )} record${archive.pagination.total === 1 ? "" : "s"}`}
+                  )} record${
+                    archive.pagination.total === 1
+                      ? ""
+                      : "s"
+                  }`}
           </p>
         </div>
       </header>
@@ -393,10 +532,13 @@ export default function ArchivePage() {
             >
               Archive tiers
             </h2>
+
             <p className="mt-2 text-xs leading-5 text-slate-400">
-              Choose a tier to explore its recorded selections.
+              Choose a tier to explore its recorded
+              selections.
             </p>
           </div>
+
           <Trophy
             className="h-5 w-5 shrink-0 text-amber-400"
             aria-hidden="true"
@@ -412,9 +554,16 @@ export default function ArchivePage() {
             <button
               key={tier.id}
               type="button"
-              aria-pressed={filters.tier === tier.id}
+              aria-pressed={
+                filters.tier === tier.id
+              }
               aria-controls="archive-results"
-              onClick={() => changeFilter("tier", tier.id)}
+              onClick={() =>
+                changeFilter(
+                  "tier",
+                  tier.id
+                )
+              }
               className={`rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors ${focusStyles} ${
                 filters.tier === tier.id
                   ? "border-emerald-400 bg-emerald-500/15 text-emerald-300"
@@ -422,6 +571,7 @@ export default function ArchivePage() {
               }`}
             >
               {tier.label}
+
               <span className="mt-1 block text-xs font-normal text-slate-400">
                 Historical selections
               </span>
@@ -436,7 +586,11 @@ export default function ArchivePage() {
         className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-5"
         onSubmit={(event) => {
           event.preventDefault();
-          changeFilter("search", searchInput.trim());
+
+          changeFilter(
+            "search",
+            searchInput.trim()
+          );
         }}
       >
         <div className="space-y-2 lg:col-span-2">
@@ -446,16 +600,22 @@ export default function ArchivePage() {
           >
             Search fixtures or selections
           </label>
+
           <div className="relative">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
               aria-hidden="true"
             />
+
             <input
               id="archive-search"
               type="search"
               value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
+              onChange={(event) =>
+                setSearchInput(
+                  event.target.value
+                )
+              }
               placeholder="Team, competition, selection"
               className={`${inputStyles} pl-10`}
             />
@@ -469,17 +629,27 @@ export default function ArchivePage() {
           >
             Sport
           </label>
+
           <select
             id="archive-sport"
             value={filters.sport}
             onChange={(event) =>
-              changeFilter("sport", event.target.value)
+              changeFilter(
+                "sport",
+                event.target.value
+              )
             }
             className={inputStyles}
           >
-            <option value="">All available sports</option>
+            <option value="">
+              All available sports
+            </option>
+
             {availableSports.map((sport) => (
-              <option key={sport} value={sport}>
+              <option
+                key={sport}
+                value={sport}
+              >
                 {sport}
               </option>
             ))}
@@ -493,17 +663,27 @@ export default function ArchivePage() {
           >
             Recorded outcome
           </label>
+
           <select
             id="archive-outcome"
             value={filters.outcome}
             onChange={(event) =>
-              changeFilter("outcome", event.target.value)
+              changeFilter(
+                "outcome",
+                event.target.value
+              )
             }
             className={inputStyles}
           >
-            <option value="">Any outcome</option>
+            <option value="">
+              Any outcome
+            </option>
+
             {OUTCOMES.map((outcome) => (
-              <option key={outcome.value} value={outcome.value}>
+              <option
+                key={outcome.value}
+                value={outcome.value}
+              >
                 {outcome.label}
               </option>
             ))}
@@ -517,15 +697,25 @@ export default function ArchivePage() {
           >
             Specific day
           </label>
+
           <input
             id="archive-day"
             type="date"
             value={filters.day}
+            max={getLatestArchiveDate()}
             onChange={(event) =>
-              changeFilter("day", event.target.value)
+              changeFilter(
+                "day",
+                event.target.value
+              )
             }
             className={`${inputStyles} [color-scheme:dark]`}
           />
+
+          <p className="text-[11px] leading-5 text-slate-500">
+            Today&apos;s tips are not available in
+            the archive.
+          </p>
         </div>
 
         <div className="flex flex-wrap gap-3 sm:col-span-2 lg:col-span-5">
@@ -533,7 +723,10 @@ export default function ArchivePage() {
             type="submit"
             className={`${buttonStyles} bg-emerald-500 text-slate-950 hover:bg-emerald-400`}
           >
-            <Search className="h-4 w-4" aria-hidden="true" />
+            <Search
+              className="h-4 w-4"
+              aria-hidden="true"
+            />
             Search
           </button>
 
@@ -553,22 +746,20 @@ export default function ArchivePage() {
           <p>
             Viewing:{" "}
             <span className="font-semibold text-slate-200">
-              {selectedTier?.label || "All tiers"}
+              {selectedTier?.label ||
+                "All tiers"}
             </span>
+
             {servedDayLabel && (
               <>
-                {" "}· Records served for{" "}
+                {" "}
+                · Records served for{" "}
                 <span className="font-semibold text-slate-200">
                   {servedDayLabel}
                 </span>
               </>
             )}
           </p>
-          {fallbackNotice && (
-            <p role="status" className="text-amber-300">
-              {fallbackNotice}
-            </p>
-          )}
         </div>
       )}
 
@@ -593,15 +784,23 @@ export default function ArchivePage() {
             <h2 className="text-lg font-bold text-slate-100">
               Unable to Load Archive
             </h2>
-            <p role="alert" className="text-sm leading-6 text-rose-300">
+
+            <p
+              role="alert"
+              className="text-sm leading-6 text-rose-300"
+            >
               {error}
             </p>
+
             <button
               type="button"
               onClick={retryRequest}
               className={`${buttonStyles} bg-emerald-500 text-slate-950 hover:bg-emerald-400`}
             >
-              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              <RefreshCw
+                className="h-4 w-4"
+                aria-hidden="true"
+              />
               Try Again
             </button>
           </div>
@@ -620,55 +819,75 @@ export default function ArchivePage() {
                   >
                     {group.title}
                   </h2>
+
                   <span className="text-xs text-slate-400">
                     {group.tips.length} card
-                    {group.tips.length === 1 ? "" : "s"} on this page
+                    {group.tips.length === 1
+                      ? ""
+                      : "s"}{" "}
+                    on this page
                   </span>
                 </header>
 
                 <div className="space-y-4">
-                  {group.tips.map((tip, index) => {
-                    const tipId = tip.id ?? tip._id;
-                    const hasTipId =
-                      tipId !== null &&
-                      tipId !== undefined &&
-                      String(tipId).trim() !== "";
+                  {group.tips.map(
+                    (tip, index) => {
+                      const tipId =
+                        tip.id ?? tip._id;
 
-                    const card =
-                      group.id === "free"
-                        ? formatFreeTipChannelCard(tip)
-                        : formatTipChannelCard(tip);
+                      const hasTipId =
+                        tipId !== null &&
+                        tipId !== undefined &&
+                        String(tipId).trim() !== "";
 
-                    return (
-                      <article
-                        key={tipId ?? `${group.id}-tip-${index}`}
-                        className="min-w-0 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5"
-                      >
-                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-                          Card {(page - 1) * PAGE_SIZE + index + 1}
-                        </h3>
+                      const card =
+                        group.id === "free"
+                          ? formatFreeTipChannelCard(
+                              tip
+                            )
+                          : formatTipChannelCard(
+                              tip
+                            );
 
-                        <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-slate-200 [overflow-wrap:anywhere]">
-                          {card}
-                        </pre>
+                      return (
+                        <article
+                          key={
+                            tipId ??
+                            `${group.id}-tip-${index}`
+                          }
+                          className="min-w-0 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5"
+                        >
+                          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                            Card{" "}
+                            {(page - 1) *
+                              PAGE_SIZE +
+                              index +
+                              1}
+                          </h3>
 
-                        {hasTipId && (
-                          <Link
-                            href={`/tips/${encodeURIComponent(
-                              String(tipId)
-                            )}`}
-                            className={`${buttonStyles} mt-3 px-0 text-xs text-emerald-400 hover:text-emerald-300`}
-                          >
-                            Preview Details
-                            <ArrowRight
-                              className="h-4 w-4"
-                              aria-hidden="true"
-                            />
-                          </Link>
-                        )}
-                      </article>
-                    );
-                  })}
+                          <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-slate-200 [overflow-wrap:anywhere]">
+                            {card}
+                          </pre>
+
+                          {hasTipId && (
+                            <Link
+                              href={`/tips/${encodeURIComponent(
+                                String(tipId)
+                              )}`}
+                              className={`${buttonStyles} mt-3 px-0 text-xs text-emerald-400 hover:text-emerald-300`}
+                            >
+                              Preview Details
+
+                              <ArrowRight
+                                className="h-4 w-4"
+                                aria-hidden="true"
+                              />
+                            </Link>
+                          )}
+                        </article>
+                      );
+                    }
+                  )}
                 </div>
               </section>
             ))}
@@ -679,48 +898,68 @@ export default function ArchivePage() {
               className="mx-auto mb-4 h-7 w-7 text-slate-400"
               aria-hidden="true"
             />
+
             <h2 className="text-lg font-bold text-slate-200">
               No Archived Tips Found
             </h2>
+
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              No selections match this view. Try another day, tier,
-              sport, or outcome.
+              No selections match this view.
+              Try another day, tier, sport, or
+              outcome.
             </p>
           </div>
         )}
       </section>
 
       {/* Archive pagination */}
-      {!loading && !error && archive.pagination.pages > 1 && (
-        <nav
-          aria-label="Archive pagination"
-          className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-5"
-        >
-          <button
-            type="button"
-            disabled={page <= 1}
-            onClick={() => changePage(page - 1)}
-            className={`${buttonStyles} border border-slate-700 text-slate-300 hover:bg-slate-800`}
+      {!loading &&
+        !error &&
+        archive.pagination.pages > 1 && (
+          <nav
+            aria-label="Archive pagination"
+            className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-5"
           >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Previous
-          </button>
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() =>
+                changePage(page - 1)
+              }
+              className={`${buttonStyles} border border-slate-700 text-slate-300 hover:bg-slate-800`}
+            >
+              <ArrowLeft
+                className="h-4 w-4"
+                aria-hidden="true"
+              />
+              Previous
+            </button>
 
-          <p className="text-xs text-slate-400">
-            Page {page} of {archive.pagination.pages}
-          </p>
+            <p className="text-xs text-slate-400">
+              Page {page} of{" "}
+              {archive.pagination.pages}
+            </p>
 
-          <button
-            type="button"
-            disabled={page >= archive.pagination.pages}
-            onClick={() => changePage(page + 1)}
-            className={`${buttonStyles} border border-slate-700 text-slate-300 hover:bg-slate-800`}
-          >
-            Next
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </nav>
-      )}
+            <button
+              type="button"
+              disabled={
+                page >=
+                archive.pagination.pages
+              }
+              onClick={() =>
+                changePage(page + 1)
+              }
+              className={`${buttonStyles} border border-slate-700 text-slate-300 hover:bg-slate-800`}
+            >
+              Next
+
+              <ArrowRight
+                className="h-4 w-4"
+                aria-hidden="true"
+              />
+            </button>
+          </nav>
+        )}
     </main>
   );
 }

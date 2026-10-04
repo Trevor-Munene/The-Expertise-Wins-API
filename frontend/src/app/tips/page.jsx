@@ -1,3 +1,4 @@
+
 // frontend/src/app/tips/page.jsx
 "use client";
 
@@ -109,6 +110,99 @@ function extractTips(response) {
     : [];
 }
 
+// Normalize sport values without changing the underlying tip data.
+function normalizeSport(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase();
+}
+
+// Strict football check for the free public view.
+function isFootballTip(tip) {
+  return normalizeSport(tip.sport) === "FOOTBALL";
+}
+
+// Read the tier from the API response without changing the API contract.
+// Different existing field names are supported so the page remains
+// compatible with the current response shape.
+function getTipTier(tip) {
+  const value =
+    tip?.tier ??
+    tip?.product ??
+    tip?.productType ??
+    tip?.accessLevel ??
+    tip?.category ??
+    "";
+
+  const normalized = String(value).trim().toUpperCase();
+
+  if (
+    normalized === "MAXBET" ||
+    normalized === "MAXBET VIP" ||
+    normalized === "MAX_BET" ||
+    normalized === "MAXBETVIP"
+  ) {
+    return "MAXBET";
+  }
+
+  if (
+    normalized === "VIP" ||
+    normalized === "PREMIUM" ||
+    normalized === "VIP CHANNEL"
+  ) {
+    return "VIP";
+  }
+
+  if (
+    normalized === "FREE" ||
+    normalized === "PUBLIC" ||
+    normalized === "FREE TIPS"
+  ) {
+    return "FREE";
+  }
+
+  return "";
+}
+
+// Free → VIP → MaxBet.
+function getTierRank(tip) {
+  const tier = getTipTier(tip);
+
+  if (tier === "FREE") return 1;
+  if (tier === "VIP") return 2;
+  if (tier === "MAXBET") return 3;
+
+  return 99;
+}
+
+function getTierLabel(tip) {
+  const tier = getTipTier(tip);
+
+  if (tier === "MAXBET") return "MAXBET";
+  if (tier === "VIP") return "VIP";
+  if (tier === "FREE") return "FREE";
+
+  return "TIP";
+}
+
+function getTierStyles(tip) {
+  const tier = getTipTier(tip);
+
+  if (tier === "FREE") {
+    return "border-emerald-500/20 bg-emerald-500/10 text-emerald-400";
+  }
+
+  if (tier === "VIP") {
+    return "border-indigo-500/20 bg-indigo-500/10 text-indigo-300";
+  }
+
+  if (tier === "MAXBET") {
+    return "border-amber-500/20 bg-amber-500/10 text-amber-400";
+  }
+
+  return "border-slate-700 bg-slate-800 text-slate-300";
+}
+
 export default function TipsPage() {
   const [activeTab, setActiveTab] = useState("free");
   const [tips, setTips] = useState([]);
@@ -182,9 +276,34 @@ export default function TipsPage() {
   }, [activeTab, retryCount]);
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
+  const todayIso = getTodayIso();
 
+  /*
+   * Keep the existing filtering behavior.
+   *
+   * The only special rules are:
+   * - Free = today's football tips only.
+   * - All = all tips returned by the API.
+   * - VIP / MaxBet = exactly what their respective endpoints return.
+   */
   const filteredTips = tips.filter((tip) => {
     const selections = Array.isArray(tip.tips) ? tip.tips : [];
+
+    /*
+     * Free tips must be today's football selections.
+     *
+     * We use the API's served day because that is already the date
+     * associated with the published tip set.
+     */
+    if (activeTab === "free") {
+      if (servedDay !== todayIso) {
+        return false;
+      }
+
+      if (!isFootballTip(tip)) {
+        return false;
+      }
+    }
 
     // Search all relevant fields, including premium selections.
     const searchableText = [
@@ -210,27 +329,49 @@ export default function TipsPage() {
 
     const matchesSport =
       selectedSport === "ALL" ||
-      String(tip.sport || "Football").trim().toUpperCase() ===
-        selectedSport;
+      normalizeSport(tip.sport || "Football") === selectedSport;
 
     return matchesSearch && matchesSport;
   });
 
+  /*
+   * All Tips keeps every returned tip but presents them in product order:
+   * FREE → VIP → MAXBET.
+   *
+   * The other tabs preserve the API's existing ordering.
+   */
+  const displayedTips =
+    activeTab === "all"
+      ? [...filteredTips].sort((a, b) => {
+          const tierDifference = getTierRank(a) - getTierRank(b);
+
+          if (tierDifference !== 0) {
+            return tierDifference;
+          }
+
+          return 0;
+        })
+      : filteredTips;
+
   const activeView = tabs.find((tab) => tab.id === activeTab);
   const isPremiumTab = activeTab === "vip" || activeTab === "maxbet";
-  const hasFilters = normalizedSearch !== "" || selectedSport !== "ALL";
+  const hasFilters =
+    normalizedSearch !== "" || selectedSport !== "ALL";
   const hasLoadedContent = !loading && !requiresAuth && !error;
 
   const isHistoricalDay =
-    hasLoadedContent && servedDay && servedDay < getTodayIso();
+    hasLoadedContent && servedDay && servedDay < todayIso;
 
   const dayLabel = servedDay
-    ? new Date(`${servedDay}T00:00:00Z`).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        timeZone: "UTC",
-      })
+    ? new Date(`${servedDay}T00:00:00Z`).toLocaleDateString(
+        "en-GB",
+        {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        }
+      )
     : null;
 
   const accessHeading = isPremiumTab
@@ -251,8 +392,8 @@ export default function TipsPage() {
       ? "Access required"
       : error
         ? "Selections unavailable"
-        : `${filteredTips.length} selection${
-            filteredTips.length === 1 ? "" : "s"
+        : `${displayedTips.length} selection${
+            displayedTips.length === 1 ? "" : "s"
           } shown`;
 
   const handleTabChange = (tabId) => {
@@ -481,10 +622,11 @@ export default function TipsPage() {
             </span>
           </p>
 
-          {isHistoricalDay && (
+          {activeTab === "free" && isHistoricalDay && (
             <p className="text-xs leading-5 text-amber-300">
-              Showing selections served for{" "}
-              <span className="font-bold">{dayLabel}</span>.
+              The latest published selections are from{" "}
+              <span className="font-bold">{dayLabel}</span>. Today's free
+              football tips are not yet available.
             </p>
           )}
 
@@ -529,6 +671,7 @@ export default function TipsPage() {
               <h3 className="text-xl font-bold text-slate-100">
                 {accessHeading}
               </h3>
+
               <p className="mx-auto max-w-md text-sm leading-6 text-slate-400">
                 {accessDescription}
               </p>
@@ -558,7 +701,10 @@ export default function TipsPage() {
             <h3 className="text-lg font-bold text-slate-100">
               Unable to Load Tips
             </h3>
-            <p className="text-sm leading-6 text-slate-400">{error}</p>
+
+            <p className="text-sm leading-6 text-slate-400">
+              {error}
+            </p>
 
             <button
               type="button"
@@ -569,10 +715,10 @@ export default function TipsPage() {
               Try Again
             </button>
           </div>
-        ) : filteredTips.length > 0 ? (
+        ) : displayedTips.length > 0 ? (
           isPremiumTab ? (
             <div className="mx-auto max-w-3xl space-y-4">
-              {filteredTips.map((tip, index) => (
+              {displayedTips.map((tip, index) => (
                 <article
                   key={tip.id ?? tip._id ?? `premium-tip-${index}`}
                   className="min-w-0 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900"
@@ -589,11 +735,25 @@ export default function TipsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredTips.map((tip, index) => (
-                <TipCard
+              {displayedTips.map((tip, index) => (
+                <article
                   key={tip.id ?? tip._id ?? `tip-${index}`}
-                  tip={tip}
-                />
+                  className="relative min-w-0"
+                >
+                  {activeTab === "all" && (
+                    <div className="mb-2 flex items-center justify-between px-1">
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${getTierStyles(
+                          tip
+                        )}`}
+                      >
+                        {getTierLabel(tip)}
+                      </span>
+                    </div>
+                  )}
+
+                  <TipCard tip={tip} />
+                </article>
               ))}
             </div>
           )
@@ -615,7 +775,9 @@ export default function TipsPage() {
 
               <p className="text-sm leading-6 text-slate-400">
                 {tips.length > 0
-                  ? "No selections match your current search or sport filter."
+                  ? activeTab === "free" && servedDay !== todayIso
+                    ? "Today's free football tips are not available yet."
+                    : "No selections match your current search or sport filter."
                   : "There are no selections available in this view right now. Check back shortly for updates."}
               </p>
             </div>
