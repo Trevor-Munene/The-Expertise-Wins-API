@@ -1,9 +1,7 @@
 // frontend/src/app/stats/page.jsx
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { statsApi } from "../../api/stats.api";
-import StatCard from "../../components/StatCard";
+import { useEffect, useRef, useState } from "react";
 import {
   Trophy,
   TrendingUp,
@@ -14,15 +12,17 @@ import {
   FileText,
   Layers,
   Award,
-  Target,
 } from "lucide-react";
-import { formatPercent, formatOdds, formatDate } from "../../lib/utils";
+
+import { statsApi } from "../../api/stats.api";
+import StatCard from "../../components/StatCard";
+import { formatPercent, formatOdds } from "../../lib/utils";
 
 const PERIOD_OPTIONS = [
   { id: "today", label: "Today" },
   { id: "week", label: "7 Days" },
   { id: "14-days", label: "14 Days" },
-  { id: "month", label: "This Month" },
+  { id: "month", label: "30 Days" },
   { id: "year", label: "This Year" },
   { id: "all-time", label: "All Time" },
 ];
@@ -41,240 +41,340 @@ const REPORT_OPTIONS = [
   { id: "yearly", label: "Yearly" },
 ];
 
+const PERIOD_METHODS = {
+  today: "getTodayStats",
+  week: "getWeeklyStats",
+  "14-days": "getFourteenDayStats",
+  month: "getMonthlyStats",
+  year: "getYearlyStats",
+  "all-time": "getAllTimeStats",
+};
+
+const PRODUCT_METHODS = {
+  free: {
+    overall: "getFreeStats",
+    week: "getFreeWeeklyStats",
+    month: "getFreeMonthlyStats",
+  },
+  vip: {
+    overall: "getVipStats",
+    week: "getVipWeeklyStats",
+    month: "getVipMonthlyStats",
+  },
+  maxbet: {
+    overall: "getMaxbetStats",
+    week: "getMaxbetWeeklyStats",
+    month: "getMaxbetMonthlyStats",
+  },
+};
+
+const REPORT_METHODS = {
+  overall: "getPerformanceReport",
+  weekly: "getWeeklyReport",
+  monthly: "getMonthlyReport",
+  yearly: "getYearlyReport",
+};
+
+const focusStyles =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+
+const panelStyles =
+  "min-w-0 rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6";
+
 const getResponseData = (response) =>
   response?.stats ?? response?.data ?? response ?? null;
 
-const getArrayData = (response, key) => {
+// Normalize arrays and keyed breakdown objects.
+function getArrayData(response, key) {
   const data = getResponseData(response);
-  if (Array.isArray(data)) return data;
+
+  if (Array.isArray(data)) {
+    return data.filter((item) => item && typeof item === "object");
+  }
+
   if (!data || typeof data !== "object") return [];
+
   return Object.entries(data).map(([name, value]) => ({
     [key]: name,
     ...(value && typeof value === "object" ? value : { value }),
   }));
-};
+}
 
-const formatMetricPercent = (value) =>
-  value != null ? formatPercent(value) : "—";
-
-const getStatusClasses = (status) => {
-  const normalized = String(status || "").toUpperCase();
-
-  if (normalized === "ACTIVE" || normalized === "WON") {
-    return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-  }
-
+// Reject missing and non-finite numeric values.
+function getFiniteNumber(value) {
   if (
-    normalized === "EXPIRED" ||
-    normalized === "LOST" ||
-    normalized === "CANCELLED"
+    value === null ||
+    value === undefined ||
+    typeof value === "boolean" ||
+    (typeof value !== "number" && typeof value !== "string") ||
+    String(value).trim() === ""
   ) {
-    return "bg-rose-500/10 text-rose-400 border-rose-500/20";
+    return null;
   }
 
-  return "bg-slate-500/10 text-slate-400 border-slate-500/20";
-};
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function formatMetricPercent(value) {
+  const number = getFiniteNumber(value);
+  return number === null ? "—" : formatPercent(number);
+}
+
+function formatMetricOdds(value) {
+  const number = getFiniteNumber(value);
+  return number !== null && number > 0 ? `@${formatOdds(number)}` : "—";
+}
+
+function formatCount(value) {
+  const number = getFiniteNumber(value);
+
+  return number !== null && number >= 0
+    ? number.toLocaleString("en-GB")
+    : "—";
+}
+
+function getNairobiDateLabel(date) {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Nairobi",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
 
 export default function StatsPage() {
   const [period, setPeriod] = useState("all-time");
   const [productFilter, setProductFilter] = useState("ALL");
   const [reportType, setReportType] = useState("overall");
+  const [refreshCount, setRefreshCount] = useState(0);
 
-  const [overview, setOverview] = useState(null);
-  const [periodStats, setPeriodStats] = useState(null);
-  const [productStats, setProductStats] = useState(null);
-  const [sportStats, setSportStats] = useState([]);
-  const [marketStats, setMarketStats] = useState([]);
-  const [competitionStats, setCompetitionStats] = useState([]);
-  const [volumeStats, setVolumeStats] = useState(null);
-  const [scrapedStats, setScrapedStats] = useState(null);
-  const [reportData, setReportData] = useState(null);
-  const [winRateData, setWinRateData] = useState(null);
-  const [roiData, setRoiData] = useState(null);
-  const [oddsData, setOddsData] = useState(null);
+  const [data, setData] = useState({});
+  const [failedRequests, setFailedRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reportFetchedAt, setReportFetchedAt] = useState(null);
 
-  const fetchAllStats = useCallback(async () => {
-    setLoading(true);
-
-    try {
-      const periodRequest =
-        period === "today"
-          ? statsApi.getTodayStats()
-          : period === "week"
-          ? statsApi.getWeeklyStats()
-          : period === "14-days"
-          ? statsApi.getFourteenDayStats()
-          : period === "month"
-          ? statsApi.getMonthlyStats()
-          : period === "year"
-          ? statsApi.getYearlyStats()
-          : statsApi.getAllTimeStats();
-
-      const productRequest =
-        productFilter === "free"
-          ? period === "week"
-            ? statsApi.getFreeWeeklyStats()
-            : period === "month"
-            ? statsApi.getFreeMonthlyStats()
-            : statsApi.getFreeStats()
-          : productFilter === "vip"
-          ? period === "week"
-            ? statsApi.getVipWeeklyStats()
-            : period === "month"
-            ? statsApi.getVipMonthlyStats()
-            : statsApi.getVipStats()
-          : productFilter === "maxbet"
-          ? period === "week"
-            ? statsApi.getMaxbetWeeklyStats()
-            : period === "month"
-            ? statsApi.getMaxbetMonthlyStats()
-            : statsApi.getMaxbetStats()
-          : Promise.resolve(null);
-
-      const reportRequest =
-        reportType === "weekly"
-          ? statsApi.getWeeklyReport()
-          : reportType === "monthly"
-          ? statsApi.getMonthlyReport()
-          : reportType === "yearly"
-          ? statsApi.getYearlyReport()
-          : statsApi.getPerformanceReport();
-
-      const results = await Promise.allSettled([
-        statsApi.getOverview(),
-        periodRequest,
-        productRequest,
-        statsApi.getSportStats(),
-        statsApi.getMarketStats(),
-        statsApi.getCompetitionStats(),
-        statsApi.getVolumeStats(),
-        statsApi.getScrapedStats(),
-        reportRequest,
-        statsApi.getWinRate(),
-        statsApi.getRoi(),
-        statsApi.getOddsStats(),
-      ]);
-
-      const [
-        overviewRes,
-        periodRes,
-        productRes,
-        sportRes,
-        marketRes,
-        competitionRes,
-        volumeRes,
-        scrapedRes,
-        reportRes,
-        winRateRes,
-        roiRes,
-        oddsRes,
-      ] = results;
-
-      if (overviewRes.status === "fulfilled") {
-        setOverview(getResponseData(overviewRes.value));
-      }
-
-      if (periodRes.status === "fulfilled") {
-        setPeriodStats(getResponseData(periodRes.value));
-      }
-
-      if (productRes.status === "fulfilled") {
-        setProductStats(getResponseData(productRes.value));
-      }
-
-      if (sportRes.status === "fulfilled") {
-        setSportStats(getArrayData(sportRes.value, "sport"));
-      }
-
-      if (marketRes.status === "fulfilled") {
-        setMarketStats(getArrayData(marketRes.value, "market"));
-      }
-
-      if (competitionRes.status === "fulfilled") {
-        setCompetitionStats(getArrayData(competitionRes.value, "competition"));
-      }
-
-
-      if (volumeRes.status === "fulfilled") {
-        setVolumeStats(getResponseData(volumeRes.value));
-      }
-
-      if (scrapedRes.status === "fulfilled") {
-        setScrapedStats(getResponseData(scrapedRes.value));
-      }
-
-      if (reportRes.status === "fulfilled") {
-        setReportData(getResponseData(reportRes.value));
-      }
-
-      if (winRateRes.status === "fulfilled") {
-        setWinRateData(getResponseData(winRateRes.value));
-      }
-
-      if (roiRes.status === "fulfilled") {
-        setRoiData(getResponseData(roiRes.value));
-      }
-
-      if (oddsRes.status === "fulfilled") {
-        setOddsData(getResponseData(oddsRes.value));
-      }
-    } catch (err) {
-      console.error("Failed loading statistics", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [period, productFilter, reportType]);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
+    let cancelled = false;
+    const requestId = ++requestIdRef.current;
+
+    async function fetchAllStats() {
+      setLoading(true);
+      setData({});
+      setFailedRequests([]);
+      setReportFetchedAt(null);
+
+      const productMethods = PRODUCT_METHODS[productFilter];
+      const productMethod = productMethods
+        ? productMethods[period] ?? productMethods.overall
+        : null;
+
+      // Keep the existing endpoints and allow partial results.
+      const requests = [
+        { key: "overview", label: "Overview", method: "getOverview" },
+        {
+          key: "period",
+          label: "Period statistics",
+          method: PERIOD_METHODS[period],
+        },
+        {
+          key: "product",
+          label: "Product statistics",
+          method: productMethod,
+        },
+        {
+          key: "sports",
+          label: "Sport performance",
+          method: "getSportStats",
+          arrayKey: "sport",
+        },
+        {
+          key: "markets",
+          label: "Market performance",
+          method: "getMarketStats",
+          arrayKey: "market",
+        },
+        {
+          key: "competitions",
+          label: "Competition performance",
+          method: "getCompetitionStats",
+          arrayKey: "competition",
+        },
+        { key: "volume", label: "Tip volume", method: "getVolumeStats" },
+        { key: "scraped", label: "Scraped tips", method: "getScrapedStats" },
+        {
+          key: "report",
+          label: "Performance report",
+          method: REPORT_METHODS[reportType],
+        },
+        { key: "winRate", label: "Overall win rate", method: "getWinRate" },
+        { key: "roi", label: "Overall ROI", method: "getRoi" },
+        { key: "odds", label: "Overall odds", method: "getOddsStats" },
+      ];
+
+      const results = await Promise.allSettled(
+        requests.map(({ method }) =>
+          method
+            ? Promise.resolve().then(() => statsApi[method]())
+            : Promise.resolve(null)
+        )
+      );
+
+      if (cancelled || requestId !== requestIdRef.current) return;
+
+      const nextData = {};
+      const failures = [];
+
+      results.forEach((result, index) => {
+        const request = requests[index];
+
+        if (result.status === "fulfilled") {
+          nextData[request.key] = request.arrayKey
+            ? getArrayData(result.value, request.arrayKey)
+            : getResponseData(result.value);
+        } else {
+          nextData[request.key] = request.arrayKey ? [] : null;
+          failures.push({ key: request.key, label: request.label });
+        }
+      });
+
+      setData(nextData);
+      setFailedRequests(failures);
+
+      if (nextData.report !== null && nextData.report !== undefined) {
+        setReportFetchedAt(new Date());
+      }
+
+      setLoading(false);
+    }
+
     fetchAllStats();
-  }, [fetchAllStats]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [period, productFilter, reportType, refreshCount]);
+
+  // Hide previous results immediately when controls change.
+  const prepareRequest = () => {
+    requestIdRef.current += 1;
+    setLoading(true);
+    setData({});
+    setFailedRequests([]);
+    setReportFetchedAt(null);
+  };
+
+  const handleRefresh = () => {
+    if (loading) return;
+    prepareRequest();
+    setRefreshCount((count) => count + 1);
+  };
+
+  const handlePeriodChange = (value) => {
+    if (value === period) return;
+    prepareRequest();
+    setPeriod(value);
+  };
+
+  const handleProductChange = (value) => {
+    if (value === productFilter) return;
+    prepareRequest();
+    setProductFilter(value);
+  };
+
+  const handleReportChange = (value) => {
+    if (value === reportType) return;
+    prepareRequest();
+    setReportType(value);
+  };
+
+  const hasFailed = (key) =>
+    failedRequests.some((request) => request.key === key);
+
+  const periodLabel = PERIOD_OPTIONS.find(
+    (option) => option.id === period
+  )?.label;
+
+  const productLabel = PRODUCT_OPTIONS.find(
+    (option) => option.id === productFilter
+  )?.label;
+
+  const usesProductStats = productFilter !== "ALL";
+  const unsupportedProductPeriod =
+    usesProductStats && !["week", "month", "all-time"].includes(period);
+
+  const effectivePeriodLabel = unsupportedProductPeriod
+    ? "All Time"
+    : periodLabel;
+
+  const scopeLabel = `${productLabel} · ${effectivePeriodLabel}`;
+  const scopedStats = usesProductStats ? data.product : data.period;
+
+  // Do not substitute global values for a selected product or period.
+  const allowGlobalFallback =
+    productFilter === "ALL" && period === "all-time";
 
   const winRate =
-    productStats?.winRate ??
-    periodStats?.winRate ??
-    winRateData?.winRate ??
-    overview?.winRate;
+    scopedStats?.winRate ??
+    (allowGlobalFallback
+      ? data.winRate?.winRate ?? data.overview?.winRate
+      : null);
 
   const roi =
-    roiData?.roi ??
-    periodStats?.roi ??
-    overview?.roi;
+    scopedStats?.roi ??
+    (allowGlobalFallback
+      ? data.roi?.roi ?? data.overview?.roi
+      : null);
 
   const averageOdds =
-    oddsData?.average ??
-    oddsData?.avgOdds ??
-    periodStats?.avgOdds ??
-    overview?.avgOdds;
+    scopedStats?.avgOdds ??
+    scopedStats?.averageOdds ??
+    (allowGlobalFallback
+      ? data.odds?.average ??
+        data.odds?.avgOdds ??
+        data.overview?.avgOdds
+      : null);
 
+  // Volume and breakdown endpoints are not filtered by these controls.
   const totalVolume =
-    volumeStats?.totalVolume ??
-    volumeStats?.count ??
-    volumeStats?.total ??
-    overview?.totalCount;
+    data.volume?.totalVolume ??
+    data.volume?.count ??
+    data.volume?.total ??
+    data.overview?.totalCount;
 
-  const scrapedCount = scrapedStats?.scrapedTips;
-
+  const scrapedCount = data.scraped?.scrapedTips;
   const publishedCount =
-    volumeStats?.publishedCount ??
-    volumeStats?.published;
-  const reportOverview = reportData?.overview ?? reportData;
+    data.volume?.publishedCount ?? data.volume?.published;
+
+  const reportOverview = data.report?.overview ?? data.report;
+  const metricScope = loading ? "Loading statistics…" : scopeLabel;
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-      {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
-            <BarChart3 className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Performance Analytics</span>
+    <main
+      aria-labelledby="stats-heading"
+      className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:space-y-10 sm:px-6 lg:px-8"
+    >
+      {/* Page header */}
+      <header className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+        <div className="min-w-0 space-y-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cyan-300">
+            <BarChart3 className="h-4 w-4" aria-hidden="true" />
+            Performance Analytics
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-100 tracking-tight">
-            System Analytics & ROI Reports
+          <h1
+            id="stats-heading"
+            className="text-3xl font-black leading-tight tracking-tight text-slate-100 sm:text-4xl"
+          >
+            System Analytics &amp; ROI Reports
           </h1>
 
-          <p className="text-slate-400 text-sm max-w-2xl">
+          <p className="max-w-2xl text-sm leading-6 text-slate-400">
             Track tip performance across periods, sports, markets,
             competitions, and products.
           </p>
@@ -282,354 +382,242 @@ export default function StatsPage() {
 
         <button
           type="button"
-          onClick={fetchAllStats}
+          onClick={handleRefresh}
           disabled={loading}
           aria-label="Refresh statistics"
-          className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 hover:text-white hover:border-slate-700 text-xs font-semibold flex items-center gap-2 self-start transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
+          className={`inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 self-start rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-xs font-semibold text-slate-300 transition-colors hover:border-slate-700 hover:text-white disabled:cursor-wait disabled:opacity-50 ${focusStyles}`}
         >
           <RefreshCw
-            className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+            className={`h-4 w-4 ${
+              loading ? "motion-safe:animate-spin" : ""
+            }`}
             aria-hidden="true"
           />
-          <span>{loading ? "Refreshing..." : "Refresh Metrics"}</span>
+          {loading ? "Loading Metrics…" : "Refresh Metrics"}
         </button>
       </header>
 
-      {/* Filters */}
-      <section className="space-y-4" aria-label="Analytics filters">
-        <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 p-2 rounded-2xl overflow-x-auto">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 shrink-0">
-            Period:
-          </span>
+      {/* Analytics filters */}
+      <section aria-label="Analytics filters" className="space-y-4">
+        <OptionGroup
+          label="Period"
+          options={PERIOD_OPTIONS}
+          value={period}
+          onChange={handlePeriodChange}
+        />
 
-          {PERIOD_OPTIONS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setPeriod(item.id)}
-              aria-pressed={period === item.id}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-cyan-400/40 ${
-                period === item.id
-                  ? "bg-cyan-gradient text-slate-950 shadow-md"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <OptionGroup
+          label="Product"
+          options={PRODUCT_OPTIONS}
+          value={productFilter}
+          onChange={handleProductChange}
+          activeClass="bg-indigo-600 text-white"
+        />
 
-        <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 p-2 rounded-2xl overflow-x-auto">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 shrink-0">
-            Product:
-          </span>
+        <div className="space-y-2 text-xs leading-5 text-slate-400">
+          <p>
+            Period and product controls apply to win rate, ROI, and average
+            odds. Tip volume and breakdowns show overall statistics.
+            Reports use their own period controls.
+          </p>
 
-          {PRODUCT_OPTIONS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setProductFilter(item.id)}
-              aria-pressed={productFilter === item.id}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-400/40 ${
-                productFilter === item.id
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+          {unsupportedProductPeriod && (
+            <p className="text-amber-300">
+              The supplied API does not provide this period for{" "}
+              {productLabel}. Product metrics show all-time results instead.
+            </p>
+          )}
+
+          <p role="status" aria-live="polite" aria-atomic="true">
+            {loading
+              ? "Loading statistics…"
+              : failedRequests.length > 0
+                ? "Some statistics could not be loaded."
+                : "Statistics loaded."}
+          </p>
         </div>
       </section>
 
-      {/* Primary Metrics */}
+      {/* Partial request failures */}
+      {!loading && failedRequests.length > 0 && (
+        <div
+          role="alert"
+          className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5"
+        >
+          <p className="text-sm font-semibold text-amber-300">
+            Some statistics are unavailable.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-400">
+            Could not load:{" "}
+            {failedRequests.map((request) => request.label).join(", ")}.
+            Use Refresh Metrics to try again.
+          </p>
+        </div>
+      )}
+
+      {/* Primary metrics */}
       <section
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         aria-label="Primary performance metrics"
+        aria-busy={loading}
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <StatCard
           title="Win Rate"
-          value={winRate != null ? formatMetricPercent(winRate) : "—"}
-          subtitle={`Scope: ${productFilter} · ${period}`}
+          value={formatMetricPercent(winRate)}
+          subtitle={metricScope}
           color="emerald"
           icon={Trophy}
         />
 
         <StatCard
           title="Estimated ROI"
-          value={roi != null ? `${roi}%` : "—"}
-          subtitle="Tracked return on investment"
+          value={formatMetricPercent(roi)}
+          subtitle={metricScope}
           color="purple"
           icon={TrendingUp}
         />
 
         <StatCard
           title="Average Odds"
-          value={averageOdds != null ? `@${formatOdds(averageOdds)}` : "—"}
-          subtitle="Average recorded selection odds"
+          value={formatMetricOdds(averageOdds)}
+          subtitle={metricScope}
           color="amber"
           icon={Activity}
         />
 
         <StatCard
           title="Tip Volume"
-          value={totalVolume != null ? totalVolume : "—"}
+          value={formatCount(totalVolume)}
           subtitle={
-            scrapedCount != null || publishedCount != null
-              ? `Scraped: ${scrapedCount ?? "—"} · Published: ${
-                  publishedCount ?? "—"
-                }`
-              : "Recorded tip volume"
+            loading
+              ? "Loading overall volume…"
+              : `Overall · Scraped: ${formatCount(
+                  scrapedCount
+                )} · Published: ${formatCount(publishedCount)}`
           }
           color="blue"
           icon={Layers}
         />
       </section>
 
-      {/* Breakdown Metrics */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Sports */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-          <h2 className="font-bold text-slate-100 text-base flex items-center gap-2">
-            <PieChart
-              className="w-4 h-4 text-cyan-400"
-              aria-hidden="true"
-            />
-            Sport Performance
-          </h2>
+      {/* Overall performance breakdowns */}
+      <section
+        aria-label="Overall performance breakdowns"
+        aria-busy={loading}
+        className="grid grid-cols-1 gap-6 lg:grid-cols-2"
+      >
+        <BreakdownPanel
+          title="Sport Performance"
+          icon={PieChart}
+          items={data.sports ?? []}
+          field="sport"
+          loading={loading}
+          failed={hasFailed("sports")}
+          accent="cyan"
+        />
 
-          {sportStats.length > 0 ? (
-            <div className="space-y-3">
-              {sportStats.map((item, index) => {
-                const rate = Number(item.winRate);
+        <BreakdownPanel
+          title="Market Performance"
+          icon={BarChart3}
+          items={data.markets ?? []}
+          field="market"
+          loading={loading}
+          failed={hasFailed("markets")}
+          accent="indigo"
+        />
 
-                return (
-                  <div
-                    key={item.sport || item.id || index}
-                    className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2"
-                  >
-                    <div className="flex items-center justify-between gap-3 text-xs">
-                      <span className="font-bold text-slate-200">
-                        {item.sport || "Unknown Sport"}
-                      </span>
-
-                      <span className="text-cyan-400 font-extrabold">
-                        {item.winRate != null
-                          ? `${item.winRate}%`
-                          : "—"}
-                      </span>
-                    </div>
-
-                    {Number.isFinite(rate) && (
-                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-cyan-gradient h-full rounded-full"
-                          style={{
-                            width: `${Math.min(Math.max(rate, 0), 100)}%`,
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    <div className="text-[11px] text-slate-400">
-                      Tips analyzed: {item.totalTips ?? item.count ?? "—"}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyBreakdown message="No sport performance data available yet." />
-          )}
-        </div>
-
-        {/* Markets */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-          <h2 className="font-bold text-slate-100 text-base flex items-center gap-2">
-            <BarChart3
-              className="w-4 h-4 text-indigo-400"
-              aria-hidden="true"
-            />
-            Market Performance
-          </h2>
-
-          {marketStats.length > 0 ? (
-            <div className="space-y-3">
-              {marketStats.map((item, index) => {
-                const rate = Number(item.winRate);
-
-                return (
-                  <div
-                    key={item.market || item.id || index}
-                    className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2"
-                  >
-                    <div className="flex items-center justify-between gap-3 text-xs">
-                      <span className="font-bold text-slate-200">
-                        {item.market || "Unknown Market"}
-                      </span>
-
-                      <span className="text-indigo-400 font-extrabold">
-                        {item.winRate != null
-                          ? `${item.winRate}%`
-                          : "—"}
-                      </span>
-                    </div>
-
-                    {Number.isFinite(rate) && (
-                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full"
-                          style={{
-                            width: `${Math.min(Math.max(rate, 0), 100)}%`,
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    <div className="text-[11px] text-slate-400">
-                      Selections: {item.totalTips ?? item.count ?? "—"}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyBreakdown message="No market performance data available yet." />
-          )}
-        </div>
-
-        {/* Competitions */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-          <h2 className="font-bold text-slate-100 text-base flex items-center gap-2">
-            <Award
-              className="w-4 h-4 text-amber-400"
-              aria-hidden="true"
-            />
-            Competitions
-          </h2>
-
-          {competitionStats.length > 0 ? (
-            <div className="space-y-2.5 text-xs">
-              {competitionStats.map((competition, index) => (
-                <div
-                  key={
-                    competition.id ||
-                    competition.name ||
-                    competition.competition ||
-                    index
-                  }
-                  className="flex items-center justify-between gap-4 bg-slate-950 p-3 rounded-xl border border-slate-800"
-                >
-                  <div className="min-w-0">
-                    <span className="font-bold text-slate-200 block truncate">
-                      {competition.name ||
-                        competition.competition ||
-                        "Unknown Competition"}
-                    </span>
-
-                    <span className="text-[10px] text-slate-400 block mt-0.5">
-                      {competition.totalTips ?? competition.count ?? "—"} Matches
-                    </span>
-                  </div>
-
-                  <span className="shrink-0 font-extrabold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20">
-                    {competition.winRate != null
-                      ? `${competition.winRate}%`
-                      : "—"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyBreakdown message="No competition performance data available yet." />
-          )}
-        </div>
-
+        <BreakdownPanel
+          title="Competitions"
+          icon={Award}
+          items={data.competitions ?? []}
+          field="competition"
+          loading={loading}
+          failed={hasFailed("competitions")}
+          accent="amber"
+        />
       </section>
 
-      {/* Reports */}
-      <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Performance reports */}
+      <section
+        aria-labelledby="report-heading"
+        aria-busy={loading}
+        className={`${panelStyles} space-y-6`}
+      >
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h2 className="font-bold text-slate-100 text-lg flex items-center gap-2">
+            <h2
+              id="report-heading"
+              className="flex items-center gap-2 text-lg font-bold text-slate-100"
+            >
               <FileText
-                className="w-5 h-5 text-cyan-400"
+                className="h-5 w-5 shrink-0 text-cyan-400"
                 aria-hidden="true"
               />
               Performance Reports
             </h2>
 
-            <p className="text-slate-400 text-xs mt-1">
-              Review recorded results for the selected reporting period.
+            <p className="mt-2 text-xs leading-5 text-slate-400">
+              Overall results for the selected reporting period, independent
+              of the product filter.
             </p>
           </div>
 
-          <div
-            className="flex items-center gap-1 bg-slate-950 p-1.5 rounded-xl border border-slate-800 overflow-x-auto"
-            aria-label="Report period"
-          >
-            {REPORT_OPTIONS.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => setReportType(option.id)}
-                aria-pressed={reportType === option.id}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-cyan-400/40 ${
-                  reportType === option.id
-                    ? "bg-cyan-gradient text-slate-950 shadow-sm"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          <OptionGroup
+            label="Report period"
+            options={REPORT_OPTIONS}
+            value={reportType}
+            onChange={handleReportChange}
+            compact
+          />
         </div>
 
-        <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4 text-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
-            <span className="font-bold uppercase tracking-wider text-cyan-400">
-              {reportType.toUpperCase()} Performance Report
-            </span>
+        <div className="space-y-5 rounded-xl border border-slate-800 bg-slate-950 p-4 sm:p-5">
+          <div className="flex flex-col justify-between gap-2 border-b border-slate-800 pb-4 sm:flex-row sm:items-center">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+              {reportType} Performance Report
+            </h3>
 
-            <span className="text-slate-500 font-mono">
-              Generated: {formatDate(new Date())}
-            </span>
+            {reportFetchedAt && (
+              <p className="text-xs leading-5 text-slate-400">
+                Retrieved:{" "}
+                <time dateTime={reportFetchedAt.toISOString()}>
+                  {getNairobiDateLabel(reportFetchedAt)}
+                </time>{" "}
+                EAT
+              </p>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-slate-300">
-            <ReportMetric
-              label="Total Predictions"
-              value={reportOverview?.totalTips ?? reportOverview?.count}
-            />
-
-            <ReportMetric
-              label="Wins Recorded"
-              value={reportOverview?.wins}
-              valueClassName="text-emerald-400"
-            />
-
-            <ReportMetric
-              label="Losses Recorded"
-              value={reportOverview?.losses}
-              valueClassName="text-rose-400"
-            />
-
-            <ReportMetric
-              label="Win Rate"
-              value={
-                reportOverview?.winRate != null
-                  ? `${reportOverview.winRate}%`
-                  : null
-              }
-              valueClassName="text-cyan-400"
-            />
-          </div>
-
-          {!reportData && (
-            <p className="text-slate-500 text-xs">
-              No report data is currently available for this period.
-            </p>
+          {loading ? (
+            <LoadingRows />
+          ) : hasFailed("report") ? (
+            <EmptyBreakdown message="The performance report could not be loaded." />
+          ) : !data.report ? (
+            <EmptyBreakdown message="No report data is currently available for this period." />
+          ) : (
+            <dl className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+              <ReportMetric
+                label="Total Predictions"
+                value={formatCount(
+                  reportOverview?.totalTips ?? reportOverview?.count
+                )}
+              />
+              <ReportMetric
+                label="Wins Recorded"
+                value={formatCount(reportOverview?.wins)}
+                valueClassName="text-emerald-400"
+              />
+              <ReportMetric
+                label="Losses Recorded"
+                value={formatCount(reportOverview?.losses)}
+                valueClassName="text-rose-400"
+              />
+              <ReportMetric
+                label="Win Rate"
+                value={formatMetricPercent(reportOverview?.winRate)}
+                valueClassName="text-cyan-400"
+              />
+            </dl>
           )}
         </div>
       </section>
@@ -637,10 +625,164 @@ export default function StatsPage() {
   );
 }
 
+function OptionGroup({
+  label,
+  options,
+  value,
+  onChange,
+  activeClass = "bg-cyan-400 text-slate-950",
+  compact = false,
+}) {
+  return (
+    <div
+      role="group"
+      aria-label={label}
+      className={`flex min-w-0 max-w-full items-center gap-2 overflow-x-auto rounded-2xl border border-slate-800 p-2 ${
+        compact ? "bg-slate-950" : "bg-slate-900"
+      }`}
+    >
+      {!compact && (
+        <span className="shrink-0 px-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          {label}:
+        </span>
+      )}
+
+      {options.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          onClick={() => onChange(option.id)}
+          aria-pressed={value === option.id}
+          className={`inline-flex min-h-[44px] shrink-0 items-center justify-center whitespace-nowrap rounded-xl px-3 py-2 text-xs font-bold transition-colors ${focusStyles} ${
+            value === option.id
+              ? activeClass
+              : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const breakdownStyles = {
+  cyan: {
+    text: "text-cyan-400",
+    bar: "bg-gradient-to-r from-cyan-400 to-teal-400",
+  },
+  indigo: {
+    text: "text-indigo-400",
+    bar: "bg-gradient-to-r from-indigo-500 to-purple-500",
+  },
+  amber: {
+    text: "text-amber-400",
+    bar: "bg-gradient-to-r from-amber-400 to-orange-400",
+  },
+};
+
+function BreakdownPanel({
+  title,
+  icon: Icon,
+  items,
+  field,
+  loading,
+  failed,
+  accent,
+}) {
+  const style = breakdownStyles[accent] ?? breakdownStyles.cyan;
+
+  return (
+    <div className={`${panelStyles} space-y-4`}>
+      <div>
+        <h2 className="flex items-center gap-2 text-base font-bold text-slate-100">
+          <Icon
+            className={`h-4 w-4 shrink-0 ${style.text}`}
+            aria-hidden="true"
+          />
+          {title}
+        </h2>
+        <p className="mt-2 text-xs text-slate-400">Overall statistics</p>
+      </div>
+
+      {loading ? (
+        <LoadingRows />
+      ) : failed ? (
+        <EmptyBreakdown message="This breakdown could not be loaded." />
+      ) : items.length === 0 ? (
+        <EmptyBreakdown message="No performance data is available yet." />
+      ) : (
+        <ul className="space-y-3">
+          {items.map((item, index) => {
+            const name =
+              item[field] ||
+              item.name ||
+              `Unknown ${field === "competition" ? "Competition" : field}`;
+
+            const rate = getFiniteNumber(item.winRate);
+            const boundedRate =
+              rate === null ? null : Math.min(Math.max(rate, 0), 100);
+
+            return (
+              <li
+                key={item.id ?? `${name}-${index}`}
+                className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <span className="min-w-0 break-words text-sm font-bold leading-5 text-slate-200">
+                    {name}
+                  </span>
+
+                  <span
+                    className={`shrink-0 text-sm font-extrabold tabular-nums ${style.text}`}
+                  >
+                    <span className="sr-only">Win rate: </span>
+                    {formatMetricPercent(item.winRate)}
+                  </span>
+                </div>
+
+                {boundedRate !== null && (
+                  <div
+                    aria-hidden="true"
+                    className="h-2 overflow-hidden rounded-full bg-slate-800"
+                  >
+                    <div
+                      className={`h-full rounded-full ${style.bar}`}
+                      style={{ width: `${boundedRate}%` }}
+                    />
+                  </div>
+                )}
+
+                <p className="text-xs leading-5 text-slate-400">
+                  Tips analyzed:{" "}
+                  {formatCount(item.totalTips ?? item.count)}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function LoadingRows() {
+  return (
+    <div aria-hidden="true" className="space-y-3">
+      {[0, 1, 2].map((index) => (
+        <div
+          key={index}
+          className="h-20 rounded-xl border border-slate-800 bg-slate-800/40 motion-safe:animate-pulse"
+        />
+      ))}
+    </div>
+  );
+}
+
 function EmptyBreakdown({ message }) {
   return (
-    <div className="bg-slate-950 border border-slate-800 rounded-xl p-6 text-center">
-      <p className="text-slate-500 text-xs">{message}</p>
+    <div className="rounded-xl border border-slate-800 bg-slate-950 p-6 text-center">
+      <p className="text-sm leading-6 text-slate-400">{message}</p>
     </div>
   );
 }
@@ -651,18 +793,13 @@ function ReportMetric({
   valueClassName = "text-slate-100",
 }) {
   return (
-    <div>
-      <span className="text-[11px] text-slate-500 block">
-        {label}
-      </span>
-
-      <span
-        className={`font-black text-base ${
-          valueClassName
-        }`}
+    <div className="min-w-0">
+      <dt className="text-xs leading-5 text-slate-400">{label}</dt>
+      <dd
+        className={`mt-2 break-words text-lg font-black tabular-nums ${valueClassName}`}
       >
-        {value != null ? value : "—"}
-      </span>
+        {value ?? "—"}
+      </dd>
     </div>
   );
 }

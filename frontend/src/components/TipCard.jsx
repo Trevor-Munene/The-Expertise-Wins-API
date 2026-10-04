@@ -8,110 +8,152 @@ import {
   statusColor,
 } from "../lib/utils";
 
+// Normalize enum values for consistent badge styling.
+function normalizeEnum(value) {
+  return typeof value === "string" ? value.trim().toUpperCase() : "";
+}
+
+// Convert enum values into readable labels.
+function formatBadgeLabel(value) {
+  return value.replace(/_/g, " ");
+}
+
 export default function TipCard({ tip }) {
   if (!tip) return null;
 
   const matchTitle =
     tip.teams ||
-    `${tip.homeTeam || "Home"} vs ${tip.awayTeam || "Away"}`;
+    (tip.homeTeam || tip.awayTeam
+      ? `${tip.homeTeam || "Home"} vs ${tip.awayTeam || "Away"}`
+      : "Match details unavailable");
 
-  const sport = tip.sport || "Football";
-  const competition = tip.competition || tip.league || "Global League";
-  const market = tip.market || "Match Winner";
-  const selection = tip.selection || tip.prediction || "1";
-  const odds = tip.odds;
+  const sport = tip.sport || "Sport unavailable";
+  const competition =
+    tip.competition || tip.league || "Competition unavailable";
+  const market = tip.market || "—";
+  const selection = tip.selection || tip.prediction || "—";
 
-  const outcome = tip.result?.outcome || tip.outcome;
-  const status = tip.status || "PUBLISHED";
-  const kickOff = tip.kickoff || tip.matchDate || tip.createdAt;
+  const outcome = normalizeEnum(tip.result?.outcome || tip.outcome);
+  const status = normalizeEnum(tip.status) || "PUBLISHED";
+  const kickoff = tip.kickoff || tip.matchDate;
+  const dateValue = kickoff || tip.createdAt;
+
   const tipId = tip.id ?? tip._id;
+  const hasTipId =
+    tipId !== null && tipId !== undefined && String(tipId).trim() !== "";
 
   const displayResult = outcome || status;
   const resultClasses = outcome
     ? outcomeColor(outcome)
     : statusColor(status);
 
+  const hasValidOdds =
+    tip.odds !== null &&
+    tip.odds !== undefined &&
+    String(tip.odds).trim() !== "" &&
+    Number.isFinite(Number(tip.odds)) &&
+    Number(tip.odds) > 0;
+
+  const displayOdds = hasValidOdds ? `@${formatOdds(tip.odds)}` : "—";
+  const displayDate = formatDateTime(dateValue);
+
+  const parsedDate = dateValue ? new Date(dateValue) : null;
+  const dateTime =
+    parsedDate && Number.isFinite(parsedDate.getTime())
+      ? parsedDate.toISOString()
+      : undefined;
+
   return (
-    <article className="group flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900 p-5 shadow-lg transition-all hover:border-slate-700 hover:shadow-xl">
+    <article className="group flex h-full min-w-0 flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg shadow-black/10 transition-colors hover:border-slate-700">
       <div>
-        {/* Header */}
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-1.5">
-            <span className="shrink-0 rounded-full border border-slate-700 bg-slate-800 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-300">
+        {/* Tip header */}
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+            <span className="max-w-full break-words rounded-full border border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-300">
               {sport}
             </span>
 
-            <span
-              className="truncate text-xs font-medium text-slate-400"
-              title={competition}
-            >
+            <span className="min-w-0 break-words text-xs font-medium leading-5 text-slate-400">
               {competition}
             </span>
           </div>
 
           <span
-            className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${resultClasses}`}
+            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${resultClasses}`}
           >
-            {displayResult}
+            {formatBadgeLabel(displayResult)}
           </span>
         </div>
 
-        {/* Match */}
-        <h3 className="mb-2 line-clamp-2 text-base font-bold text-slate-100 transition-colors group-hover:text-emerald-400">
+        {/* Match title */}
+        <h3 className="mb-3 break-words text-base font-bold leading-6 text-slate-100">
           {matchTitle}
         </h3>
 
-        {/* Prediction */}
-        <div className="my-3 space-y-2 rounded-lg border border-slate-800/80 bg-slate-950/70 p-3">
-          <div className="flex items-center justify-between gap-4 text-xs">
-            <span className="flex shrink-0 items-center gap-1 font-medium text-slate-400">
-              <Target className="h-3.5 w-3.5 text-emerald-400" />
+        {/* Prediction details */}
+        <dl className="my-3 space-y-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+          <div className="flex items-start justify-between gap-4 text-xs">
+            <dt className="flex shrink-0 items-center gap-1.5 font-medium leading-5 text-slate-400">
+              <Target
+                className="h-3.5 w-3.5 text-emerald-400"
+                aria-hidden="true"
+              />
               Market
-            </span>
-
-            <span className="truncate text-right font-semibold text-slate-200">
+            </dt>
+            <dd className="min-w-0 break-words text-right font-semibold leading-5 text-slate-200">
               {market}
-            </span>
+            </dd>
           </div>
 
-          <div className="flex items-center justify-between gap-4 text-xs">
-            <span className="flex shrink-0 items-center gap-1 font-medium text-slate-400">
-              <Award className="h-3.5 w-3.5 text-teal-400" />
+          <div className="flex items-start justify-between gap-4 text-xs">
+            <dt className="flex shrink-0 items-center gap-1.5 font-medium leading-5 text-slate-400">
+              <Award
+                className="h-3.5 w-3.5 text-teal-400"
+                aria-hidden="true"
+              />
               Selection
-            </span>
-
-            <span className="truncate text-right font-extrabold text-emerald-400">
+            </dt>
+            <dd className="min-w-0 break-words text-right font-extrabold leading-5 text-emerald-400">
               {selection}
-            </span>
+            </dd>
           </div>
 
           <div className="flex items-center justify-between gap-4 text-xs">
-            <span className="font-medium text-slate-400">Odds</span>
-
-            <span className="rounded border border-amber-400/20 bg-amber-400/10 px-2 py-0.5 font-bold text-amber-400">
-              @{formatOdds(odds)}
-            </span>
+            <dt className="font-medium text-slate-400">Odds</dt>
+            <dd className="rounded-md border border-amber-400/20 bg-amber-400/10 px-2 py-1 font-bold text-amber-400 tabular-nums">
+              {displayOdds}
+            </dd>
           </div>
-        </div>
+        </dl>
       </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between border-t border-slate-800/60 pt-3 text-xs text-slate-400">
-        <div className="flex min-w-0 items-center gap-1 text-[11px]">
-          <Clock className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-
-          <span className="truncate">
-            {formatDateTime(kickOff)}
-          </span>
+      {/* Tip footer */}
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-slate-800 pt-3 text-xs text-slate-400">
+        <div className="flex min-w-0 items-start gap-1.5">
+          <Clock
+            className="mt-0.5 h-3.5 w-3.5 shrink-0"
+            aria-hidden="true"
+          />
+          <time
+            dateTime={dateTime}
+            title={kickoff ? "Match kickoff" : "Tip created"}
+            className="break-words leading-5"
+          >
+            <span className="sr-only">
+              {kickoff ? "Match kickoff: " : "Tip created: "}
+            </span>
+            {displayDate}
+          </time>
         </div>
 
-        {tipId && (
+        {hasTipId && (
           <Link
-            href={`/tips/${tipId}`}
-            className="ml-3 flex shrink-0 items-center gap-1 font-semibold text-emerald-400 transition-colors hover:text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded"
+            href={`/tips/${encodeURIComponent(String(tipId))}`}
+            aria-label={`View details for ${matchTitle}`}
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-lg px-2 font-semibold text-emerald-400 transition-colors hover:text-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
           >
-            <span>Details</span>
-            <ArrowRight className="h-3.5 w-3.5" />
+            Details
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         )}
       </div>
