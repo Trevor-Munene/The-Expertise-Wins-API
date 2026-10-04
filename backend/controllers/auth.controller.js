@@ -1,15 +1,15 @@
-// backend/controllers/auth.controller.js
 const passport = require("passport");
 const authService = require("../services/auth.service");
 
-// Helper to extract request data consistently
+// Extract request data, defaulting the body to an empty object
 const getRequestData = (req) => ({
   params: req.params,
   query: req.query,
-  body: req.body,
+  body: req.body ?? {},
   userId: req.user?.id,
 });
 
+// Register a new user
 const registerUser = async (req, res, next) => {
   try {
     const { body } = getRequestData(req);
@@ -23,6 +23,7 @@ const registerUser = async (req, res, next) => {
   }
 };
 
+// Authenticate with email and password and return a JWT
 const loginUser = async (req, res, next) => {
   passport.authenticate(
     "local",
@@ -49,6 +50,7 @@ const loginUser = async (req, res, next) => {
   )(req, res, next);
 };
 
+// Log out the current user
 const logoutUser = async (req, res, next) => {
   try {
     const result = await authService.logoutUser();
@@ -58,6 +60,7 @@ const logoutUser = async (req, res, next) => {
   }
 };
 
+// Get the current user's profile
 const getCurrentUser = async (req, res, next) => {
   try {
     const { userId } = getRequestData(req);
@@ -68,6 +71,7 @@ const getCurrentUser = async (req, res, next) => {
   }
 };
 
+// Change the current user's password
 const updatePassword = async (req, res, next) => {
   try {
     const { userId, body } = getRequestData(req);
@@ -78,12 +82,15 @@ const updatePassword = async (req, res, next) => {
   }
 };
 
-// New avatar update endpoint
+// Update the current user's avatar from the uploaded file
 const updateAvatar = async (req, res, next) => {
   try {
     const { userId } = getRequestData(req);
-    // Assuming the imageHandler middleware stores the file path in req.file.path
+    // Read the stored file path set by the imageHandler middleware
     const avatarUrl = req.file?.path;
+    if (!avatarUrl) {
+      return res.status(400).json({ message: "Avatar file is required." });
+    }
     const result = await authService.updateProfile(userId, { avatarUrl });
     res.status(200).json({ message: "Avatar updated", result });
   } catch (error) {

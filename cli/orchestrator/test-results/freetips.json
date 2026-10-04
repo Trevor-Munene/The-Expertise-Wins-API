@@ -6,22 +6,22 @@
     "competition": "Bet of the Day",
     "league": "Bet of the Day",
     "country": null,
-    "homeTeam": "Uxbridge",
-    "awayTeam": "Hungerford Town",
-    "kickoff": "18:00",
-    "market": "Total Goals",
-    "selection": "Over (9/10)",
-    "odds": 1.9,
+    "homeTeam": "Rep of Ireland",
+    "awayTeam": "Israel",
+    "kickoff": "22:45",
+    "market": "Full Time Result",
+    "selection": "Ireland Win",
+    "odds": 2.08,
     "stakeUnits": 2,
-    "previewTitle": "Bet of the Day",
-    "preview": "Uxbridge have seen over 2.5 goals in 3 of their last 4 previous games and Hungerford have seen over 3.5 goals in their last 3 matches.",
-    "verdict": "Uxbridge have seen over 2.5 goals in 3 of their last 4 previous games and Hungerford have seen over 3.5 goals in their last 3 matches.",
+    "previewTitle": "Republic of Ireland vs Israel Predictions & Tips - Boys in Green to Win in the Nations League",
+    "preview": "Republic of Ireland are a tough side to play against and showed their quality against Israel recently. The Boys in Green can take all three points in this Nations League game.",
+    "verdict": "Republic of Ireland are a tough side to play against and showed their quality against Israel recently. The Boys in Green can take all three points in this Nations League game.",
     "tips": [
       {
         "bookmaker": "Stake.com",
-        "selection": "Over (9/10)",
-        "market": "Total Goals",
-        "odds": 1.9,
+        "selection": "Ireland Win",
+        "market": "Full Time Result",
+        "odds": 2.08,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
         "outcome": null
@@ -30,12 +30,12 @@
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/betting/bet-of-the-day/",
+    "detailsUrl": "https://www.freetips.com/football/republic-of-ireland-vs-israel-predictions-tips-20261002-0008/",
     "status": "pending",
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
+    "scrapedAt": "2026-10-04T11:19:58.766Z"
   },
   {
     "source": "freetips",
@@ -44,40 +44,22 @@
     "competition": "Tennis Bet of the Day",
     "league": "Tennis Bet of the Day",
     "country": null,
-    "homeTeam": "Daniil Medvedev",
-    "awayTeam": "Jan-Lennard Struff",
-    "kickoff": "13:00",
-    "market": "Total Games",
-    "selection": "Over 20.5 Games",
-    "odds": 1.8,
-    "stakeUnits": 3,
-    "previewTitle": "Daniil Medvedev vs Jan-Lennard Struff Betting Tips & Live Stream - Struff to Keep it Close at ATP Beijing",
-    "preview": "Jan-Lennard Struff is being given little chance here despite beating Daniil Medvedev at Wimbledon. The conditions are quicker in Beijing, but I don’t think that is enough reason to take the short odds on Medvedev.",
-    "verdict": "Jan-Lennard Struff is being given little chance here despite beating Daniil Medvedev at Wimbledon. The conditions are quicker in Beijing, but I don’t think that is enough reason to take the short odds on Medvedev.",
+    "homeTeam": "Alexander Zverev",
+    "awayTeam": "Novak Djokovic",
+    "kickoff": "15:00",
+    "market": "Set Betting",
+    "selection": "Zverev Win 2-1",
+    "odds": 4,
+    "stakeUnits": 1,
+    "previewTitle": "Alexander Zverev vs Novak Djokovic Betting Tips & Live Stream - Zverev to end Djokovic’s Unbeaten run in Beijing",
+    "preview": "Alexander Zverev’s serve has been unstoppable in Beijing and Novak Djokovic was pushed all the way in the second round. I don’t think Djokovic will go down easy, but Zverev should have no problems going the distance.",
+    "verdict": "Alexander Zverev’s serve has been unstoppable in Beijing and Novak Djokovic was pushed all the way in the second round. I don’t think Djokovic will go down easy, but Zverev should have no problems going the distance.",
     "tips": [
       {
         "bookmaker": "Stake.com",
-        "selection": "Over 20.5 Games",
-        "market": "Total Games",
-        "odds": 1.8,
-        "units": 3,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Struff +3.5",
-        "market": "Games Handicap",
-        "odds": 2.55,
-        "units": 2,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Over 12.5 Games",
-        "market": "Set 1 Total Games",
-        "odds": 5,
+        "selection": "Zverev Win 2-1",
+        "market": "Set Betting",
+        "odds": 4,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
         "outcome": null
@@ -86,169 +68,12 @@
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/tennis/daniil-medvedev-vs-jan-lennard-struff-tips-live-stream-20261002-0033/",
+    "detailsUrl": "https://www.freetips.com/tennis/alexander-zverev-vs-novak-djokovic-tips-live-stream-20261003-0029/",
     "status": "pending",
     "result": null,
     "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Struff +3.5",
-        "market": "Games Handicap",
-        "odds": 2.55,
-        "stakeUnits": 2,
-        "outcome": null
-      },
-      {
-        "selection": "Over 12.5 Games",
-        "market": "Set 1 Total Games",
-        "odds": 5,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Basketball",
-    "competition": "Basketball",
-    "league": "Basketball",
-    "country": null,
-    "homeTeam": "Brisbane Bullets",
-    "awayTeam": "Tasmania JackJumpers",
-    "kickoff": "32m",
-    "market": "Moneyline",
-    "selection": "Brisbane",
-    "odds": 1.87,
-    "stakeUnits": 3,
-    "previewTitle": "Brisbane Bullets vs Tasmania JackJumpers Tips & Live Stream - Take the Bullets in NBL",
-    "preview": "Back Brisbane to respond with a home victory against Tasmania, with Nate Hinton 10+ rebounds also tipped after his strong start on the glass.",
-    "verdict": "Back Brisbane to respond with a home victory against Tasmania, with Nate Hinton 10+ rebounds also tipped after his strong start on the glass.",
-    "tips": [
-      {
-        "bookmaker": "1xBet",
-        "selection": "Brisbane",
-        "market": "Moneyline",
-        "odds": 1.87,
-        "units": 3,
-        "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Nate Hinton 10+",
-        "market": "Rebounds",
-        "odds": 2.6,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/basketball/brisbane-bullets-vs-tasmania-jackjumpers-tips-20261002-0038/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Nate Hinton 10+",
-        "market": "Rebounds",
-        "odds": 2.6,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Cricket",
-    "competition": "Cricket",
-    "league": "Cricket",
-    "country": null,
-    "homeTeam": "India",
-    "awayTeam": "West Indies 3rd ODI",
-    "kickoff": "1h 32m",
-    "market": "Score Over 25.5 Runs",
-    "selection": "Amir Jangoo",
-    "odds": 1.83,
-    "stakeUnits": 2,
-    "previewTitle": "India vs West Indies 3rd ODI Betting Tips - Gill in smashing ODI form",
-    "preview": "India are huge favourites to win to secure a 3-0 series triumph. Shubman Gill and Kuldeep Yadav are both in incredible form for India, while Amir Jangoo and Alzarri Joseph have performed really well for the visitors.",
-    "verdict": "India are huge favourites to win to secure a 3-0 series triumph. Shubman Gill and Kuldeep Yadav are both in incredible form for India, while Amir Jangoo and Alzarri Joseph have performed really well for the visitors.",
-    "tips": [
-      {
-        "bookmaker": "Planbet",
-        "selection": "Amir Jangoo",
-        "market": "Score Over 25.5 Runs",
-        "odds": 1.83,
-        "units": 2,
-        "betUrl": "https://www.freetips.com/link/6a320699240918101555/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Shubman Gill",
-        "market": "Best India Batter",
-        "odds": 3.2,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "10bet",
-        "selection": "Alzarri Joseph",
-        "market": "Take Over 1.5 Wickets",
-        "odds": 3,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/a82c3234190213122144/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Bc.Game Sport",
-        "selection": "Kuldeep Yadav",
-        "market": "Take Over 2.5 Wickets",
-        "odds": 2.75,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/f56557260105173714/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/cricket/india-vs-west-indies-3rd-odi-betting-tips-20261003-0002/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Shubman Gill",
-        "market": "Best India Batter",
-        "odds": 3.2,
-        "stakeUnits": 1,
-        "outcome": null
-      },
-      {
-        "selection": "Alzarri Joseph",
-        "market": "Take Over 1.5 Wickets",
-        "odds": 3,
-        "stakeUnits": 1,
-        "outcome": null
-      },
-      {
-        "selection": "Kuldeep Yadav",
-        "market": "Take Over 2.5 Wickets",
-        "odds": 2.75,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
+    "extraTips": [],
+    "scrapedAt": "2026-10-04T11:19:58.766Z"
   },
   {
     "source": "freetips",
@@ -257,32 +82,23 @@
     "competition": "ATP Tokyo",
     "league": "ATP Tokyo",
     "country": null,
-    "homeTeam": "Ugo Humbert",
-    "awayTeam": "Jiri Lehecka",
-    "kickoff": "1h 32m",
-    "market": "Sets Handicap",
-    "selection": "Ugo Humbert +1.5",
-    "odds": 1.6,
+    "homeTeam": "Valentin Vacherot",
+    "awayTeam": "Arthur Fils",
+    "kickoff": "1h 30m",
+    "market": "Set Betting",
+    "selection": "Arthur Fils Win 2-0",
+    "odds": 1.73,
     "stakeUnits": 3,
-    "previewTitle": "Ugo Humbert vs Jiri Lehecka Betting Tips & Live Stream - Value on Humbert at ATP Tokyo",
-    "preview": "Jiri Lehecka was involved in a very long match in the first round and Ugo Humbert got his job done in 70 minutes. Coupled with Humbert’s demolition of Lehecka in their only clash, the Frenchman can win once again.",
-    "verdict": "Jiri Lehecka was involved in a very long match in the first round and Ugo Humbert got his job done in 70 minutes. Coupled with Humbert’s demolition of Lehecka in their only clash, the Frenchman can win once again.",
+    "previewTitle": "Valentin Vacherot vs Arthur Fils Betting Tips & Live Stream - Fils to Win in Straight Sets at ATP Tokyo",
+    "preview": "Arthur Fils came into the Japan Open as a Top 10 player and is showing why. Valentin Vacherot has given up 17 break points in Tokyo, Fils to get this one done in straight sets.",
+    "verdict": "Arthur Fils came into the Japan Open as a Top 10 player and is showing why. Valentin Vacherot has given up 17 break points in Tokyo, Fils to get this one done in straight sets.",
     "tips": [
       {
         "bookmaker": "Stake.com",
-        "selection": "Ugo Humbert +1.5",
-        "market": "Sets Handicap",
-        "odds": 1.6,
+        "selection": "Arthur Fils Win 2-0",
+        "market": "Set Betting",
+        "odds": 1.73,
         "units": 3,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Ugo Humbert Win",
-        "market": "Winner",
-        "odds": 2.5,
-        "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
         "outcome": null
       }
@@ -290,300 +106,36 @@
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/tennis/ugo-humbert-vs-jiri-lehecka-tips-live-stream-20261002-0024/",
+    "detailsUrl": "https://www.freetips.com/tennis/valentin-vacherot-vs-arthur-fils-tips-live-stream-20261003-0028/",
     "status": "pending",
     "result": null,
     "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Ugo Humbert Win",
-        "market": "Winner",
-        "odds": 2.5,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Basketball",
-    "competition": "Basketball",
-    "league": "Basketball",
-    "country": null,
-    "homeTeam": "Melbourne United",
-    "awayTeam": "Cairns Taipans",
-    "kickoff": "2h 32m",
-    "market": "Team Total",
-    "selection": "Cairns Under 85.5",
-    "odds": 1.91,
-    "stakeUnits": 3,
-    "previewTitle": "Melbourne United vs Cairns Taipans Tips & Live Stream - Taipans to go down again in NBL",
-    "preview": "Take Melbourne -8.5 if we have to pick a side, but Cairns Under 85.5 team points is the game market we prefer. Josh Oduro 15+ points and Keanu Pinder 7+ rebounds complete the card.",
-    "verdict": "Take Melbourne -8.5 if we have to pick a side, but Cairns Under 85.5 team points is the game market we prefer. Josh Oduro 15+ points and Keanu Pinder 7+ rebounds complete the card.",
-    "tips": [
-      {
-        "bookmaker": "1xBet",
-        "selection": "Cairns Under 85.5",
-        "market": "Team Total",
-        "odds": 1.91,
-        "units": 3,
-        "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Planbet",
-        "selection": "Josh Oduro",
-        "market": "15+ Points",
-        "odds": 1.68,
-        "units": 3,
-        "betUrl": "https://www.freetips.com/link/6a320699240918101555/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Bc.Game Sport",
-        "selection": "Keanu Pinder",
-        "market": "7+ Rebounds",
-        "odds": 1.7,
-        "units": 2,
-        "betUrl": "https://www.freetips.com/link/f56557260105173714/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Melbourne -8.5",
-        "market": "Handicap/Line",
-        "odds": 1.91,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/basketball/melbourne-united-vs-cairns-taipans-tips-20261002-0039/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Josh Oduro",
-        "market": "15+ Points",
-        "odds": 1.68,
-        "stakeUnits": 3,
-        "outcome": null
-      },
-      {
-        "selection": "Keanu Pinder",
-        "market": "7+ Rebounds",
-        "odds": 1.7,
-        "stakeUnits": 2,
-        "outcome": null
-      },
-      {
-        "selection": "Melbourne -8.5",
-        "market": "Handicap/Line",
-        "odds": 1.91,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
+    "extraTips": [],
+    "scrapedAt": "2026-10-04T05:29:35.748Z"
   },
   {
     "source": "freetips",
     "externalId": null,
     "sport": "Esports",
-    "competition": "ESL Pro League Season 24",
-    "league": "ESL Pro League Season 24",
+    "competition": "VALORANT Champions 2026",
+    "league": "VALORANT Champions 2026",
     "country": null,
-    "homeTeam": "Team Falcons",
-    "awayTeam": "TYLOO",
-    "kickoff": "3h 2m",
-    "market": "Map Handicap",
-    "selection": "Team Falcons -1.5 Maps",
-    "odds": 1.5,
-    "stakeUnits": 3,
-    "previewTitle": "Team Falcons vs TYLOO Betting Tips – Team Falcons to Dominate TYLOO at ESL Pro League Season 24",
-    "preview": "Even though Team Falcons have been going through a rough stretch lately, this is still a highly experienced and stacked roster that will be hungry to show something at ESL Pro League.Following a long dry spell, Falcons can’t afford another slip-up, so they should be motivated to deliver. And things will be easy for them at the start as Falcons take on TYLOO, who might be Asia’s best team, but they lack the tactical depth and individual quality to properly challenge any tier-1 team.",
-    "verdict": "Even though Team Falcons have been going through a rough stretch lately, this is still a highly experienced and stacked roster that will be hungry to show something at ESL Pro League.Following a long dry spell, Falcons can’t afford another slip-up, so they should be motivated to deliver. And things will be easy for them at the start as Falcons take on TYLOO, who might be Asia’s best team, but they lack the tactical depth and individual quality to properly challenge any tier-1 team.",
-    "tips": [
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Team Falcons -1.5 Maps",
-        "market": "Map Handicap",
-        "odds": 1.5,
-        "units": 3,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/esports/team-falcons-vs-tyloo-betting-tips-20261002-0025/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Volleyball",
-    "competition": "Asian Games 2026",
-    "league": "Asian Games 2026",
-    "country": null,
-    "homeTeam": "Japan",
-    "awayTeam": "Iran",
-    "kickoff": "3h 22m",
-    "market": "Result",
-    "selection": "Japan Win",
-    "odds": 1.55,
-    "stakeUnits": 3,
-    "previewTitle": "Japan vs Iran Live Stream & Tips – Hosts to Win Gold at the Asian Games 2026",
-    "preview": "Japan defeated Iran when they met in the Volleyball Nations League 2026 in late June and have looked fantastic so far in the tournament. I will back them to secure the gold medal in front of the home crowd.",
-    "verdict": "Japan defeated Iran when they met in the Volleyball Nations League 2026 in late June and have looked fantastic so far in the tournament. I will back them to secure the gold medal in front of the home crowd.",
-    "tips": [
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Japan Win",
-        "market": "Result",
-        "odds": 1.55,
-        "units": 3,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/volleyball/japan-vs-iran-live-stream-20261002-0036/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Football",
-    "competition": "Football",
-    "league": "Football",
-    "country": null,
-    "homeTeam": "South Korea U23",
-    "awayTeam": "Japan U23",
-    "kickoff": "3h 32m",
-    "market": "To Win Final",
-    "selection": "South Korea",
-    "odds": 1.9,
-    "stakeUnits": 3,
-    "previewTitle": "South Korea U23 vs Japan U23 Preview and Betting Tips - Taegeuk Warriors to Win Asian Games Final",
-    "preview": "Both teams are unbeaten in the tournament, although Japan showed some vulnerability in their semi-final clash. South Korea remain perfect and having beaten the Samurai Blue in the last two finals, should have the upper hand once again.",
-    "verdict": "Both teams are unbeaten in the tournament, although Japan showed some vulnerability in their semi-final clash. South Korea remain perfect and having beaten the Samurai Blue in the last two finals, should have the upper hand once again.",
-    "tips": [
-      {
-        "bookmaker": "Stake.com",
-        "selection": "South Korea",
-        "market": "To Win Final",
-        "odds": 1.9,
-        "units": 3,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/football/south-korea-u23-vs-japan-u23-preview-20261001-0028/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Tennis",
-    "competition": "ATP Beijing",
-    "league": "ATP Beijing",
-    "country": null,
-    "homeTeam": "Alexander Zverev",
-    "awayTeam": "Juncheng Shang",
-    "kickoff": "4h 2m",
-    "market": "Total Games",
-    "selection": "Under 19.5 Games",
-    "odds": 2.2,
-    "stakeUnits": 2,
-    "previewTitle": "Alexander Zverev vs Juncheng Shang Betting Tips & Live Stream - Zverev’s Class to Count at ATP Beijing",
-    "preview": "Alexander Zverev is the form player in men’s tennis and should be able to punish Juncheng Shang’s serve. I am expecting a straight sets victory which brings the total games market into play.",
-    "verdict": "Alexander Zverev is the form player in men’s tennis and should be able to punish Juncheng Shang’s serve. I am expecting a straight sets victory which brings the total games market into play.",
-    "tips": [
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Under 19.5 Games",
-        "market": "Total Games",
-        "odds": 2.2,
-        "units": 2,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Under 18.5 Games",
-        "market": "Total Games",
-        "odds": 2.65,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/tennis/alexander-zverev-vs-juncheng-shang-tips-live-stream-20261002-0034/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Under 18.5 Games",
-        "market": "Total Games",
-        "odds": 2.65,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Esports",
-    "competition": "ESL Pro League Season 24",
-    "league": "ESL Pro League Season 24",
-    "country": null,
-    "homeTeam": "PARIVISION",
-    "awayTeam": "Legacy",
-    "kickoff": "4h 2m",
+    "homeTeam": "LOUD",
+    "awayTeam": "Global Esports",
+    "kickoff": "46m",
     "market": "Moneyline",
-    "selection": "PARIVISION To Win",
-    "odds": 1.75,
+    "selection": "LOUD To Win",
+    "odds": 1.72,
     "stakeUnits": 3,
-    "previewTitle": "PARIVISION vs Legacy Betting Tips – PARIVISION To Handle Legacy at ESL Pro League Season 24",
-    "preview": "It is hard to put too much trust in PARIVISION, who have become known as a very volatile team. Meanwhile, Legacy have been showing excellent form lately and are rightly considered one of the strongest CS2 teams in the world.However, the impact of arT’s absence can’t be overstated. He has been the key factor in Legacy’s success this year, and with him out of the picture, the Brazilians will struggle to come close to their old heights.",
-    "verdict": "It is hard to put too much trust in PARIVISION, who have become known as a very volatile team. Meanwhile, Legacy have been showing excellent form lately and are rightly considered one of the strongest CS2 teams in the world.However, the impact of arT’s absence can’t be overstated. He has been the key factor in Legacy’s success this year, and with him out of the picture, the Brazilians will struggle to come close to their old heights.",
+    "previewTitle": "LOUD vs Global Esports Betting Tips – LOUD Can Deal with GE at VALORANT Champions 2026",
+    "preview": "This one is hard to call, as it is a clash between two very unique and strong teams. With Global Esports, you can be sure they’ll have a strategy ready to make the day harder for LOUD, while LOUD are a very experienced roster that can deliver on big stages and has a lot of firepower.No result would be surprising, but with LOUD having lukxo, their ceiling appears higher.",
+    "verdict": "This one is hard to call, as it is a clash between two very unique and strong teams. With Global Esports, you can be sure they’ll have a strategy ready to make the day harder for LOUD, while LOUD are a very experienced roster that can deliver on big stages and has a lot of firepower.No result would be surprising, but with LOUD having lukxo, their ceiling appears higher.",
     "tips": [
       {
         "bookmaker": "Stake.com",
-        "selection": "PARIVISION To Win",
+        "selection": "LOUD To Win",
         "market": "Moneyline",
-        "odds": 1.75,
+        "odds": 1.72,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
         "outcome": null
@@ -592,67 +144,12 @@
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/esports/parivision-vs-legacy-betting-tips-20261002-0027/",
+    "detailsUrl": "https://www.freetips.com/esports/loud-vs-global-esports-betting-tips-20261003-0019/",
     "status": "pending",
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Football",
-    "competition": "Football",
-    "league": "Football",
-    "country": null,
-    "homeTeam": "Chesterfield",
-    "awayTeam": "Tranmere",
-    "kickoff": "4h 32m",
-    "market": "Full Time Result",
-    "selection": "Draw",
-    "odds": 4.2,
-    "stakeUnits": 3,
-    "previewTitle": "Chesterfield vs Tranmere Live Stream & Tips - League Two Draw Has Value",
-    "preview": "Chesterfield will want to keep picking up points at the SMH Group Stadium and Tranmere draw a lot on the road. A League Two draw is the best bet on Saturday.",
-    "verdict": "Chesterfield will want to keep picking up points at the SMH Group Stadium and Tranmere draw a lot on the road. A League Two draw is the best bet on Saturday.",
-    "tips": [
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Draw",
-        "market": "Full Time Result",
-        "odds": 4.2,
-        "units": 3,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Roobet ",
-        "selection": "1-1 Draw",
-        "market": "Correct Score",
-        "odds": 8,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/57a5a0c4260605151656/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/football/chesterfield-vs-tranmere-live-stream-tips-20261001-0027/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [
-      {
-        "selection": "1-1 Draw",
-        "market": "Correct Score",
-        "odds": 8,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
+    "scrapedAt": "2026-10-04T09:14:02.124Z"
   },
   {
     "source": "freetips",
@@ -661,20 +158,752 @@
     "competition": "Basket League",
     "league": "Basket League",
     "country": null,
-    "homeTeam": "Mykonos",
-    "awayTeam": "PAOK",
-    "kickoff": "5h 2m",
-    "market": "Asian Handicap",
-    "selection": "Mykonos +11.5",
-    "odds": 1.9,
+    "homeTeam": "Panathinaikos",
+    "awayTeam": "Vikos",
+    "kickoff": "46m",
+    "market": "Total Points",
+    "selection": "Under 166.5",
+    "odds": 1.83,
     "stakeUnits": 2,
-    "previewTitle": "Mykonos vs PAOK Live Stream & Tips – Handicap in Play in the Basket League",
-    "preview": "Mykonos caused a lot of problems and defeated PAOK at home last season. The visiting side might have fitness problems after playing three games in the last seven days, so a home win with a +11.5 handicap is tipped.",
-    "verdict": "Mykonos caused a lot of problems and defeated PAOK at home last season. The visiting side might have fitness problems after playing three games in the last seven days, so a home win with a +11.5 handicap is tipped.",
+    "previewTitle": "Panathinaikos vs Vikos Live Stream & Tips – Stick to Points in the Basket League",
+    "preview": "Zeljko Obradovic insists on defensive discipline, so it's no surprise Panathinaikos allowed around 72 points per game in the EuroLeague. Vikos might struggle offensively against the big guns, so under 166.5 looks like the best bet.",
+    "verdict": "Zeljko Obradovic insists on defensive discipline, so it's no surprise Panathinaikos allowed around 72 points per game in the EuroLeague. Vikos might struggle offensively against the big guns, so under 166.5 looks like the best bet.",
     "tips": [
       {
         "bookmaker": "Stake.com",
-        "selection": "Mykonos +11.5",
+        "selection": "Under 166.5",
+        "market": "Total Points",
+        "odds": 1.83,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/basketball/panathinaikos-vs-vikos-live-stream-20261003-0027/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-10-04T09:14:02.124Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Basketball",
+    "competition": "Basketball",
+    "league": "Basketball",
+    "country": null,
+    "homeTeam": "Obradoiro",
+    "awayTeam": "Real Madrid",
+    "kickoff": "1h 16m",
+    "market": "Asian Handicap",
+    "selection": "Real Madrid -8.5",
+    "odds": 1.85,
+    "stakeUnits": 2,
+    "previewTitle": "Obradoiro vs Real Madrid Live Stream & Tips – Los Blancos to Cover in ACB Liga",
+    "preview": "Real Madrid are likely to take out their frustrations on newcomers Obradoiro on Sunday in order to boost confidence ahead of super-important EuroLeague games in the upcoming weeks. An away win with a –8.5 handicap is my top pick.",
+    "verdict": "Real Madrid are likely to take out their frustrations on newcomers Obradoiro on Sunday in order to boost confidence ahead of super-important EuroLeague games in the upcoming weeks. An away win with a –8.5 handicap is my top pick.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Real Madrid -8.5",
+        "market": "Asian Handicap",
+        "odds": 1.85,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/basketball/obradoiro-vs-real-madrid-live-stream-20261003-0024/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-10-04T09:14:02.124Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Tennis",
+    "competition": "Tennis",
+    "league": "Tennis",
+    "country": null,
+    "homeTeam": "Karolina Muchova",
+    "awayTeam": "Liudmila Samsonova",
+    "kickoff": "1h 10m",
+    "market": "Result + Total Games",
+    "selection": "Muchova + Over 18.5",
+    "odds": 1.9,
+    "stakeUnits": 2,
+    "previewTitle": "Karolina Muchova vs Liudmila Samsonova Betting Tips & Live Stream – Muchova Backed To Survive A Tough Beijing Test",
+    "preview": "Both Muchova and Samsonova have reached the Beijing final in the past, setting up another competitive meeting. However, Muchova’s recent momentum from the Billie Jean King Cup gives her the edge, while Samsonova’s recent improvement should keep the contest close.",
+    "verdict": "Both Muchova and Samsonova have reached the Beijing final in the past, setting up another competitive meeting. However, Muchova’s recent momentum from the Billie Jean King Cup gives her the edge, while Samsonova’s recent improvement should keep the contest close.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Muchova + Over 18.5",
+        "market": "Result + Total Games",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Over 20.5",
+        "market": "Total Games",
+        "odds": 1.83,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Over 2.5",
+        "market": "Total Sets",
+        "odds": 2.62,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/tennis/karolina-muchova-vs-liudmila-samsonova-betting-tips-20261003-0022/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Over 20.5",
+        "market": "Total Games",
+        "odds": 1.83,
+        "stakeUnits": 2,
+        "outcome": null
+      },
+      {
+        "selection": "Over 2.5",
+        "market": "Total Sets",
+        "odds": 2.62,
+        "stakeUnits": 1,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-10-04T11:19:58.766Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Esports",
+    "competition": "Esports",
+    "league": "Esports",
+    "country": null,
+    "homeTeam": "FUT Esports",
+    "awayTeam": "T1",
+    "kickoff": "1h 40m",
+    "market": "Moneyline",
+    "selection": "FUT Esports To Win",
+    "odds": 1.85,
+    "stakeUnits": 3,
+    "previewTitle": "FUT Esports vs T1 Betting Tips – FUT Tipped To Make it Past T1",
+    "preview": "Stylistically, these two teams are similar as they both like to brawl. Even on paper, they appear equally strong, with little to separate them quality-wise.However, form-wise, FUT Esports have looked better this event, or better said, T1 have looked worse.They could iron out some wrinkles for Sunday’s game, but if T1 do not improve from their performance against JD Gaming, beating FUT will not come easy.",
+    "verdict": "Stylistically, these two teams are similar as they both like to brawl. Even on paper, they appear equally strong, with little to separate them quality-wise.However, form-wise, FUT Esports have looked better this event, or better said, T1 have looked worse.They could iron out some wrinkles for Sunday’s game, but if T1 do not improve from their performance against JD Gaming, beating FUT will not come easy.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "FUT Esports To Win",
+        "market": "Moneyline",
+        "odds": 1.85,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/esports/fut-esports-vs-t1-betting-tips-20261003-0025/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-10-04T11:19:58.766Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "American Football",
+    "competition": "NFL",
+    "league": "NFL",
+    "country": null,
+    "homeTeam": "IND Colts",
+    "awayTeam": "WAS Commanders - London",
+    "kickoff": "2h 10m",
+    "market": "Spread",
+    "selection": "Washington +3.5",
+    "odds": 1.9,
+    "stakeUnits": 4,
+    "previewTitle": "Indianapolis Colts vs Washington Commanders Betting Tips – Commanders To Cover As NFL London Underdog",
+    "preview": "Indianapolis won last weekend, but an ugly, narrow win over Houston does little to instil confidence.This defense has given up a bunch of points and has struggled against the run, so give us the free points and a Commanders team that just hung 33 points on the defending champions.",
+    "verdict": "Indianapolis won last weekend, but an ugly, narrow win over Houston does little to instil confidence.This defense has given up a bunch of points and has struggled against the run, so give us the free points and a Commanders team that just hung 33 points on the defending champions.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Washington +3.5",
+        "market": "Spread",
+        "odds": 1.9,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Over 47.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/nfl/indianapolis-colts-vs-washington-commanders-nfl-betting-tips-20260929-0008/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Over 47.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "stakeUnits": 2,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-10-04T11:19:58.766Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Basketball",
+    "competition": "Basket League",
+    "league": "Basket League",
+    "country": null,
+    "homeTeam": "Iraklis",
+    "awayTeam": "Olympiakos",
+    "kickoff": "3h 10m",
+    "market": "Total Points",
+    "selection": "Over 167.5",
+    "odds": 1.85,
+    "stakeUnits": 2,
+    "previewTitle": "Iraklis vs Olympiakos Live Stream & Tips – High Scoring Clash in the Basket League",
+    "preview": "Olympiakos have been one of the most entertaining teams to watch this season, with their games usually ending with plenty of points. I expect this trend to continue on Sunday against Iraklis, with Over 167.5 points being the best bet.",
+    "verdict": "Olympiakos have been one of the most entertaining teams to watch this season, with their games usually ending with plenty of points. I expect this trend to continue on Sunday against Iraklis, with Over 167.5 points being the best bet.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Over 167.5",
+        "market": "Total Points",
+        "odds": 1.85,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/basketball/iraklis-vs-olympiakos-live-stream-20261003-0026/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-10-04T11:19:58.766Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "UEFA Nations League",
+    "league": "UEFA Nations League",
+    "country": null,
+    "homeTeam": "Kosovo",
+    "awayTeam": "Austria",
+    "kickoff": "4h 40m",
+    "market": "Total Goals",
+    "selection": "Under 2.5 Goals",
+    "odds": 2,
+    "stakeUnits": 2,
+    "previewTitle": "Kosovo vs Austria Tips & Predictions – Cagey Affair Expected in the UEFA Nations League",
+    "preview": "I expect Kosovo to defend much better this time than in the first H2H clash against Austria. Both sides would probably be happy with a draw here, and with that mentality in mind, under 2.5 goals looks like a realistic outcome.",
+    "verdict": "I expect Kosovo to defend much better this time than in the first H2H clash against Austria. Both sides would probably be happy with a draw here, and with that mentality in mind, under 2.5 goals looks like a realistic outcome.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 2.5 Goals",
+        "market": "Total Goals",
+        "odds": 2,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 1.5 Goals",
+        "market": "Total Goals",
+        "odds": 3.4,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/kosovo-vs-austria-tips-20261002-0013/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Under 1.5 Goals",
+        "market": "Total Goals",
+        "odds": 3.4,
+        "stakeUnits": 1,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-10-04T11:19:58.766Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Football",
+    "league": "Football",
+    "country": null,
+    "homeTeam": "Egypt",
+    "awayTeam": "South Africa",
+    "kickoff": "5h 40m",
+    "market": "Both Teams to Score",
+    "selection": "Yes",
+    "odds": 1.93,
+    "stakeUnits": 3,
+    "previewTitle": "Egypt vs South Africa Preview and Betting Tips - Attacks to Shine in Glamour Friendly",
+    "preview": "Egypt and South Africa have shown plenty of attacking quality lately and are coming off impressive one-sided wins. With neither defence looking particularly convincing lately, both teams can be backed to score here.",
+    "verdict": "Egypt and South Africa have shown plenty of attacking quality lately and are coming off impressive one-sided wins. With neither defence looking particularly convincing lately, both teams can be backed to score here.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Yes",
+        "market": "Both Teams to Score",
+        "odds": 1.93,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/egypt-vs-south-africa-preview-20261002-0016/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-10-04T11:19:58.767Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "American Football",
+    "competition": "Philadelphia Eagles Betting Tips",
+    "league": "Philadelphia Eagles Betting Tips",
+    "country": null,
+    "homeTeam": "LA Rams",
+    "awayTeam": "PHI Eagles",
+    "kickoff": "5h 40m",
+    "market": "Spread",
+    "selection": "LA Rams -2.5",
+    "odds": 1.8,
+    "stakeUnits": 4,
+    "previewTitle": "Los Angeles Rams at Philadelphia Eagles Betting Tips – Take Rams & Free Points In NFL Road Trip",
+    "preview": "Los Angeles are not off to a great start and their recent record against the Eagles is bad, but we are going with the Rams here.Matthew Stafford can enjoy plenty of success against a Philly defense that just got picked apart by Case Keenum and the Bears, while their defense puts the clamps on an out-of-sync Eagles offense.",
+    "verdict": "Los Angeles are not off to a great start and their recent record against the Eagles is bad, but we are going with the Rams here.Matthew Stafford can enjoy plenty of success against a Philly defense that just got picked apart by Case Keenum and the Bears, while their defense puts the clamps on an out-of-sync Eagles offense.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "LA Rams -2.5",
+        "market": "Spread",
+        "odds": 1.8,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 44.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/nfl/los-angeles-rams-at-philadelphia-eagles-nfl-betting-tips-20260929-0009/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Under 44.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "stakeUnits": 2,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-10-04T11:19:58.767Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "American Football",
+    "competition": "Cincinnati Bengals Betting Tips",
+    "league": "Cincinnati Bengals Betting Tips",
+    "country": null,
+    "homeTeam": "JAX Jaguars",
+    "awayTeam": "CIN Bengals",
+    "kickoff": "5h 40m",
+    "market": "Spread",
+    "selection": "Cincinnati -2.5",
+    "odds": 1.9,
+    "stakeUnits": 4,
+    "previewTitle": "Jacksonville Jaguars at Cincinnati Bengals Betting Tips – Bengals To Bounce Back In NFL",
+    "preview": "Cincinnati dropped a shootout to the Steelers a week ago, but we do not expect lightning to strike twice.The Bengals can make the most of home advantage here, as Joe Burrow lights up this Jacksonville defense to lead the team to a victory and a cover.",
+    "verdict": "Cincinnati dropped a shootout to the Steelers a week ago, but we do not expect lightning to strike twice.The Bengals can make the most of home advantage here, as Joe Burrow lights up this Jacksonville defense to lead the team to a victory and a cover.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Cincinnati -2.5",
+        "market": "Spread",
+        "odds": 1.9,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Over 51.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/nfl/jacksonville-jaguars-at-cincinnati-bengals-nfl-betting-tips-20260929-0012/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Over 51.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "stakeUnits": 2,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-10-04T11:19:58.767Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "UEFA Nations League",
+    "league": "UEFA Nations League",
+    "country": null,
+    "homeTeam": "Portugal",
+    "awayTeam": "Norway",
+    "kickoff": "7h 25m",
+    "market": "BTTS & Total Goals",
+    "selection": "BTTS Yes & Over 2.5",
+    "odds": 1.9,
+    "stakeUnits": 5,
+    "previewTitle": "Portugal vs Norway Predictions & Betting Tips - High Scoring Match Expected in the UEFA Nations League",
+    "preview": "Portugal had some luck in their victory in Norway and might find it hard to keep a clean sheet here. BTTS is my best bet here with goals on the menu in Porto.",
+    "verdict": "Portugal had some luck in their victory in Norway and might find it hard to keep a clean sheet here. BTTS is my best bet here with goals on the menu in Porto.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS Yes & Over 2.5",
+        "market": "BTTS & Total Goals",
+        "odds": 1.9,
+        "units": 5,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS Yes & Over 3.5",
+        "market": "BTTS & Total Goals",
+        "odds": 2.5,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Erling Haaland",
+        "market": "Anytime Goalscorer",
+        "odds": 2.2,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Erling Haaland",
+        "market": "First Goalscorer",
+        "odds": 5,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/portugal-vs-norway-predictions-betting-tips-20261003-0021/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "BTTS Yes & Over 3.5",
+        "market": "BTTS & Total Goals",
+        "odds": 2.5,
+        "stakeUnits": 2,
+        "outcome": null
+      },
+      {
+        "selection": "Erling Haaland",
+        "market": "Anytime Goalscorer",
+        "odds": 2.2,
+        "stakeUnits": 2,
+        "outcome": null
+      },
+      {
+        "selection": "Erling Haaland",
+        "market": "First Goalscorer",
+        "odds": 5,
+        "stakeUnits": 1,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-10-04T11:19:58.767Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "UEFA Nations League",
+    "league": "UEFA Nations League",
+    "country": null,
+    "homeTeam": "Netherlands",
+    "awayTeam": "Serbia",
+    "kickoff": "7h 25m",
+    "market": "To Score in Both Halves",
+    "selection": "Netherlands",
+    "odds": 1.7,
+    "stakeUnits": 3,
+    "previewTitle": "Netherlands vs Serbia Tips & Predictions – Oranje's Offense to Shine in the UEFA Nations League",
+    "preview": "Serbia should have conceded way more than six goals in their three UNL games so far. I am predicting another poor defensive performance for them against the Netherlands on Sunday.",
+    "verdict": "Serbia should have conceded way more than six goals in their three UNL games so far. I am predicting another poor defensive performance for them against the Netherlands on Sunday.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Netherlands",
+        "market": "To Score in Both Halves",
+        "odds": 1.7,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Netherlands",
+        "market": "To Win Both Halves",
+        "odds": 2.2,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/netherlands-vs-serbia-tips-20261002-0014/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Netherlands",
+        "market": "To Win Both Halves",
+        "odds": 2.2,
+        "stakeUnits": 2,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-10-04T11:19:58.767Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "UEFA Nations League",
+    "league": "UEFA Nations League",
+    "country": null,
+    "homeTeam": "Greece",
+    "awayTeam": "Germany",
+    "kickoff": "7h 25m",
+    "market": "Double Chance",
+    "selection": "Greece",
+    "odds": 2,
+    "stakeUnits": 2,
+    "previewTitle": "Greece vs Germany Tips & Predictions – Hellas Underestimated in the UEFA Nations League",
+    "preview": "Greek football is currently going through something of a renaissance, with a number of highly talented players emerging in recent years. I expect them to trouble Germany once again and secure at least a point at home.",
+    "verdict": "Greek football is currently going through something of a renaissance, with a number of highly talented players emerging in recent years. I expect them to trouble Germany once again and secure at least a point at home.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Greece",
+        "market": "Double Chance",
+        "odds": 2,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/greece-vs-germany-tips-20261002-0015/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-10-04T11:19:58.767Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "UEFA Nations League",
+    "league": "UEFA Nations League",
+    "country": null,
+    "homeTeam": "Wales",
+    "awayTeam": "Denmark",
+    "kickoff": "7h 25m",
+    "market": "BTTS",
+    "selection": "BTTS Yes",
+    "odds": 1.67,
+    "stakeUnits": 4,
+    "previewTitle": "Wales vs Denmark Predictions & Betting Tips - Wales to Avoid Defeat in the UEFA Nations League",
+    "preview": "Denmark have a stronger squad but Wales are a tough nut to crack in Cardiff. I am expecting a close clash to end in a 2-2 draw.",
+    "verdict": "Denmark have a stronger squad but Wales are a tough nut to crack in Cardiff. I am expecting a close clash to end in a 2-2 draw.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS Yes",
+        "market": "BTTS",
+        "odds": 1.67,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Draw",
+        "market": "Full Time Result",
+        "odds": 3.7,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "2-2 Draw",
+        "market": "Correct Score",
+        "odds": 13,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/wales-vs-denmark-predictions-tips-20261003-0023/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Draw",
+        "market": "Full Time Result",
+        "odds": 3.7,
+        "stakeUnits": 2,
+        "outcome": null
+      },
+      {
+        "selection": "2-2 Draw",
+        "market": "Correct Score",
+        "odds": 13,
+        "stakeUnits": 1,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-10-04T11:19:58.767Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Basketball",
+    "competition": "Super Lig",
+    "league": "Super Lig",
+    "country": null,
+    "homeTeam": "Fenerbahce",
+    "awayTeam": "Korfez",
+    "kickoff": "1h 10m",
+    "market": "Asian Handicap",
+    "selection": "Fenerbahce -11.5",
+    "odds": 1.9,
+    "stakeUnits": 2,
+    "previewTitle": "Fenerbahce vs Korfez Live Stream & Tips – Hosts to Cover in the Super Lig",
+    "preview": "Fenerbahce's performances in the EuroLeague have been fantastic, and even though they had two games this week on the big scene, I expect them to come out very motivated to make up for last weekend's loss to Bahcesehir. A home win with a –11.5 handicap is my main pick here.",
+    "verdict": "Fenerbahce's performances in the EuroLeague have been fantastic, and even though they had two games this week on the big scene, I expect them to come out very motivated to make up for last weekend's loss to Bahcesehir. A home win with a –11.5 handicap is my main pick here.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Fenerbahce -11.5",
         "market": "Asian Handicap",
         "odds": 1.9,
         "units": 2,
@@ -685,45 +914,36 @@
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/basketball/mykonos-vs-paok-live-stream-20261002-0035/",
+    "detailsUrl": "https://www.freetips.com/basketball/fenerbahce-vs-korfez-live-stream-20261004-0001/",
     "status": "pending",
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
+    "scrapedAt": "2026-10-04T11:19:58.766Z"
   },
   {
     "source": "freetips",
     "externalId": null,
-    "sport": "Tennis",
-    "competition": "Tennis",
-    "league": "Tennis",
+    "sport": "Basketball",
+    "competition": "LKL",
+    "league": "LKL",
     "country": null,
-    "homeTeam": "Elena Rybakina",
-    "awayTeam": "Alina Charaeva",
-    "kickoff": "5h 32m",
-    "market": "Total Games",
-    "selection": "Under 19.5",
-    "odds": 1.46,
+    "homeTeam": "Zalgiris",
+    "awayTeam": "Lietkabelis",
+    "kickoff": "2h 40m",
+    "market": "Asian Handicap",
+    "selection": "Lietkabelis +18.5",
+    "odds": 1.9,
     "stakeUnits": 2,
-    "previewTitle": "Elena Rybakina vs Alina Charaeva Betting Tips & Live Stream – Rybakina Looks To Dominate Her Beijing Test",
-    "preview": "Charaeva has made steady progress on tour in recent months, but her current level and overall game are unlikely to be enough to trouble Rybakina. The Kazakh enters as the heavy favourite to come through this clash.",
-    "verdict": "Charaeva has made steady progress on tour in recent months, but her current level and overall game are unlikely to be enough to trouble Rybakina. The Kazakh enters as the heavy favourite to come through this clash.",
+    "previewTitle": "Zalgiris vs Lietkabelis Live Stream & Tips – Handicap in Play in the LKL",
+    "preview": "Zalgiris are likely to rest their star players here to preserve fitness for the next EuroLeague clash, which will be super important as they look to put an end to their two-game losing streak. Lietkabelis have caused trouble for the champions in the recent past, so an away win with a +18.5 handicap is my top selection.",
+    "verdict": "Zalgiris are likely to rest their star players here to preserve fitness for the next EuroLeague clash, which will be super important as they look to put an end to their two-game losing streak. Lietkabelis have caused trouble for the champions in the recent past, so an away win with a +18.5 handicap is my top selection.",
     "tips": [
       {
         "bookmaker": "Stake.com",
-        "selection": "Under 19.5",
-        "market": "Total Games",
-        "odds": 1.46,
-        "units": 2,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Rybakina -5.5",
-        "market": "Handicap Games",
-        "odds": 1.41,
+        "selection": "Lietkabelis +18.5",
+        "market": "Asian Handicap",
+        "odds": 1.9,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
         "outcome": null
@@ -732,45 +952,55 @@
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/tennis/elena-rybakina-vs-alina-charaeva-betting-tips-20261002-0023/",
+    "detailsUrl": "https://www.freetips.com/basketball/zalgiris-vs-lietkabelis-live-stream-20261004-0002/",
     "status": "pending",
     "result": null,
     "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Rybakina -5.5",
-        "market": "Handicap Games",
-        "odds": 1.41,
-        "stakeUnits": 2,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
+    "extraTips": [],
+    "scrapedAt": "2026-10-04T11:19:58.766Z"
   },
   {
     "source": "freetips",
     "externalId": null,
     "sport": "Football",
-    "competition": "UEFA Nations League",
-    "league": "UEFA Nations League",
+    "competition": "Football",
+    "league": "Football",
     "country": null,
-    "homeTeam": "Finland",
-    "awayTeam": "Albania",
-    "kickoff": "6h 2m",
-    "market": "Full-Time Result",
-    "selection": "Albania Win",
-    "odds": 2.8,
-    "stakeUnits": 2,
-    "previewTitle": "Finland vs Albania Tips & Predictions – Visitors Underestimated in the UEFA Nations League",
-    "preview": "Finland failed to beat underdog Belarus earlier this week, while their last good result in competitive environment was 12 months ago. I am backing in-form Albania to win here.",
-    "verdict": "Finland failed to beat underdog Belarus earlier this week, while their last good result in competitive environment was 12 months ago. I am backing in-form Albania to win here.",
+    "homeTeam": "Girona",
+    "awayTeam": "Mallorca",
+    "kickoff": "7h 40m",
+    "market": "Both Teams to Score",
+    "selection": "BTTS Yes",
+    "odds": 1.75,
+    "stakeUnits": 3,
+    "previewTitle": "Girona vs Mallorca Tips & Live Stream – Points Shared in Segunda Division",
+    "preview": "These two teams enter this clash with identical records this season. I am predicting a close encounter to end without a winner.",
+    "verdict": "These two teams enter this clash with identical records this season. I am predicting a close encounter to end without a winner.",
     "tips": [
       {
         "bookmaker": "Stake.com",
-        "selection": "Albania Win",
+        "selection": "BTTS Yes",
+        "market": "Both Teams to Score",
+        "odds": 1.75,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Draw",
         "market": "Full-Time Result",
-        "odds": 2.8,
+        "odds": 3.3,
         "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "1-1 Draw",
+        "market": "Correct Score",
+        "odds": 6,
+        "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
         "outcome": null
       }
@@ -778,311 +1008,64 @@
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/football/finland-vs-albania-tips-20261001-0031/",
+    "detailsUrl": "https://www.freetips.com/football/girona-vs-mallorca-tips-20261002-0012/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Draw",
+        "market": "Full-Time Result",
+        "odds": 3.3,
+        "stakeUnits": 2,
+        "outcome": null
+      },
+      {
+        "selection": "1-1 Draw",
+        "market": "Correct Score",
+        "odds": 6,
+        "stakeUnits": 1,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-10-04T11:19:58.767Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Football",
+    "league": "Football",
+    "country": null,
+    "homeTeam": "Morocco",
+    "awayTeam": "Mali",
+    "kickoff": "7h 40m",
+    "market": "To Win",
+    "selection": "Morocco",
+    "odds": 1.55,
+    "stakeUnits": 4,
+    "previewTitle": "Morocco vs Mali Preview and Betting Tips - Atlas Lions to Show Quality in International Friendly",
+    "preview": "Morocco have looked almost unstoppable lately and are particularly tough to face on home soil. They should have the upper hand over Mali, who often find things difficult on their travels.",
+    "verdict": "Morocco have looked almost unstoppable lately and are particularly tough to face on home soil. They should have the upper hand over Mali, who often find things difficult on their travels.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Morocco",
+        "market": "To Win",
+        "odds": 1.55,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/morocco-vs-mali-preview-20261002-0018/",
     "status": "pending",
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Ice Hockey",
-    "competition": "Ice Hockey",
-    "league": "Ice Hockey",
-    "country": null,
-    "homeTeam": "Vaxjo Lakers HC",
-    "awayTeam": "Rogle BK",
-    "kickoff": "6h 17m",
-    "market": "Game Total",
-    "selection": "Over 5.5",
-    "odds": 2.2,
-    "stakeUnits": 3,
-    "previewTitle": "Växjö Lakers vs Rögle BK SHL Predictions & Betting Tips - More Goal Chaos at Vida Arena?",
-    "preview": "Over 5.5 total goals is our main selection, with both Växjö and Rögle over 2.5 team goals the more aggressive play on another wild Lakers contest. Olivier Nadeau anytime goalscorer and Lucas Elvenes 2+ points complete the card.",
-    "verdict": "Over 5.5 total goals is our main selection, with both Växjö and Rögle over 2.5 team goals the more aggressive play on another wild Lakers contest. Olivier Nadeau anytime goalscorer and Lucas Elvenes 2+ points complete the card.",
-    "tips": [
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Over 5.5",
-        "market": "Game Total",
-        "odds": 2.2,
-        "units": 3,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Both Teams",
-        "market": "To Score Over 2.5 Goals",
-        "odds": 3.5,
-        "units": 2,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Lucas Elvernes",
-        "market": "2+ Points",
-        "odds": 3.55,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Olivier Nadeau",
-        "market": "Anytime Goal Scorer",
-        "odds": 3.1,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/ice-hockey/vaxjo-lakers-vs-rogle-bk-shl-predictions-betting-tips-20261002-0009/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Both Teams",
-        "market": "To Score Over 2.5 Goals",
-        "odds": 3.5,
-        "stakeUnits": 2,
-        "outcome": null
-      },
-      {
-        "selection": "Lucas Elvernes",
-        "market": "2+ Points",
-        "odds": 3.55,
-        "stakeUnits": 1,
-        "outcome": null
-      },
-      {
-        "selection": "Olivier Nadeau",
-        "market": "Anytime Goal Scorer",
-        "odds": 3.1,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Ice Hockey",
-    "competition": "Ice Hockey",
-    "league": "Ice Hockey",
-    "country": null,
-    "homeTeam": "CSKA Moscow",
-    "awayTeam": "Dynamo Moscow",
-    "kickoff": "7h 2m",
-    "market": "Money Line",
-    "selection": "CSKA Moscow",
-    "odds": 1.55,
-    "stakeUnits": 3,
-    "previewTitle": "CSKA Moscow vs Dynamo Moscow Predictions & Betting Tips - CSKA to Extend Winning Run",
-    "preview": "Back CSKA Moscow to win including overtime and shootouts, Dynamo Moscow under 2.5 team goals and CSKA Moscow to score first.",
-    "verdict": "Back CSKA Moscow to win including overtime and shootouts, Dynamo Moscow under 2.5 team goals and CSKA Moscow to score first.",
-    "tips": [
-      {
-        "bookmaker": "Stake.com",
-        "selection": "CSKA Moscow",
-        "market": "Money Line",
-        "odds": 1.55,
-        "units": 3,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Dynamo Under 2.5",
-        "market": "Team Total",
-        "odds": 1.48,
-        "units": 2,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "CSKA Moscow",
-        "market": "To Score First",
-        "odds": 1.68,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/ice-hockey/cska-moscow-vs-dynamo-moscow-predictions-betting-tips-20261002-0007/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Dynamo Under 2.5",
-        "market": "Team Total",
-        "odds": 1.48,
-        "stakeUnits": 2,
-        "outcome": null
-      },
-      {
-        "selection": "CSKA Moscow",
-        "market": "To Score First",
-        "odds": 1.68,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Ice Hockey",
-    "competition": "Ice Hockey",
-    "league": "Ice Hockey",
-    "country": null,
-    "homeTeam": "Saturday SHL Best Bets",
-    "awayTeam": "October 3",
-    "kickoff": "8h 50m",
-    "market": "Handicap/Line",
-    "selection": "Färjestad -1.5",
-    "odds": 1.9,
-    "stakeUnits": 1,
-    "previewTitle": "Saturday SHL Best Bets & Predictions - Back Färjestad to Win Big",
-    "preview": "We're backing Frölunda Over 3.5 Team Goals, Färjestad -1.5 and Björklöven Over 2.5 Team Goals on Saturday.",
-    "verdict": "We're backing Frölunda Over 3.5 Team Goals, Färjestad -1.5 and Björklöven Over 2.5 Team Goals on Saturday.",
-    "tips": [
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Färjestad -1.5",
-        "market": "Handicap/Line",
-        "odds": 1.9,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Frölunda Over 3.5",
-        "market": "Team Total",
-        "odds": 2.1,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Björklöven Over 2.5",
-        "market": "Team Total",
-        "odds": 1.85,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/ice-hockey/saturday-shl-best-bets-predictions-20261002-0010/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Frölunda Over 3.5",
-        "market": "Team Total",
-        "odds": 2.1,
-        "stakeUnits": 1,
-        "outcome": null
-      },
-      {
-        "selection": "Björklöven Over 2.5",
-        "market": "Team Total",
-        "odds": 1.85,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T05:10:09.290Z"
-  },
-  {
-    "source": "freetips",
-    "externalId": null,
-    "sport": "Ice Hockey",
-    "competition": "Ice Hockey",
-    "league": "Ice Hockey",
-    "country": null,
-    "homeTeam": "Saturday SHL Best Bets",
-    "awayTeam": "October 3",
-    "kickoff": "7h 2m",
-    "market": "Team Total",
-    "selection": "Frölunda Over 3.5",
-    "odds": 2.1,
-    "stakeUnits": 1,
-    "previewTitle": "Saturday SHL Best Bets & Predictions - Back Färjestad to Win Big",
-    "preview": "We're backing Frölunda Over 3.5 Team Goals, Färjestad -1.5 and Björklöven Over 2.5 Team Goals on Saturday.",
-    "verdict": "We're backing Frölunda Over 3.5 Team Goals, Färjestad -1.5 and Björklöven Over 2.5 Team Goals on Saturday.",
-    "tips": [
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Frölunda Over 3.5",
-        "market": "Team Total",
-        "odds": 2.1,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Färjestad -1.5",
-        "market": "Handicap/Line",
-        "odds": 1.9,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      },
-      {
-        "bookmaker": "Stake.com",
-        "selection": "Björklöven Over 2.5",
-        "market": "Team Total",
-        "odds": 1.85,
-        "units": 1,
-        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
-      }
-    ],
-    "analytics": null,
-    "confidenceIndex": null,
-    "predictedScore": null,
-    "detailsUrl": "https://www.freetips.com/ice-hockey/saturday-shl-best-bets-predictions-20261002-0010/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
-    "extraTips": [
-      {
-        "selection": "Färjestad -1.5",
-        "market": "Handicap/Line",
-        "odds": 1.9,
-        "stakeUnits": 1,
-        "outcome": null
-      },
-      {
-        "selection": "Björklöven Over 2.5",
-        "market": "Team Total",
-        "odds": 1.85,
-        "stakeUnits": 1,
-        "outcome": null
-      }
-    ],
-    "scrapedAt": "2026-10-03T06:58:17.161Z"
+    "scrapedAt": "2026-10-04T11:19:58.767Z"
   }
 ]

@@ -25,7 +25,11 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       auth.clear();
-      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+      if (
+        typeof window !== "undefined" &&
+        (window.location.pathname.startsWith("/admin") ||
+          window.location.pathname.startsWith("/profile"))
+      ) {
         window.location.href = "/login";
       }
     }

@@ -9,11 +9,14 @@ import { formatTipChannelCard, formatFreeTipChannelCard } from "../../lib/tipCha
 const PAGE_SIZE = 20;
 const getTodayDate = () => new Date().toISOString().slice(0, 10);
 
+// Default to today; when the API has no data for today it falls back to the most
+// recent day that has records, so switching to another date shows real data.
 const createInitialFilters = () => ({
   sport: "",
   tier: "free",
   day: getTodayDate(),
   search: "",
+  outcome: "",
 });
 
 export default function ArchivePage() {
@@ -36,6 +39,22 @@ export default function ArchivePage() {
           limit: PAGE_SIZE,
         });
         if (active) setArchive(response?.tips || { data: [], pagination: { page: 1, pages: 0, total: 0 }, sports: [], tiers: [] });
+
+          // When the selected day has no records, fall back to the most recent
+          // day the API reports so the archive is not blank on first load.
+          const total = response?.tips?.pagination?.total ?? 0;
+          if (total === 0 && filters.day && !filters.from && !filters.to) {
+            try {
+              const latest = await tipsApi.getArchive({ limit: 1 });
+              const latestDay = latest?.tips?.day || null;
+              if (latestDay && latestDay !== filters.day) {
+                setFilters((current) => ({ ...current, day: latestDay }));
+                return;
+              }
+            } catch {
+              // Keep the empty state when the fallback lookup fails.
+            }
+          }
       } catch (requestError) {
         if (active) {
           setArchive({ data: [], pagination: { page: 1, pages: 0, total: 0 }, sports: [], tierSports: {}, tiers: [] });

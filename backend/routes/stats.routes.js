@@ -6,13 +6,13 @@ const authorizeAdmin = require("../middleware/authorize");
 
 const statsRouter = Router();
 
-// Overall API performance
+// Get the overall performance overview
 statsRouter.get("/", statsController.getOverview);
 
-// Admin application usage
+// Get application usage for admins
 statsRouter.get("/usage", authenticateJWT, authorizeAdmin, statsController.getUsageStats);
 
-// Time-based performance
+// Get performance for fixed time periods
 statsRouter.get("/today", statsController.getTodayStats);
 statsRouter.get("/week", statsController.getWeeklyStats);
 statsRouter.get("/14-days", statsController.getFourteenDayStats);
@@ -20,13 +20,12 @@ statsRouter.get("/month", statsController.getMonthlyStats);
 statsRouter.get("/year", statsController.getYearlyStats);
 statsRouter.get("/all-time", statsController.getAllTimeStats);
 
-// Product performance
+// Get performance per product, requiring login for paid products
 statsRouter.get("/free", statsController.getFreeStats);
-
 statsRouter.get("/vip", authenticateJWT, statsController.getVipStats);
 statsRouter.get("/maxbet", authenticateJWT, statsController.getMaxbetStats);
 
-// Product performance by period
+// Get product performance for weekly and monthly periods
 statsRouter.get("/free/week", statsController.getFreeWeeklyStats);
 statsRouter.get("/free/month", statsController.getFreeMonthlyStats);
 statsRouter.get("/vip/week", authenticateJWT, statsController.getVipWeeklyStats);
@@ -34,36 +33,36 @@ statsRouter.get("/vip/month", authenticateJWT, statsController.getVipMonthlyStat
 statsRouter.get("/maxbet/week", authenticateJWT, statsController.getMaxbetWeeklyStats);
 statsRouter.get("/maxbet/month", authenticateJWT, statsController.getMaxbetMonthlyStats);
 
-// Results and effectiveness
+// Get results filtered by outcome
 statsRouter.get("/results", statsController.getResults);
 statsRouter.get("/wins", statsController.getWins);
 statsRouter.get("/losses", statsController.getLosses);
 statsRouter.get("/pending", statsController.getPending);
 
-// Performance metrics
+// Get performance metrics
 statsRouter.get("/win-rate", statsController.getWinRate);
 statsRouter.get("/roi", statsController.getRoi);
 statsRouter.get("/odds", statsController.getOddsStats);
 statsRouter.get("/stakes", statsController.getStakeStats);
 
-// Performance by category
+// Get performance grouped by category
 statsRouter.get("/sports", statsController.getSportStats);
 statsRouter.get("/markets", statsController.getMarketStats);
 statsRouter.get("/competitions", statsController.getCompetitionStats);
 statsRouter.get("/sources", authenticateJWT, authorizeAdmin, statsController.getSourceStats);
 
-// API activity and tip volume
+// Get tip volume and activity
 statsRouter.get("/volume", statsController.getVolumeStats);
 statsRouter.get("/scraped", statsController.getScrapedStats);
 statsRouter.get("/published", statsController.getPublishedStats);
 
-// Effectiveness reports
+// Get performance reports
 statsRouter.get("/report", statsController.getPerformanceReport);
 statsRouter.get("/report/weekly", statsController.getWeeklyReport);
 statsRouter.get("/report/monthly", statsController.getMonthlyReport);
 statsRouter.get("/report/yearly", statsController.getYearlyReport);
 
-// Authenticated user performance
+// Get performance for products the current user can access
 statsRouter.get("/my-access", authenticateJWT, statsController.getMyAccessStats);
 
 module.exports = statsRouter;

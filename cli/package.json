@@ -9,7 +9,10 @@
     "test:premium-source": "node tests/premium.service.test.js",
     "test:settlement": "node tests/settlement.test.js",
     "expertise": "node orchestrator/run-freetips.js --skip-settlement-tests && node services/app.js",
-    "settlement": "node settlement/app.js"
+    "settlement": "node settlement/app.js",
+    "sync": "node sync.js --target=local",
+    "sync:prod": "node sync.js --target=production",
+    "sync:dry": "node sync.js --target=local --dry-run"
   },
   "dependencies": {
     "axios": "^1.19.0",

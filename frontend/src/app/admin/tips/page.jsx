@@ -75,7 +75,25 @@ export default function AdminTipsPage() {
   const handleCreateTip = async (e) => {
     e.preventDefault();
     try {
-      await adminApi.createTip(createForm);
+      let homeTeam = createForm.homeTeam;
+      let awayTeam = createForm.awayTeam;
+      if (!homeTeam && !awayTeam && createForm.teams) {
+        const parts = createForm.teams.split(/\s+(?:vs\.?|v|-)\s+/i);
+        if (parts.length >= 2) {
+          homeTeam = parts[0].trim();
+          awayTeam = parts[1].trim();
+        } else {
+          homeTeam = createForm.teams.trim();
+        }
+      }
+
+      await adminApi.createTip({
+        ...createForm,
+        source: createForm.source || "MANUAL",
+        homeTeam: homeTeam || undefined,
+        awayTeam: awayTeam || undefined,
+        odds: Number(createForm.odds) || 1.85,
+      });
       toast.success("Tip created successfully");
       setCreateModalOpen(false);
       loadData();
@@ -88,12 +106,27 @@ export default function AdminTipsPage() {
     e.preventDefault();
     if (!editForm) return;
     try {
-      await adminApi.updateTip(editForm.id, editForm);
+      let homeTeam = editForm.homeTeam;
+      let awayTeam = editForm.awayTeam;
+      if (editForm.teams && (!homeTeam || !awayTeam)) {
+        const parts = editForm.teams.split(/\s+(?:vs\.?|v|-)\s+/i);
+        if (parts.length >= 2) {
+          homeTeam = parts[0].trim();
+          awayTeam = parts[1].trim();
+        }
+      }
+
+      await adminApi.updateTip(editForm.id, {
+        ...editForm,
+        homeTeam: homeTeam || undefined,
+        awayTeam: awayTeam || undefined,
+        odds: editForm.odds ? Number(editForm.odds) : undefined,
+      });
       toast.success("Tip updated successfully");
       setEditModalOpen(false);
       loadData();
     } catch (err) {
-      toast.error("Failed updating tip");
+      toast.error(err.response?.data?.message || "Failed updating tip");
     }
   };
 
@@ -239,7 +272,7 @@ export default function AdminTipsPage() {
   };
 
   const filteredTips = tips.filter((t) => {
-    const matchStr = `${t.teams} ${t.homeTeam} ${t.awayTeam} ${t.competition} ${t.selection}`.toLowerCase();
+    const matchStr = `${t.teams || ""} ${t.homeTeam || ""} ${t.awayTeam || ""} ${t.competition || ""} ${t.selection || ""}`.toLowerCase();
     const matchesSearch = matchStr.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || (t.status || "PUBLISHED") === statusFilter;
     return matchesSearch && matchesStatus;

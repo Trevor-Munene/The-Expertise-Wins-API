@@ -1,8 +1,8 @@
-# 🏃 Running The Expertise Wins API
+# 🏃 Running The Expertise Wins
 
-This is the **CLI operator's runbook**. The repository also contains a backend API and a frontend; their setup is documented in `backend/README.md` and `frontend/README.md`.
+This is the **operator's runbook** for the whole workspace. Package-specific detail lives in [`packages/cli.md`](./packages/cli.md), [`packages/backend.md`](./packages/backend.md), and [`packages/frontend.md`](./packages/frontend.md).
 
-> **Where this fits:** `README.md` explains *what* the project is and *why*. `Roadmap.md` explains *where it's going*. **This file explains how to actually run it.**
+> **Where this fits:** the root [`README.md`](../README.md) explains what the project is and why it exists. [`roadmap.md`](./roadmap.md) explains where it's going. **This file explains how to actually run it.**
 
 ---
 
@@ -14,6 +14,8 @@ The CLI has two jobs:
 2. **Settle** yesterday's/today's results from input you paste in.
 
 The current CLI loop is **produce → publish manually → paste marked results → settle**. It writes local JSON; it does not publish to Telegram or send data to the API.
+
+> **The CLI is not the only way to get data into the web app.** The backend seed imports the CLI's dated JSON dumps into PostgreSQL, and the Next.js frontend reads the API. To get live data on the web pages, you need the database seeded — see the database sections below.
 
 ---
 
@@ -41,15 +43,17 @@ docker compose run --rm app npm run --prefix backend seed:check
 docker compose up -d app
 ```
 
-The first `docker compose run app` builds the shared development image, including frontend dependencies; that initial build can take a few minutes. Subsequent commands reuse the image. Once the API is running at `http://localhost:3180`, sign up the configured email through `POST /api/auth/register` with a username and the password from `backend/.env`. Then import the nine dated dumps and promote that account:
+The first `docker compose run app` builds the shared development image, including frontend dependencies; that initial build can take a few minutes. Subsequent commands reuse the image. Once the API is running at `http://localhost:3180`, sign up the configured email through `POST /api/auth/register` with a username and the password from `backend/.env`. Then import the dated dumps and promote that account:
 
 ```powershell
 docker compose run --rm app npm run --prefix backend seed
 ```
 
-The seed imports 271 historical tips from the current nine dated dumps, creates missing Free/VIP/MaxBet products, and assigns each tip to a published tier based on the CLI classification rules. Free football is public; VIP and MaxBet lists require access. The seed is safe to rerun and preserves already-settled outcomes. It promotes the existing `ADMIN_EMAIL` account without changing its password. If no account exists, it creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. The seeded database remains in the named `postgres_data` volume when containers stop.
+The seed imports the historical tips from the current 10 dated dumps, creates missing Free/VIP/MaxBet products, and assigns each tip to a published tier based on the CLI classification rules. The 10 dumps hold **288 tip records**. Free football is public; VIP and MaxBet lists require access. The seed is safe to rerun and preserves already-settled outcomes. It promotes the existing `ADMIN_EMAIL` account without changing its password. If no account exists, it creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. The seeded database remains in the named `postgres_data` volume when containers stop.
 
-The API health endpoint is `http://localhost:3180/`; the frontend is at `http://localhost:3181` after the app service starts. See [backend/README.md](backend/README.md) for host-based PostgreSQL setup and known API authorization gaps.
+> Prefer `npm run sync` over calling the seed directly — see [Syncing the CLI dumps to a database](#syncing-the-cli-dumps-to-a-database).
+
+The API health endpoint is `http://localhost:3180/`; the frontend is at `http://localhost:3181` after the app service starts. See [`packages/backend.md`](./packages/backend.md) for host-based PostgreSQL setup and known API authorization gaps.
 
 The first time you run the CLI, install its dependencies into the persistent Docker volume, then run its tests:
 
@@ -75,7 +79,48 @@ docker compose down
 
 To also erase PostgreSQL data and dependency/cache volumes, use `docker compose down --volumes`. This is destructive and resets the isolated environment.
 
-Do not expose the API publicly yet: admin routes currently authenticate requests without enforcing the `ADMIN` role, and several tip routes still need stricter access controls. This does not prevent local route testing. See [backend/README.md](backend/README.md) for the current readiness notes.
+Do not expose the API publicly yet: tip create/update/result/delete routes accept any authenticated JWT without enforcing role or ownership, and several tip routes still need stricter access controls. This does not prevent local route testing. See [`packages/backend.md`](./packages/backend.md) for the current readiness notes.
+
+## Host-based web development (API + frontend)
+
+You can run PostgreSQL in Docker while running the API and frontend directly on the host. This is the path verified on 2026-10-04 and is the quickest way to iterate on the web app.
+
+```powershell
+# 1. Start only the database in Docker
+docker compose up -d db
+
+# 2. Create env files
+Copy-Item backend/.env.example backend/.env
+Copy-Item frontend/.env.example frontend/.env
+```
+
+Then edit the two files so they agree with each other:
+
+- `backend/.env` → set `DATABASE_URL="postgresql://tew:tew_local_dev@localhost:55432/expertise_wins?schema=public"`, set a strong `JWT_SECRET`, keep `PORT=3000`, and set `CORS_ORIGIN="http://localhost:3001,http://localhost:3181"`.
+- `frontend/.env` → set `NEXT_PUBLIC_API_URL=http://localhost:3000/api` and `NEXT_PUBLIC_APP_URL=http://localhost:3001`.
+
+> **Do not skip this.** `.env.example` ships `postgresql://USER:PASSWORD@...` placeholders. Starting the API without a real `backend/.env` makes **every** route return HTTP 500, and a frontend pointed at the wrong port renders pages with no data. Both failures look identical to a broken frontend.
+
+Then install, migrate, seed, and run:
+
+```powershell
+npm install
+npm install --prefix backend
+npm install --prefix frontend
+
+npm run --prefix backend prisma:generate
+npm run --prefix backend prisma:migrate
+npm run --prefix backend seed:check
+npm run --prefix backend seed
+
+npm run dev
+```
+
+The API is then at `http://localhost:3000` and the frontend at `http://localhost:3001`. Verify with `GET http://localhost:3000/` (health) and `POST http://localhost:3000/api/auth/login` (auth).
+
+> Regenerate the Prisma client whenever `schema.prisma` changes. A stale client omits newly added models and produces runtime errors on any route that touches them.
+
+---
 
 ## Host-based CLI (alternative)
 
@@ -95,8 +140,53 @@ npm ci --prefix cli
 | `npm run expertise` | **Full daily run** — scrape → normalize → save → print cards |
 | `npm run --prefix cli start` | Print cards from the **existing** snapshot (no scraping) |
 | `npm run settlement` | **Settle results** from the pasted template and print the settled report |
+| `npm run sync` | Push the local dumps into the development database |
+| `npm run sync:prod` | Push the local dumps into the production database |
+| `npm run sync:dry` | Validate the dumps without writing to any database |
+| `npm run expertise:sync` | Scrape, print, then sync in one step |
+| `npm run settlement:sync` | Settle, then sync in one step |
 | `npm run --prefix cli test` | Run the CLI FreeTips, contract, and settlement tests |
 | `npm run --prefix cli test:settlement` | Run only the CLI settlement tests |
+
+---
+
+## Syncing the CLI dumps to a database
+
+The CLI writes local JSON; the web app reads PostgreSQL. `npm run sync` bridges the two, and the same script serves local development and production — only the env file differs.
+
+```powershell
+# Push the local dumps to the development database (backend/.env)
+npm run sync
+
+# Push to production (.env.production)
+npm run sync:prod
+
+# Validate the dumps without writing
+npm run sync:dry
+```
+
+Configure production once:
+
+```powershell
+Copy-Item .env.production.example .env.production
+# then set the real DATABASE_URL in .env.production (gitignored)
+```
+
+The script validates every dump before writing, masks the database password in its output, and refuses to run when the env file is missing, `DATABASE_URL` is unset, or the shipped `USER:PASSWORD` placeholder is still in place. It is idempotent: it upserts tips and creates only missing publications, so it never duplicates tips or discards settled results.
+
+### Daily routine
+
+```powershell
+# Morning: scrape, print cards, publish to the database
+npm run expertise
+npm run sync
+
+# Later: paste yesterday's results into settlement/settlement-template.txt
+npm run settlement
+npm run sync
+```
+
+`npm run expertise:sync` and `npm run settlement:sync` chain both steps.
 
 ---
 
@@ -211,10 +301,10 @@ In the printed report:
 |---|---|
 | A tip's line shows `✅✅` | **win** |
 | A tip's line shows `❎❎` | **lose** |
-| A **free** tip is **not present** in your pasted text | **loss** (a free tip you never marked as won is accounted as a loss on your end) |
-| A featured tip (`isFeatured` or Bet of the Day) has no marker | left **unsettled** (needs an explicit marker) |
+| A **free** football tip is **not present** in your pasted text | **loss** (never marked as won is accounted as a loss on your end) |
+| A **paid** tip (featured or non-football) has no marker | left **unsettled** (needs an explicit marker) |
 
-> ⚠️ **Match the text carefully.** The matcher finds the **first** line in a fixture's block that contains the selection text. If one selection is a substring of another on the same fixture, put the more specific line in the position you want it matched — otherwise the wrong marker can be applied.
+> ⚠️ **Match the text carefully.** A marker is matched by selection text, falling back to the printed odds and stake on the same line, so a selection reworded between the dump and the channel still settles. The matcher checks every occurrence of the team name, so a fixture sharing a name with an earlier card is matched against the right block.
 
 ---
 
@@ -280,6 +370,9 @@ npm run --prefix cli test
 | Settlement marks the wrong outcome | Matcher hit a substring line first — reorder the lines for that fixture (most specific first). |
 | `node` / `npm` not found | Use the full path, e.g. `"C:\Program Files\nodejs\npm.cmd" run settlement`. |
 | Cards look empty | The snapshot is empty or was reset for a new day. Run `npm run expertise`. |
+| Every web page returns 500 / loads with no data | `backend/.env` is missing or still has `USER:PASSWORD` placeholders, or `frontend/.env` points at the wrong API port. See [Host-based web development](#host-based-web-development-api--frontend). |
+| `/tips` or `/archive` shows no records | These routes default to **today's UTC date**. Run the CLI scrape for today, or pick a day that has data (the API accepts `?day=YYYY-MM-DD`). The newest dump is `freetips-4th Oct 2026.json`. |
+| Win rate and ROI show `0` | Every seeded tip has outcome `PENDING`. Settle results through the CLI workflow, then re-run the backend seed. |
 
 ---
 
@@ -291,4 +384,6 @@ These are **not** automated in the current workflow:
 * direct Telegram bot publishing
 * automatic result verification from live scores
 
-The backend and frontend exist in this repository; see their package READMEs for setup and current limitations. See `Roadmap.md` for planned work.
+Also not yet built: server-side role/ownership enforcement on tip mutations, an automated backend test suite, and UI-to-API integration tests.
+
+The backend and frontend exist in this repository; see [`packages/backend.md`](./packages/backend.md) and [`packages/frontend.md`](./packages/frontend.md) for setup and current limitations. See [`roadmap.md`](./roadmap.md) for planned work.

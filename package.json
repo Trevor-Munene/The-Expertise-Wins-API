@@ -12,7 +12,12 @@
     "start:backend": "npm run --prefix backend start",
     "start:frontend": "npm run --prefix frontend start",
     "expertise": "npm run --prefix cli expertise",
-    "settlement": "npm run --prefix cli settlement"
+    "settlement": "npm run --prefix cli settlement",
+    "sync": "npm run --prefix cli sync",
+    "sync:prod": "npm run --prefix cli sync:prod",
+    "sync:dry": "npm run --prefix cli sync:dry",
+    "expertise:sync": "npm run expertise && npm run sync",
+    "settlement:sync": "npm run settlement && npm run sync"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

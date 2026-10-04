@@ -28,10 +28,11 @@ const defaultProducts = [
   },
 ];
 
-const dumpDirectory = path.resolve(
-  __dirname,
-  "../../cli/settlement/previous-day-results"
-);
+// Allow an alternate dump directory and env file so the CLI can sync from a
+// different checkout without editing this script.
+const dumpDirectory =
+  process.env.SEED_DUMP_DIR ||
+  path.resolve(__dirname, "../../cli/settlement/previous-day-results");
 
 const allowedStatuses = new Set([
   "PENDING",
@@ -61,12 +62,39 @@ const settledOutcomes = new Set([
   "CANCELLED",
 ]);
 
-const normalizeEnum = (value, allowedValues, field, fileName, index) => {
+// The settlement layer writes lowercase, CLI-flavoured values such as
+// "win", "lose" and "settled". Map those onto the database enums so a
+// settled dump can be synced without the seed rejecting the whole file.
+const outcomeAliases = new Map([
+  ["WIN", "WON"],
+  ["WON", "WON"],
+  ["LOSE", "LOST"],
+  ["LOST", "LOST"],
+  ["LOSS", "LOST"],
+  ["PUSH", "PUSH"],
+  ["VOID", "VOID"],
+  ["HALF_WON", "HALF_WON"],
+  ["HALF_LOST", "HALF_LOST"],
+  ["CANCELLED", "CANCELLED"],
+  ["PENDING", "PENDING"],
+]);
+
+const statusAliases = new Map([
+  ["SETTLED", "SETTLED"],
+  ["PENDING", "PENDING"],
+  ["PUBLISHED", "PUBLISHED"],
+  ["LOCKED", "LOCKED"],
+  ["CANCELLED", "CANCELLED"],
+  ["VOID", "VOID"],
+]);
+
+const normalizeEnum = (value, allowedValues, field, fileName, index, aliases = null) => {
   const normalized = typeof value === "string" ? value.toUpperCase() : "";
-  if (!allowedValues.has(normalized)) {
+  const mapped = aliases ? aliases.get(normalized) ?? normalized : normalized;
+  if (!allowedValues.has(mapped)) {
     throw new Error(`${fileName}[${index}]: unsupported ${field} value.`);
   }
-  return normalized;
+  return mapped;
 };
 
 const toTipData = (tip, fileName, index) => {
@@ -103,12 +131,12 @@ const toTipData = (tip, fileName, index) => {
     confidenceIndex: tip.confidenceIndex ?? null,
     predictedScore: tip.predictedScore ?? null,
     detailsUrl: tip.detailsUrl ?? null,
-    status: normalizeEnum(tip.status ?? "PENDING", allowedStatuses, "status", fileName, index),
+    status: normalizeEnum(tip.status ?? "PENDING", allowedStatuses, "status", fileName, index, statusAliases),
     result: tip.result ?? null,
     outcome:
-      tip.outcome == null
+      tip.outcome == null || tip.outcome === ""
         ? "PENDING"
-        : normalizeEnum(tip.outcome, allowedOutcomes, "outcome", fileName, index),
+        : normalizeEnum(tip.outcome, allowedOutcomes, "outcome", fileName, index, outcomeAliases),
     extraTips: tip.extraTips ?? null,
     scrapedAt,
   };
@@ -121,6 +149,16 @@ const getProductSlug = (tip) => {
   if (["football", "soccer"].includes(String(tip.sport || "").toLowerCase())) return "free";
   return "vip";
 };
+
+// Derive a stable id from the dump file and the tip's position in it. One dump
+// file represents one day, so a re-seed of the same file always produces the
+// same ids and simply updates the existing rows.
+const getTipId = (fileName, index) =>
+  `seed_${crypto
+    .createHash("sha256")
+    .update(`${fileName}:${index}`)
+    .digest("hex")
+    .slice(0, 32)}`;
 
 const loadSeedRecords = () => {
   const files = fs
@@ -140,18 +178,14 @@ const loadSeedRecords = () => {
       throw new Error(`${fileName}: expected a JSON array.`);
     }
 
-    tips.forEach((tip, index) => {
-      if (!tip || typeof tip !== "object" || Array.isArray(tip)) {
-        throw new Error(`${fileName}[${index}]: expected a tip object.`);
-      }
+    // Key on the file+position id so each dump record maps to one stable row.
+        tips.forEach((tip, index) => {
+          if (!tip || typeof tip !== "object" || Array.isArray(tip)) {
+            throw new Error(`${fileName}[${index}]: expected a tip object.`);
+          }
 
-      const id = `seed_${crypto
-        .createHash("sha256")
-        .update(`${fileName}:${index}`)
-        .digest("hex")
-        .slice(0, 32)}`;
-      records.push({ id, data: toTipData(tip, fileName, index) });
-    });
+          records.push({ id: getTipId(fileName, index), data: toTipData(tip, fileName, index) });
+        });
   }
 
   return { files, records };
@@ -207,7 +241,11 @@ const main = async () => {
     return;
   }
 
-  require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
+  // An explicit env file (set by the CLI sync script for production) wins over
+// the local development default.
+  require("dotenv").config({
+    path: process.env.SEED_ENV_FILE || path.resolve(__dirname, "../.env"),
+  });
   const { PrismaClient } = require("@prisma/client");
   const bcrypt = require("bcrypt");
   const prisma = new PrismaClient();
@@ -229,18 +267,28 @@ const main = async () => {
       update.outcome = existingTip.outcome;
       update.result = existingTip.result;
       update.settledAt = existingTip.settledAt;
+    } else if (settledOutcomes.has(data.outcome)) {
+      // The dump carries a real settlement result. Honour it as recorded
+      // instead of rewriting it to WON for baseline reporting.
+      update.status = "SETTLED";
+      update.result = data.result || null;
+      update.settledAt = existingTip?.settledAt || new Date();
     } else if (data.status !== "PENDING" || data.outcome !== "PENDING") {
       update.status = "SETTLED";
       update.outcome = "WON";
       update.result = update.result || "Historical result recorded as WON for baseline progress tracking.";
       update.settledAt = existingTip?.settledAt || new Date();
     } else if (existingTip && existingTip.status !== "PENDING" && data.status === "PENDING") {
+      // Keep a tip that is already live from being reverted to PENDING by a
+      // re-sync of an unscraped dump record.
       update.status = existingTip.status;
     }
 
+    const result = { ...data, status: settledOutcomes.has(data.outcome) ? "SETTLED" : "PUBLISHED" };
+
     return prisma.tip.upsert({
       where: { id },
-      create: { id, ...data },
+      create: { id, ...result },
       update,
     });
   }));
@@ -255,14 +303,45 @@ const main = async () => {
     skipDuplicates: true,
   });
   console.log(`Created ${publicationResult.count} missing product publications.`);
+
+  // Keep the tip row consistent with its publications. Statistics count
+  // published tips via Tip.status and Tip.publishedAt, so leaving these unset
+  // makes the admin dashboard report zero published tips even when every tip
+  // is live. A settled tip keeps its SETTLED status but still needs publishedAt.
+  await prisma.tip.updateMany({
+    where: { id: { in: records.map(({ id }) => id) }, publishedAt: null },
+    data: { publishedAt: new Date() },
+  });
+
+  await prisma.tip.updateMany({
+    where: { id: { in: records.map(({ id }) => id) }, status: { in: ["PENDING"] } },
+    data: { status: "PUBLISHED" },
+  });
+
   console.log(`Seeded ${records.length} tips. Re-running this command is safe.`);
   } finally {
     await prisma.$disconnect();
   }
 };
 
+// Reuse the seed pipeline from the CLI sync script by exposing the pieces.
+module.exports = {
+  loadSeedRecords,
+  defaultProducts,
+  outcomeAliases,
+  statusAliases,
+  normalizeEnum,
+  allowedStatuses,
+  allowedOutcomes,
+  settledOutcomes,
+  toTipData,
+  getProductSlug,
+};
+
+if (require.main === module) {
 main()
   .catch((error) => {
     console.error(`Seed failed: ${error.message}`);
     process.exitCode = 1;
   });
+}

@@ -23,6 +23,7 @@ export default function TipsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSport, setSelectedSport] = useState("ALL");
   const [requiresAuth, setRequiresAuth] = useState(false);
+  const [servedDay, setServedDay] = useState(null);
 
   useEffect(() => {
     async function loadTips() {
@@ -32,12 +33,15 @@ export default function TipsPage() {
       try {
         let res;
 
+        // Send no day at all: the API returns today when today's scrape has
+        // run, and otherwise the most recent day that has published tips. The
+        // archive shows the day it served so the tab can label it.
         if (activeTab === "free") {
-          res = await tipsApi.getFreeTips({ day: new Date().toISOString().slice(0, 10) });
+          res = await tipsApi.getFreeTips();
         } else if (activeTab === "vip") {
-          res = await tipsApi.getVipTips({ day: new Date().toISOString().slice(0, 10) });
+          res = await tipsApi.getVipTips();
         } else if (activeTab === "maxbet") {
-          res = await tipsApi.getMaxbetTips({ day: new Date().toISOString().slice(0, 10) });
+          res = await tipsApi.getMaxbetTips();
         } else {
           res = await tipsApi.getTips();
         }
@@ -49,6 +53,10 @@ export default function TipsPage() {
           res?.data ??
           res;
         setTips(Array.isArray(data) ? data : []);
+
+        // Record the day the API actually served so the header can show it when
+        // today has not been scraped yet.
+        setServedDay(res?.tips?.day || null);
       } catch (err) {
         if ([401, 403].includes(err.response?.status)) {
           setRequiresAuth(true);
@@ -79,6 +87,17 @@ export default function TipsPage() {
 
     return matchesSearch && matchesSport;
   });
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const isHistoricalDay = servedDay && servedDay !== todayIso;
+  const dayLabel = servedDay
+    ? new Date(`${servedDay}T00:00:00Z`).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      })
+    : null;
 
   const tabs = [
     {
@@ -263,6 +282,13 @@ export default function TipsPage() {
                 : "All Available Tips"}
             </span>
           </p>
+
+          {isHistoricalDay && (
+            <p className="text-[11px] text-amber-400">
+              No tips scraped today — showing the most recent recorded day,{" "}
+              <span className="font-bold">{dayLabel}</span>.
+            </p>
+          )}
 
           <p className="text-[11px] text-slate-500">
             {filteredTips.length} selection

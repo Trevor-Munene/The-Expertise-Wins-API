@@ -17,7 +17,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-tew}:${POSTGRES_PASSWORD:-tew_local_dev}@db:5432/${POSTGRES_DB:-expertise_wins}?schema=public
       JWT_SECRET: ${JWT_SECRET:-local-docker-dev-secret-change-before-use}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
-      PORT: 3000
+      PORT: 3180
       CORS_ORIGIN: "http://localhost:${FRONTEND_HOST_PORT:-3181},http://localhost:3001"
       NEXT_PUBLIC_API_URL: http://localhost:${API_HOST_PORT:-3180}/api
       NEXT_PUBLIC_APP_URL: http://localhost:${FRONTEND_HOST_PORT:-3181}

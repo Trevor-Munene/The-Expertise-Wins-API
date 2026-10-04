@@ -1,0 +1,52 @@
+Error: A registered user must be selected for this token.
+    at createError (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:88:17)
+    at resolveAssignedUser (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:448:11)
+    at Object.createAccessToken (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:473:25)
+    at async createAccessToken (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\controllers\admin.controller.js:235:20) {
+  status: 400,
+  statusCode: 400
+}
+Error: The selected user does not exist.
+    at createError (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:88:17)
+    at resolveAssignedUser (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:456:20)
+    at async Object.createAccessToken (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:473:19)
+    at async createAccessToken (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\controllers\admin.controller.js:235:20) {
+  status: 404,
+  statusCode: 404
+}
+Error: Product ID is required.
+    at createError (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:88:17)
+    at Object.createAccessToken (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:468:25)
+    at createAccessToken (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\controllers\admin.controller.js:235:39)
+    at Layer.handle [as handle_request] (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\index.js:280:10) {
+  status: 400,
+  statusCode: 400
+}
+Error: A registered user must be selected for this token.
+    at createError (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:88:17)
+    at resolveAssignedUser (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:448:11)
+    at Object.createAccessTokensBulk (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:495:25)
+    at async createAccessTokensBulk (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\controllers\admin.controller.js:246:20) {
+  status: 400,
+  statusCode: 400
+}
+Error: An access token cannot be reassigned to a different user.
+    at createError (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:88:17)
+    at Object.updateAccessToken (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\services\admin.service.js:535:11)
+    at updateAccessToken (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\controllers\admin.controller.js:280:44)
+    at Layer.handle [as handle_request] (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\index.js:284:15
+    at param (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\index.js:365:14)
+    at param (C:\Users\johnw\Desktop\Dream ya Kutoka Block\The-Expertise-Wins-API\backend\node_modules\express\lib\router\index.js:376:14) {
+  status: 400,
+  statusCode: 400
+}

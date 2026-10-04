@@ -1,16 +1,15 @@
-// backend/controllers/products.controller.js
 const productsService = require("../services/products.service");
 
-// Helper to destructure request data
+// Extract request data used by the handlers
 const getRequestData = (req) => ({
   params: req.params,
   query: req.query,
   userId: req.user?.id,
 });
 
+// List all active products
 const getProducts = async (req, res, next) => {
   try {
-    // No parameters needed for this service call
     const products = await productsService.getProducts();
     res.status(200).json({ products });
   } catch (error) {
@@ -18,6 +17,7 @@ const getProducts = async (req, res, next) => {
   }
 };
 
+// Get the free product
 const getFreeProduct = async (req, res, next) => {
   try {
     const product = await productsService.getFreeProduct();
@@ -27,6 +27,7 @@ const getFreeProduct = async (req, res, next) => {
   }
 };
 
+// Get the VIP product
 const getVipProduct = async (req, res, next) => {
   try {
     const product = await productsService.getVipProduct();
@@ -36,6 +37,7 @@ const getVipProduct = async (req, res, next) => {
   }
 };
 
+// Get the MaxBet product
 const getMaxbetProduct = async (req, res, next) => {
   try {
     const product = await productsService.getMaxbetProduct();
@@ -45,19 +47,21 @@ const getMaxbetProduct = async (req, res, next) => {
   }
 };
 
+// Get a single product by id
 const getProductById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const product = await productsService.getProductById(id);
+    const { params } = getRequestData(req);
+    const product = await productsService.getProductById(params.id);
     res.status(200).json({ product });
   } catch (error) {
     next(error);
   }
 };
 
+// List products the current user can access
 const getMyProducts = async (req, res, next) => {
   try {
-    const { id: userId } = req.user;
+    const { userId } = getRequestData(req);
     const products = await productsService.getMyProducts(userId);
     res.status(200).json({ products });
   } catch (error) {

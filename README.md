@@ -54,6 +54,59 @@ npm run dev
 
 For the fully containerized path, see [`docs/runbook.md`](./docs/runbook.md).
 
+## Docker Development
+
+Docker runs the whole stack — API, frontend, and PostgreSQL — in containers, so you don't need Node or PostgreSQL installed on the host.
+
+Install Docker Desktop with Linux container support enabled. From the repository root in PowerShell, configure the local admin password in the ignored `backend/.env` file, then initialize the database:
+
+```powershell
+docker compose config --quiet
+if (-not (Test-Path backend/.env)) { Copy-Item backend/.env.example backend/.env }
+docker compose up -d db
+docker compose run --rm app npm run --prefix backend prisma:generate
+docker compose run --rm app npm run --prefix backend prisma:migrate -- --name init
+docker compose run --rm app npm run --prefix backend seed:check
+docker compose run --rm app npm run sync
+docker compose up -d app
+```
+
+Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `backend/.env` before syncing. The sync promotes an existing user with that email without changing its password, or creates an active admin if the user does not exist. Passwords are stored as bcrypt hashes.
+
+The first `docker compose run app` builds the shared image, including frontend dependencies, and can take a few minutes; later runs reuse the image.
+
+Run the CLI inside the container (install CLI dependencies once first):
+
+```powershell
+docker compose run --rm --no-deps app npm ci --prefix cli
+docker compose run --rm --no-deps app npm run --prefix cli test
+docker compose run --rm --no-deps app npm run expertise
+docker compose run --rm --no-deps app npm run sync
+```
+
+Stop the services while preserving data:
+
+```powershell
+docker compose down
+```
+
+`docker compose down --volumes` also erases PostgreSQL data and dependency caches. That is destructive and resets the environment.
+
+### Container Ports
+
+Inside containers the API listens on `3000` and the frontend on `3001`; Compose publishes them on host ports that can be overridden with a root `.env` file (gitignored):
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `API_HOST_PORT` | `3180` | Host port mapped to the API's `3000` |
+| `FRONTEND_HOST_PORT` | `3181` | Host port mapped to the frontend's `3001` |
+| `POSTGRES_HOST_PORT` | `55432` | Host port mapped to PostgreSQL's `5432` |
+| `POSTGRES_DB` | `expertise_wins` | Database name |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` | `tew` / `tew_local_dev` | Database credentials |
+| `JWT_SECRET` | local dev placeholder | **Set a strong value before any real deployment** |
+
+The API container connects to PostgreSQL using the Compose service name `db`, not `localhost`. Dependencies and database data live in Docker volumes, so `docker compose down` keeps them. Defaults are for local development only.
+
 ## Daily Workflow
 
 ```powershell
@@ -75,6 +128,8 @@ npm run sync
 | Backend API | `http://localhost:3000` | `http://localhost:3180` |
 | Frontend | `http://localhost:3001` | `http://localhost:3181` |
 | PostgreSQL | `localhost:55432` | `localhost:55432` (inside containers: `db:5432`) |
+
+With Docker Compose, `npm run sync` and `npm run sync:prod` also run inside the container using the Compose database.
 
 ## API Areas
 
@@ -110,10 +165,11 @@ Authentication, data retrieval, settlement, token issuance, and admin workflows 
 
 ### Operational Notes
 
-- **Data:** the dumps in `cli/settlement/previous-day-results/` hold **288 tip records** across 10 days, which map to 288 rows in the database.
+- **Data:** the dumps in `cli/settlement/previous-day-results/` hold **293 tip records** across 10 days, which map to 293 rows in the database.
 - **Settlement flows to the database.** `npm run settlement` records results in the dump and `npm run sync` publishes them, so win rate and ROI update automatically.
 - **Paid tips never default to a loss.** Only non-featured football tips become losses when unmarked; featured and non-football tips stay unsettled so a gap in your results text is never recorded as a false loss.
 - **Empty "today" views fall back.** Tip and archive lists return today when today's scrape has run, and otherwise the most recent day that has records, so the pages are never blank before the daily scrape. The tips page labels when it is showing an earlier day.
+- **Admins see every tier.** The tips page loads Free, VIP, and MaxBet for an admin account; the public tips list intentionally exposes only the public (Free) product.
 - **Syncing is safe and idempotent.** `npm run sync` validates every dump before writing, masks the database password in its output, and refuses to run against a half-configured environment. Running it repeatedly never duplicates tips or discards settled results.
 - **Regenerate the Prisma client** after any `schema.prisma` change (`npm run --prefix backend prisma:generate`). A stale client silently omits newly added models and causes runtime failures in code that references them.
 

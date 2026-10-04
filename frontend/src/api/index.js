@@ -1,4 +1,4 @@
-// frontend/src/api/index.js
+// Re-export every API module from one entry point
 export * from "./auth.api";
 export * from "./tips.api";
 export * from "./stats.api";

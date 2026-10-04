@@ -5,22 +5,22 @@ const { authenticateJWT } = require("../middleware/authentication");
 
 const productsRouter = Router();
 
-// Available products
+// List all active products
 productsRouter.get("/", productsController.getProducts);
 
-// Public product information
+// Get the free product
 productsRouter.get("/free", productsController.getFreeProduct);
 
-// Premium product information
+// Get the VIP product
 productsRouter.get("/vip", productsController.getVipProduct);
 
-// MaxBet product information
+// Get the MaxBet product
 productsRouter.get("/maxbet", productsController.getMaxbetProduct);
 
-// Authenticated user's available products
+// List products the current user can access
 productsRouter.get("/my-access", authenticateJWT, productsController.getMyProducts);
 
-// Single product
+// Get a single product by id, registered last so named routes match first
 productsRouter.get("/:id", productsController.getProductById);
 
 module.exports = productsRouter;

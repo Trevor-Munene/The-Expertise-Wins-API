@@ -1,7 +1,7 @@
-// backend/services/admin.service.js
 const crypto = require("crypto");
 const prisma = require("../lib/prisma");
 
+// Select user fields returned to the client
 const USER_SELECT = {
   id: true,
   email: true,
@@ -18,6 +18,7 @@ const USER_SELECT = {
   updatedAt: true,
 };
 
+// Select tip fields returned to the client
 const TIP_SELECT = {
   id: true,
   source: true,
@@ -54,6 +55,7 @@ const TIP_SELECT = {
   publishedById: true,
 };
 
+// Select product fields returned to the client
 const PRODUCT_SELECT = {
   id: true,
   name: true,
@@ -66,6 +68,7 @@ const PRODUCT_SELECT = {
   updatedAt: true,
 };
 
+// Select access token fields returned to the client, excluding the hash
 const ACCESS_TOKEN_SELECT = {
   id: true,
   tokenPrefix: true,
@@ -80,19 +83,22 @@ const ACCESS_TOKEN_SELECT = {
   assignedUser: { select: { id: true, email: true, username: true, firstName: true, lastName: true } },
 };
 
+// Create an error with an HTTP status the error handler can read
 const createError = (message, statusCode = 400) => {
   const error = new Error(message);
+  error.status = statusCode;
   error.statusCode = statusCode;
   return error;
 };
 
+// Parse page and limit from the query string
 const parsePagination = (query = {}) => {
   const page = Math.max(Number.parseInt(query.page, 10) || 1, 1);
   const limit = Math.min(Math.max(Number.parseInt(query.limit, 10) || 20, 1), 100);
   return { page, limit, skip: (page - 1) * limit };
 };
 
-// ---------- User related functions ----------
+// List users with filters and pagination
 const getUsers = async (query = {}) => {
   const { page, limit, skip } = parsePagination(query);
   const where = {};
@@ -116,6 +122,7 @@ const getUsers = async (query = {}) => {
   };
 };
 
+// Get a single user with their access tokens
 const getUserById = async (userId) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -131,7 +138,8 @@ const getUserById = async (userId) => {
   return user;
 };
 
-const updateUser = async (userId, userData) => {
+// Update allowed user fields and check unique values first
+const updateUser = async (userId, userData = {}) => {
   const allowedFields = ["email", "username", "firstName", "lastName", "telegramUsername", "telegramUserId", "role", "status"];
   const data = {};
   for (const field of allowedFields) {
@@ -139,22 +147,26 @@ const updateUser = async (userId, userData) => {
   }
   if (Object.keys(data).length === 0) throw createError("No user fields provided for update.");
 
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      OR: [
-        data.email ? { email: data.email, NOT: { id: userId } } : undefined,
-        data.username ? { username: data.username, NOT: { id: userId } } : undefined,
-        data.telegramUserId ? { telegramUserId: data.telegramUserId, NOT: { id: userId } } : undefined,
-      ].filter(Boolean),
-    },
-    select: { id: true },
-  });
-  if (existingUser) throw createError("Email, username, or Telegram user ID is already in use.", 409);
+  // Build conflict checks only for unique fields being changed
+  const uniqueChecks = [
+    data.email ? { email: data.email, NOT: { id: userId } } : undefined,
+    data.username ? { username: data.username, NOT: { id: userId } } : undefined,
+    data.telegramUserId ? { telegramUserId: data.telegramUserId, NOT: { id: userId } } : undefined,
+  ].filter(Boolean);
+
+  if (uniqueChecks.length > 0) {
+    const existingUser = await prisma.user.findFirst({
+      where: { OR: uniqueChecks },
+      select: { id: true },
+    });
+    if (existingUser) throw createError("Email, username, or Telegram user ID is already in use.", 409);
+  }
 
   const user = await prisma.user.update({ where: { id: userId }, data, select: USER_SELECT });
   return user;
 };
 
+// Update a user's status after validating it
 const updateUserStatus = async (userId, status) => {
   const validStatuses = ["ACTIVE", "SUSPENDED", "BANNED", "PENDING"];
   if (!validStatuses.includes(status)) throw createError("Invalid user status.");
@@ -162,8 +174,8 @@ const updateUserStatus = async (userId, status) => {
   return user;
 };
 
-// ---------- Tip related functions ----------
-const createTip = async (tipData, userId) => {
+// Create a tip from allowed fields and check required fields
+const createTip = async (tipData = {}, userId) => {
   const allowedFields = [
     "source",
     "externalId",
@@ -203,6 +215,7 @@ const createTip = async (tipData, userId) => {
   return prisma.tip.create({ data, select: TIP_SELECT });
 };
 
+// List tips with filters and pagination
 const getTips = async (query = {}) => {
   const { page, limit, skip } = parsePagination(query);
   const where = {};
@@ -218,6 +231,7 @@ const getTips = async (query = {}) => {
   return { tips, pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
 };
 
+// Get a single tip with its product publications
 const getTipById = async (tipId) => {
   const tip = await prisma.tip.findUnique({
     where: { id: tipId },
@@ -230,7 +244,8 @@ const getTipById = async (tipId) => {
   return tip;
 };
 
-const updateTip = async (tipId, tipData) => {
+// Update allowed tip fields
+const updateTip = async (tipId, tipData = {}) => {
   const allowedFields = [
     "source",
     "externalId",
@@ -267,6 +282,7 @@ const updateTip = async (tipId, tipData) => {
   return prisma.tip.update({ where: { id: tipId }, data, select: TIP_SELECT });
 };
 
+// Soft delete a tip by marking it cancelled
 const deleteTip = async (tipId) => {
   return prisma.tip.update({
     where: { id: tipId },
@@ -275,11 +291,13 @@ const deleteTip = async (tipId) => {
   });
 };
 
+// Validate a list of tip ids and remove duplicates
 const validateTipIds = (ids) => {
   if (!Array.isArray(ids) || ids.length === 0) throw createError("At least one tip ID is required.");
   return [...new Set(ids)];
 };
 
+// Update allowed fields on many tips
 const updateTipsBulk = async (ids, data) => {
   const tipIds = validateTipIds(ids);
   const allowedFields = ["status", "result", "outcome", "stakeUnits", "odds", "verdict", "preview", "previewTitle", "confidenceIndex", "predictedScore"];
@@ -292,6 +310,7 @@ const updateTipsBulk = async (ids, data) => {
   return { message: "Tips updated successfully.", updated: result.count };
 };
 
+// Publish a single tip and record who published it
 const publishTip = async (tipId, userId) => {
   return prisma.tip.update({
     where: { id: tipId },
@@ -300,6 +319,7 @@ const publishTip = async (tipId, userId) => {
   });
 };
 
+// Publish many tips and record who published them
 const publishTipsBulk = async (ids, userId) => {
   const tipIds = validateTipIds(ids);
   const publishedAt = new Date();
@@ -310,16 +330,19 @@ const publishTipsBulk = async (ids, userId) => {
   return { message: "Tips published successfully.", updated: result.count };
 };
 
+// Unpublish a single tip by locking it
 const unpublishTip = async (tipId) => {
   return prisma.tip.update({ where: { id: tipId }, data: { status: "LOCKED" }, select: TIP_SELECT });
 };
 
+// Unpublish many tips by locking them
 const unpublishTipsBulk = async (ids) => {
   const tipIds = validateTipIds(ids);
   const result = await prisma.tip.updateMany({ where: { id: { in: tipIds } }, data: { status: "LOCKED" } });
   return { message: "Tips unpublished successfully.", updated: result.count };
 };
 
+// Settle a single tip with a validated outcome
 const settleTip = async (tipId, outcome, result) => {
   const validOutcomes = ["WON", "LOST", "VOID", "PUSH", "HALF_WON", "HALF_LOST", "CANCELLED"];
   if (!validOutcomes.includes(outcome)) throw createError("Invalid tip outcome.");
@@ -330,6 +353,7 @@ const settleTip = async (tipId, outcome, result) => {
   });
 };
 
+// Settle many tips with a validated outcome
 const settleTipsBulk = async (ids, outcome, result) => {
   const tipIds = validateTipIds(ids);
   const validOutcomes = ["WON", "LOST", "VOID", "PUSH", "HALF_WON", "HALF_LOST", "CANCELLED"];
@@ -340,6 +364,7 @@ const settleTipsBulk = async (ids, outcome, result) => {
   return { message: "Tips settled successfully.", updated: updated.count };
 };
 
+// Cancel a single tip
 const cancelTip = async (tipId) => {
   return prisma.tip.update({
     where: { id: tipId },
@@ -348,12 +373,14 @@ const cancelTip = async (tipId) => {
   });
 };
 
+// Cancel many tips
 const cancelTipsBulk = async (ids) => {
   const tipIds = validateTipIds(ids);
   const result = await prisma.tip.updateMany({ where: { id: { in: tipIds } }, data: { status: "CANCELLED", outcome: "CANCELLED", settledAt: new Date() } });
   return { message: "Tips cancelled successfully.", updated: result.count };
 };
 
+// Publish a tip to an active product, creating or reviving the publication
 const publishTipToProduct = async (tipId, productId) => {
   const [tip, product] = await Promise.all([
     prisma.tip.findUnique({ where: { id: tipId }, select: { id: true } }),
@@ -370,6 +397,7 @@ const publishTipToProduct = async (tipId, productId) => {
   });
 };
 
+// Mark a tip publication as unpublished
 const removeTipPublication = async (tipId, productId) => {
   const publication = await prisma.tipPublication.findUnique({ where: { tipId_productId: { tipId, productId } } });
   if (!publication) throw createError("Tip publication not found.", 404);
@@ -380,11 +408,16 @@ const removeTipPublication = async (tipId, productId) => {
   });
 };
 
-// ---------- Access Token functions ----------
+// Generate a random raw access token
 const generateRawAccessToken = () => crypto.randomBytes(32).toString("hex");
+
+// Hash an access token for storage
 const hashAccessToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
+
+// Get the display prefix of an access token
 const getTokenPrefix = (token) => token.slice(0, 10);
 
+// Shape an access token for the response
 const formatAccessToken = (accessToken) => ({
   id: accessToken.id,
   tokenPrefix: accessToken.tokenPrefix,
@@ -399,6 +432,7 @@ const formatAccessToken = (accessToken) => ({
   assignedUser: accessToken.assignedUser,
 });
 
+// Parse an optional expiry date
 const parseExpiry = (expiresAt) => {
   if (!expiresAt) return null;
   const date = new Date(expiresAt);
@@ -406,29 +440,60 @@ const parseExpiry = (expiresAt) => {
   return date;
 };
 
-const createAccessToken = async (tokenData) => {
+// Resolve the registered user an access token is being issued to. Tokens are
+// only ever minted by an admin for a specific, active, registered account so
+// that every token has exactly one owner and access cannot be transferred.
+const resolveAssignedUser = async (assignedUserId) => {
+  if (!assignedUserId || typeof assignedUserId !== "string" || !assignedUserId.trim()) {
+    throw createError("A registered user must be selected for this token.", 400);
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: assignedUserId.trim() },
+    select: { id: true, status: true },
+  });
+
+  if (!user) throw createError("The selected user does not exist.", 404);
+  if (user.status !== "ACTIVE") {
+    throw createError("Tokens can only be issued to an active user.", 400);
+  }
+
+  return user.id;
+};
+
+// Create a single access token for an active product and a registered user.
+// The raw token is returned exactly once so the admin can pass it on.
+const createAccessToken = async (tokenData = {}) => {
   const { productId, expiresAt, notes, assignedUserId } = tokenData;
   if (!productId) throw createError("Product ID is required.");
   const product = await prisma.product.findUnique({ where: { id: productId }, select: { id: true, status: true } });
   if (!product) throw createError("Product not found.", 404);
   if (product.status !== "ACTIVE") throw createError("Cannot create a token for an inactive product.");
+
+  const ownerId = await resolveAssignedUser(assignedUserId);
+
   const rawToken = generateRawAccessToken();
   const tokenHash = hashAccessToken(rawToken);
   const accessToken = await prisma.accessToken.create({
-    data: { tokenHash, tokenPrefix: getTokenPrefix(rawToken), productId, assignedUserId: assignedUserId || null, expiresAt: parseExpiry(expiresAt), notes: notes ?? null },
+    data: { tokenHash, tokenPrefix: getTokenPrefix(rawToken), productId, assignedUserId: ownerId, expiresAt: parseExpiry(expiresAt), notes: notes ?? null },
     select: ACCESS_TOKEN_SELECT,
   });
   return { token: rawToken, accessToken: formatAccessToken(accessToken) };
 };
 
-const createAccessTokensBulk = async (tokenData) => {
-  const { productId, count, expiresAt, notes } = tokenData;
+// Create many access tokens for an active product, all assigned to the same
+// registered user.
+const createAccessTokensBulk = async (tokenData = {}) => {
+  const { productId, count, expiresAt, notes, assignedUserId } = tokenData;
   const tokenCount = Number.parseInt(count, 10);
   if (!productId) throw createError("Product ID is required.");
   if (!Number.isInteger(tokenCount) || tokenCount < 1 || tokenCount > 1000) throw createError("Token count must be between 1 and 1000.");
   const product = await prisma.product.findUnique({ where: { id: productId }, select: { id: true, status: true } });
   if (!product) throw createError("Product not found.", 404);
   if (product.status !== "ACTIVE") throw createError("Cannot create tokens for an inactive product.");
+
+  const ownerId = await resolveAssignedUser(assignedUserId);
+
   const parsedExpiry = parseExpiry(expiresAt);
   const tokens = [];
   for (let i = 0; i < tokenCount; i++) {
@@ -436,11 +501,12 @@ const createAccessTokensBulk = async (tokenData) => {
     tokens.push({ rawToken, tokenHash: hashAccessToken(rawToken), tokenPrefix: getTokenPrefix(rawToken) });
   }
   await prisma.accessToken.createMany({
-    data: tokens.map((t) => ({ tokenHash: t.tokenHash, tokenPrefix: t.tokenPrefix, productId, expiresAt: parsedExpiry, notes: notes ?? null })),
+    data: tokens.map((t) => ({ tokenHash: t.tokenHash, tokenPrefix: t.tokenPrefix, productId, assignedUserId: ownerId, expiresAt: parsedExpiry, notes: notes ?? null })),
   });
   return { count: tokens.length, tokens: tokens.map((t) => t.rawToken) };
 };
 
+// List access tokens with filters and pagination
 const getAccessTokens = async (query = {}) => {
   const { page, limit, skip } = parsePagination(query);
   const where = {};
@@ -454,14 +520,22 @@ const getAccessTokens = async (query = {}) => {
   return { accessTokens: accessTokens.map(formatAccessToken), pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
 };
 
+// Get a single access token by id
 const getAccessTokenById = async (accessTokenId) => {
   const accessToken = await prisma.accessToken.findUnique({ where: { id: accessTokenId }, select: ACCESS_TOKEN_SELECT });
   if (!accessToken) throw createError("Access token not found.", 404);
   return formatAccessToken(accessToken);
 };
 
-const updateAccessToken = async (accessTokenId, tokenData) => {
-  const allowedFields = ["notes", "status", "expiresAt", "assignedUserId"];
+// Update allowed access token fields. The assigned user is deliberately not
+// reassignable here: a token always belongs to the user it was issued to, so
+// ownership can only be fixed at creation time.
+const updateAccessToken = async (accessTokenId, tokenData = {}) => {
+  if (tokenData.assignedUserId !== undefined) {
+    throw createError("An access token cannot be reassigned to a different user.", 400);
+  }
+
+  const allowedFields = ["notes", "status", "expiresAt"];
   const data = {};
   for (const field of allowedFields) {
     if (tokenData[field] !== undefined) data[field] = field === "expiresAt" ? parseExpiry(tokenData[field]) : tokenData[field];
@@ -471,11 +545,13 @@ const updateAccessToken = async (accessTokenId, tokenData) => {
   return formatAccessToken(accessToken);
 };
 
+// Revoke an access token
 const revokeAccessToken = async (accessTokenId) => {
   const accessToken = await prisma.accessToken.update({ where: { id: accessTokenId }, data: { status: "REVOKED" }, select: ACCESS_TOKEN_SELECT });
   return formatAccessToken(accessToken);
 };
 
+// Extend an access token from its current expiry or from now
 const extendAccessToken = async (accessTokenId, days) => {
   const numberOfDays = Number.parseInt(days, 10);
   if (!Number.isInteger(numberOfDays) || numberOfDays <= 0) throw createError("Days must be a positive integer.");
@@ -494,8 +570,8 @@ const extendAccessToken = async (accessTokenId, days) => {
   return formatAccessToken(updated);
 };
 
-// ---------- Product functions ----------
-const createProduct = async (productData) => {
+// Create a product after checking required fields
+const createProduct = async (productData = {}) => {
   const { name, slug, description, type, status, isPublic } = productData;
   if (!name || !slug || !type) throw createError("Name, slug, and type are required.");
   return prisma.product.create({
@@ -504,6 +580,7 @@ const createProduct = async (productData) => {
   });
 };
 
+// List products with filters
 const getProducts = async (query = {}) => {
   const where = {};
   if (query.type) where.type = query.type;
@@ -511,6 +588,7 @@ const getProducts = async (query = {}) => {
   return prisma.product.findMany({ where, select: PRODUCT_SELECT, orderBy: { createdAt: "desc" } });
 };
 
+// Get a single product with token and publication counts
 const getProductById = async (productId) => {
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -520,7 +598,8 @@ const getProductById = async (productId) => {
   return product;
 };
 
-const updateProduct = async (productId, productData) => {
+// Update allowed product fields
+const updateProduct = async (productId, productData = {}) => {
   const allowedFields = ["name", "slug", "description", "type", "status", "isPublic"];
   const data = {};
   for (const field of allowedFields) {
@@ -530,6 +609,7 @@ const updateProduct = async (productId, productData) => {
   return prisma.product.update({ where: { id: productId }, data, select: PRODUCT_SELECT });
 };
 
+// Update a product's status after validating it
 const updateProductStatus = async (productId, status) => {
   const validStatuses = ["ACTIVE", "INACTIVE", "ARCHIVED"];
   if (!validStatuses.includes(status)) throw createError("Invalid product status.");

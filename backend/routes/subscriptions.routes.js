@@ -1,33 +1,34 @@
 const { Router } = require("express");
 
 const subscriptionsController = require("../controllers/subscription.controller");
-const { authenticateJWT, optionalAuthenticateJWT } = require("../middleware/authentication");
+const { authenticateJWT } = require("../middleware/authentication");
 
 const subscriptionsRouter = Router();
 
-// Subscription overview
+// List all subscriptions for the current user
 subscriptionsRouter.get("/", authenticateJWT, subscriptionsController.getMySubscriptions);
 
-// Available access
+// Get the current active subscription and the subscription history
 subscriptionsRouter.get("/active", authenticateJWT, subscriptionsController.getActiveSubscription);
 subscriptionsRouter.get("/history", authenticateJWT, subscriptionsController.getSubscriptionHistory);
 
-// Access token redemption
-subscriptionsRouter.post("/redeem", optionalAuthenticateJWT, subscriptionsController.redeemAccessToken);
+// Redeem an access token. Tokens are issued to a registered account, so
+// redemption requires signing in as that account.
+subscriptionsRouter.post("/redeem", authenticateJWT, subscriptionsController.redeemAccessToken);
 
-// Check an access token
+// Check whether an access token is valid
 subscriptionsRouter.post("/verify", subscriptionsController.verifyAccessToken);
 
-// Current user's access
+// List products the current user can access
 subscriptionsRouter.get("/my-access", authenticateJWT, subscriptionsController.getMyAccess);
 
-// Cancel access
+// Cancel a subscription
 subscriptionsRouter.post("/:id/cancel", authenticateJWT, subscriptionsController.cancelSubscription);
 
-// Renew access
+// Renew a subscription
 subscriptionsRouter.post("/:id/renew", authenticateJWT, subscriptionsController.renewSubscription);
 
-// Subscription details
+// Get a single subscription, registered last so named routes match first
 subscriptionsRouter.get("/:id", authenticateJWT, subscriptionsController.getSubscriptionById);
 
 module.exports = subscriptionsRouter;

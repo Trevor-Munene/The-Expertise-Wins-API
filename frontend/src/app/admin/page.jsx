@@ -114,7 +114,7 @@ export default function AdminOverviewPage() {
         }
 
         if (statsRes.status === "fulfilled") {
-          setStats(statsRes.value?.data || statsRes.value);
+          setStats(statsRes.value?.stats || statsRes.value?.data || statsRes.value);
         }
         if (usageRes.status === "fulfilled") {
           setUsage(usageRes.value?.stats || usageRes.value?.data || usageRes.value);

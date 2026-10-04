@@ -24,16 +24,17 @@
         "odds": 1.9,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/betting/bet-of-the-day/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-10-03T06:58:17.161Z"
   },
@@ -62,7 +63,8 @@
         "odds": 1.8,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -87,9 +89,9 @@
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/daniil-medvedev-vs-jan-lennard-struff-tips-live-stream-20261002-0033/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [
       {
         "selection": "Struff +3.5",
@@ -133,7 +135,8 @@
         "odds": 1.87,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -142,23 +145,25 @@
         "odds": 2.6,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/basketball/brisbane-bullets-vs-tasmania-jackjumpers-tips-20261002-0038/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [
       {
         "selection": "Nate Hinton 10+",
         "market": "Rebounds",
         "odds": 2.6,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-03T06:58:17.161Z"
@@ -275,7 +280,8 @@
         "odds": 1.6,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -291,9 +297,9 @@
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/ugo-humbert-vs-jiri-lehecka-tips-live-stream-20261002-0024/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Ugo Humbert Win",
@@ -339,7 +345,8 @@
         "odds": 1.68,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/6a320699240918101555/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Bc.Game Sport",
@@ -348,7 +355,8 @@
         "odds": 1.7,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/f56557260105173714/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -357,7 +365,8 @@
         "odds": 1.91,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
@@ -373,21 +382,24 @@
         "market": "15+ Points",
         "odds": 1.68,
         "stakeUnits": 3,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "selection": "Keanu Pinder",
         "market": "7+ Rebounds",
         "odds": 1.7,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "selection": "Melbourne -8.5",
         "market": "Handicap/Line",
         "odds": 1.91,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-03T06:58:17.161Z"
@@ -455,16 +467,17 @@
         "odds": 1.55,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/volleyball/japan-vs-iran-live-stream-20261002-0036/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-10-03T06:58:17.161Z"
   },
@@ -493,16 +506,17 @@
         "odds": 1.9,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/south-korea-u23-vs-japan-u23-preview-20261001-0028/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-10-03T06:58:17.161Z"
   },
@@ -531,7 +545,8 @@
         "odds": 2.2,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -540,23 +555,25 @@
         "odds": 2.65,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/alexander-zverev-vs-juncheng-shang-tips-live-stream-20261002-0034/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Under 18.5 Games",
         "market": "Total Games",
         "odds": 2.65,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-03T06:58:17.161Z"
@@ -624,7 +641,8 @@
         "odds": 4.2,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Roobet ",
@@ -633,23 +651,25 @@
         "odds": 8,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/57a5a0c4260605151656/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/chesterfield-vs-tranmere-live-stream-tips-20261001-0027/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [
       {
         "selection": "1-1 Draw",
         "market": "Correct Score",
         "odds": 8,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-03T06:58:17.161Z"
@@ -679,16 +699,17 @@
         "odds": 1.9,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/basketball/mykonos-vs-paok-live-stream-20261002-0035/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-10-03T06:58:17.161Z"
   },
@@ -717,7 +738,8 @@
         "odds": 1.46,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -733,9 +755,9 @@
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/elena-rybakina-vs-alina-charaeva-betting-tips-20261002-0023/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Rybakina -5.5",
@@ -772,16 +794,17 @@
         "odds": 2.8,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/finland-vs-albania-tips-20261001-0031/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [],
     "scrapedAt": "2026-10-03T06:58:17.161Z"
   },
@@ -810,7 +833,8 @@
         "odds": 2.2,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -819,7 +843,8 @@
         "odds": 3.5,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -828,7 +853,8 @@
         "odds": 3.55,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -837,37 +863,41 @@
         "odds": 3.1,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/ice-hockey/vaxjo-lakers-vs-rogle-bk-shl-predictions-betting-tips-20261002-0009/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [
       {
         "selection": "Both Teams",
         "market": "To Score Over 2.5 Goals",
         "odds": 3.5,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "selection": "Lucas Elvernes",
         "market": "2+ Points",
         "odds": 3.55,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "selection": "Olivier Nadeau",
         "market": "Anytime Goal Scorer",
         "odds": 3.1,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-03T06:58:17.161Z"
@@ -897,7 +927,8 @@
         "odds": 1.55,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -915,16 +946,17 @@
         "odds": 1.68,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/ice-hockey/cska-moscow-vs-dynamo-moscow-predictions-betting-tips-20261002-0007/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Dynamo Under 2.5",
@@ -938,7 +970,8 @@
         "market": "To Score First",
         "odds": 1.68,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-03T06:58:17.161Z"

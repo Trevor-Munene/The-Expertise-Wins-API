@@ -26,6 +26,7 @@ const initialSingleForm = {
 
 const initialBulkForm = {
   productId: "",
+  assignedUserId: "",
   count: 5,
   durationDays: 30,
 };
@@ -165,13 +166,27 @@ export default function AdminTokensPage() {
       return;
     }
 
+    if (!singleForm.productId) {
+      toast.error("Select a product tier");
+      return;
+    }
+
+    if (!singleForm.assignedUserId) {
+      toast.error("Select the registered user this token is for");
+      return;
+    }
+
     setCreatingSingle(true);
 
     try {
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + durationDays);
+
       const response = await adminApi.createAccessToken({
-        ...singleForm,
-        durationDays,
-        note: singleForm.note.trim(),
+        productId: singleForm.productId,
+        expiresAt: expiryDate.toISOString(),
+        notes: singleForm.note.trim() || undefined,
+        assignedUserId: singleForm.assignedUserId,
       });
 
       toast.success(
@@ -211,13 +226,27 @@ export default function AdminTokensPage() {
       return;
     }
 
+    if (!bulkForm.productId) {
+      toast.error("Select a product tier");
+      return;
+    }
+
+    if (!bulkForm.assignedUserId) {
+      toast.error("Select the registered user these tokens are for");
+      return;
+    }
+
     setCreatingBulk(true);
 
     try {
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + durationDays);
+
       const response = await adminApi.createAccessTokensBulk({
-        ...bulkForm,
+        productId: bulkForm.productId,
         count,
-        durationDays,
+        expiresAt: expiryDate.toISOString(),
+        assignedUserId: bulkForm.assignedUserId,
       });
 
       toast.success(
@@ -500,20 +529,24 @@ export default function AdminTokensPage() {
 
               <div>
             <label
-              htmlFor="single-user"
-              className="mb-1.5 block text-xs font-semibold text-slate-400"
-            >
-              Link to registered user (optional)
-            </label>
-            <select
-              id="single-user"
-              value={singleForm.assignedUserId || ""}
-              onChange={(event) => setSingleForm((current) => ({ ...current, assignedUserId: event.target.value || null }))}
-              className={inputClassName}
-            >
-              <option value="">Redeemable without login</option>
-              {users.map((user) => <option key={user.id} value={user.id}>{user.email || user.username || user.id}</option>)}
-            </select>
+                            htmlFor="single-user"
+                            className="mb-1.5 block text-xs font-semibold text-slate-400"
+                          >
+                            Issue to registered user
+                          </label>
+                          <select
+                            id="single-user"
+                            required
+                            value={singleForm.assignedUserId || ""}
+                            onChange={(event) => setSingleForm((current) => ({ ...current, assignedUserId: event.target.value }))}
+                            className={inputClassName}
+                          >
+                            <option value="">Select the registered user</option>
+                            {users.map((user) => <option key={user.id} value={user.id}>{user.email || user.username || user.id}</option>)}
+                          </select>
+                          <p className="mt-1.5 text-[11px] text-slate-500">
+                            Tokens are always issued to one account and can only be redeemed by that account while signed in.
+                          </p>
           </div>
 
           <div>
@@ -602,6 +635,40 @@ export default function AdminTokensPage() {
                   </option>
                 ))}
             </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="bulk-user"
+              className="mb-1.5 block text-xs font-semibold text-slate-400"
+            >
+              Issue to registered user *
+            </label>
+
+            <select
+              id="bulk-user"
+              required
+              value={bulkForm.assignedUserId || ""}
+              onChange={(event) =>
+                setBulkForm((current) => ({
+                  ...current,
+                  assignedUserId: event.target.value,
+                }))
+              }
+              className={inputClassName}
+            >
+              <option value="">Select the registered user</option>
+
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.email || user.username || user.id}
+                </option>
+              ))}
+            </select>
+
+            <p className="mt-1.5 text-[11px] text-slate-500">
+              Every token in this batch is issued to the same account.
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

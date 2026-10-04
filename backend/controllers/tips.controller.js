@@ -1,14 +1,14 @@
-// backend/controllers/tips.controller.js
 const tipsService = require("../services/tips.service");
 
-// Helper to extract request data consistently
+// Extract request data, defaulting the body to an empty object
 const getRequestData = (req) => ({
   params: req.params,
   query: req.query,
-  body: req.body,
+  body: req.body ?? {},
   userId: req.user?.id,
 });
 
+// List public tips
 const getTips = async (req, res, next) => {
   try {
     const { query } = getRequestData(req);
@@ -19,6 +19,7 @@ const getTips = async (req, res, next) => {
   }
 };
 
+// List free product tips
 const getFreeTips = async (req, res, next) => {
   try {
     const { query } = getRequestData(req);
@@ -29,6 +30,7 @@ const getFreeTips = async (req, res, next) => {
   }
 };
 
+// List VIP tips if the user has access
 const getVipTips = async (req, res, next) => {
   try {
     const { userId, query } = getRequestData(req);
@@ -39,6 +41,7 @@ const getVipTips = async (req, res, next) => {
   }
 };
 
+// List MaxBet tips if the user has access
 const getMaxbetTips = async (req, res, next) => {
   try {
     const { userId, query } = getRequestData(req);
@@ -49,6 +52,7 @@ const getMaxbetTips = async (req, res, next) => {
   }
 };
 
+// List archived tips for the visible tiers
 const getArchive = async (req, res, next) => {
   try {
     const { query, userId } = getRequestData(req);
@@ -59,62 +63,55 @@ const getArchive = async (req, res, next) => {
   }
 };
 
+// Get a single tip if it is visible to the user
 const getTipById = async (req, res, next) => {
   try {
-    const { id } = req.params; // single param, destructure for consistency
-    const tip = await tipsService.getTipById(id, req.user?.id, req.user?.role === "ADMIN");
+    const { params, userId } = getRequestData(req);
+    const tip = await tipsService.getTipById(params.id, userId, req.user?.role === "ADMIN");
     res.status(200).json({ tip });
   } catch (error) {
     next(error);
   }
 };
 
+// Create a tip as the current user
 const createTip = async (req, res, next) => {
   try {
     const { userId, body } = getRequestData(req);
     const tip = await tipsService.createTip(userId, body);
-    res.status(201).json({
-      message: "Tip created successfully.",
-      tip,
-    });
+    res.status(201).json({ message: "Tip created successfully.", tip });
   } catch (error) {
     next(error);
   }
 };
 
+// Update a tip
 const updateTip = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { userId, body } = getRequestData(req);
-    const tip = await tipsService.updateTip(id, userId, body);
-    res.status(200).json({
-      message: "Tip updated successfully.",
-      tip,
-    });
+    const { params, userId, body } = getRequestData(req);
+    const tip = await tipsService.updateTip(params.id, userId, body);
+    res.status(200).json({ message: "Tip updated successfully.", tip });
   } catch (error) {
     next(error);
   }
 };
 
+// Update a tip's result and outcome
 const updateTipResult = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { userId, body } = getRequestData(req);
-    const tip = await tipsService.updateTipResult(id, userId, body);
-    res.status(200).json({
-      message: "Tip result updated successfully.",
-      tip,
-    });
+    const { params, userId, body } = getRequestData(req);
+    const tip = await tipsService.updateTipResult(params.id, userId, body);
+    res.status(200).json({ message: "Tip result updated successfully.", tip });
   } catch (error) {
     next(error);
   }
 };
 
+// Cancel a tip
 const deleteTip = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { userId } = getRequestData(req);
-    const result = await tipsService.deleteTip(id, userId);
+    const { params, userId } = getRequestData(req);
+    const result = await tipsService.deleteTip(params.id, userId);
     res.status(200).json(result);
   } catch (error) {
     next(error);

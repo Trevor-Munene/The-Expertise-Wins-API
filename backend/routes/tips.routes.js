@@ -5,28 +5,28 @@ const { authenticateJWT, optionalAuthenticateJWT } = require("../middleware/auth
 
 const tipsRouter = Router();
 
-// Public tips
+// List public tips and free tips
 tipsRouter.get("/", tipsController.getTips);
 tipsRouter.get("/free", tipsController.getFreeTips);
 
-// Protected product tips
+// List tips for paid products, requiring login
 tipsRouter.get("/vip", authenticateJWT, tipsController.getVipTips);
 tipsRouter.get("/maxbet", authenticateJWT, tipsController.getMaxbetTips);
 
-// Historical previews, public tiers for guests and entitled tiers for members
+// List archived tips for guests and logged in members
 tipsRouter.get("/archive", optionalAuthenticateJWT, tipsController.getArchive);
 
-// Individual tip
+// Get a single tip, registered after named routes so they match first
 tipsRouter.get("/:id", optionalAuthenticateJWT, tipsController.getTipById);
 
-// Tip management
+// Create and update tips
 tipsRouter.post("/", authenticateJWT, tipsController.createTip);
 tipsRouter.patch("/:id", authenticateJWT, tipsController.updateTip);
 
-// Tip results
+// Update a tip's result
 tipsRouter.patch("/:id/result", authenticateJWT, tipsController.updateTipResult);
 
-// Delete / cancel a tip
+// Cancel a tip
 tipsRouter.delete("/:id", authenticateJWT, tipsController.deleteTip);
 
 module.exports = tipsRouter;

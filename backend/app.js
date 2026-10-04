@@ -7,7 +7,6 @@ const cors = require("cors");
 const { passport } = require("./middleware/authentication");
 const errorHandler = require("./middleware/errorHandler");
 
-// Routers
 const authRouter = require("./routes/auth.routes");
 const tipsRouter = require("./routes/tips.routes");
 const statsRouter = require("./routes/stats.routes");
@@ -16,52 +15,68 @@ const subscriptionsRouter = require("./routes/subscriptions.routes");
 const adminRouter = require("./routes/admin.routes");
 const prisma = require("./lib/prisma");
 
+// Record a usage event for every finished API request
 const appUsageTracker = (req, res, next) => {
   res.on("finish", () => {
-    if (!req.path.startsWith("/api")) return;
-    prisma.usageEvent.create({
-      data: { event: `${req.method} ${req.path}`, path: req.path, userId: req.user?.id || null, metadata: { statusCode: res.statusCode } },
-    }).catch(() => {});
+    // Read the full path because mounted routers strip their prefix from req.path
+    const path = req.originalUrl.split("?")[0];
+    if (!path.startsWith("/api")) return;
+
+    // Never let analytics break a real API response: guard the model and
+    // swallow every failure, otherwise a stale or unreachable database
+    // raises an unhandled rejection that can take the whole process down.
+    Promise.resolve()
+      .then(() => {
+        if (typeof prisma.usageEvent?.create !== "function") return;
+        return prisma.usageEvent.create({
+          data: {
+            event: `${req.method} ${path}`,
+            path,
+            userId: req.user?.id || null,
+            metadata: { statusCode: res.statusCode },
+          },
+        });
+      })
+      .catch(() => {});
   });
   next();
 };
 
 const app = express();
 
-// CORS configuration – driven by CORS_ORIGIN env (comma‑separated list)
-const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+// Read allowed origins from CORS_ORIGIN as a comma separated list
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:3001")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+// Allow listed origins and non browser tools, and reject others without a server error
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow non‑browser tools (curl, Postman, server‑to‑server)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error(`CORS blocked: ${origin}`));
+      return callback(null, allowedOrigins.includes(origin));
     },
     credentials: true,
   })
 );
 
-// Body parsers
+// Parse JSON and form request bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Passport initialization
+// Initialise Passport for JWT and local strategies
 app.use(passport.initialize());
 
-// Static assets (e.g., uploaded avatars)
+// Serve uploaded files such as avatars
 app.use("/public", express.static("public"));
 
-// Health check / root endpoint
+// Respond to the health check
 app.get("/", (req, res) =>
   res.json({ status: 200, message: "The Expertise Wins API is ready for development." })
 );
 
-// API routes – all prefixed with /api
+// Track usage, then mount all API routes under /api
 app.use(appUsageTracker);
 app.use("/api/auth", authRouter);
 app.use("/api/tips", tipsRouter);
@@ -70,14 +85,15 @@ app.use("/api/products", productsRouter);
 app.use("/api/subscriptions", subscriptionsRouter);
 app.use("/api/admin", adminRouter);
 
-// 404 handler for unknown routes
+// Return 404 for unknown routes
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found." });
 });
 
-// Global error handler
+// Handle errors from every route
 app.use(errorHandler);
 
+// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🎯 The Expertise Wins API running on port ${PORT}`);

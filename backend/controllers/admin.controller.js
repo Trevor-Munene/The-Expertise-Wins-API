@@ -1,7 +1,6 @@
-// backend/controllers/admin.controller.js
 const adminService = require("../services/admin.service");
 
-// Users
+// List users with filters and pagination
 const getUsers = async (req, res, next) => {
   try {
     const { query } = req;
@@ -12,6 +11,7 @@ const getUsers = async (req, res, next) => {
   }
 };
 
+// Get a single user by id
 const getUserById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -22,10 +22,11 @@ const getUserById = async (req, res, next) => {
   }
 };
 
+// Update a user's details
 const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { body } = req;
+    const body = req.body ?? {};
     const user = await adminService.updateUser(id, body);
     res.status(200).json({ message: "User updated successfully.", user });
   } catch (error) {
@@ -33,10 +34,11 @@ const updateUser = async (req, res, next) => {
   }
 };
 
+// Update a user's status
 const updateUserStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status } = req.body ?? {};
     const user = await adminService.updateUserStatus(id, status);
     res.status(200).json({ message: "User status updated successfully.", user });
   } catch (error) {
@@ -44,10 +46,11 @@ const updateUserStatus = async (req, res, next) => {
   }
 };
 
-// Tips
+// Create a tip as the current admin
 const createTip = async (req, res, next) => {
   try {
-    const { body, user } = req;
+    const body = req.body ?? {};
+    const { user } = req;
     const tip = await adminService.createTip(body, user.id);
     res.status(201).json({ message: "Tip created successfully.", tip });
   } catch (error) {
@@ -55,6 +58,7 @@ const createTip = async (req, res, next) => {
   }
 };
 
+// List tips with filters and pagination
 const getTips = async (req, res, next) => {
   try {
     const { query } = req;
@@ -65,6 +69,7 @@ const getTips = async (req, res, next) => {
   }
 };
 
+// Get a single tip by id
 const getTipById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -75,10 +80,11 @@ const getTipById = async (req, res, next) => {
   }
 };
 
+// Update a tip
 const updateTip = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { body } = req;
+    const body = req.body ?? {};
     const tip = await adminService.updateTip(id, body);
     res.status(200).json({ message: "Tip updated successfully.", tip });
   } catch (error) {
@@ -86,6 +92,7 @@ const updateTip = async (req, res, next) => {
   }
 };
 
+// Soft delete a tip by cancelling it
 const deleteTip = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -96,9 +103,10 @@ const deleteTip = async (req, res, next) => {
   }
 };
 
+// Update many tips at once
 const updateTipsBulk = async (req, res, next) => {
   try {
-    const { ids, data } = req.body;
+    const { ids, data } = req.body ?? {};
     const result = await adminService.updateTipsBulk(ids, data);
     res.status(200).json(result);
   } catch (error) {
@@ -106,9 +114,10 @@ const updateTipsBulk = async (req, res, next) => {
   }
 };
 
+// Publish many tips at once
 const publishTipsBulk = async (req, res, next) => {
   try {
-    const { ids } = req.body;
+    const { ids } = req.body ?? {};
     const { id: userId } = req.user;
     const result = await adminService.publishTipsBulk(ids, userId);
     res.status(200).json(result);
@@ -117,9 +126,10 @@ const publishTipsBulk = async (req, res, next) => {
   }
 };
 
+// Unpublish many tips at once
 const unpublishTipsBulk = async (req, res, next) => {
   try {
-    const { ids } = req.body;
+    const { ids } = req.body ?? {};
     const result = await adminService.unpublishTipsBulk(ids);
     res.status(200).json(result);
   } catch (error) {
@@ -127,9 +137,10 @@ const unpublishTipsBulk = async (req, res, next) => {
   }
 };
 
+// Settle many tips at once
 const settleTipsBulk = async (req, res, next) => {
   try {
-    const { ids, outcome, result: resInfo } = req.body;
+    const { ids, outcome, result: resInfo } = req.body ?? {};
     const result = await adminService.settleTipsBulk(ids, outcome, resInfo);
     res.status(200).json(result);
   } catch (error) {
@@ -137,9 +148,10 @@ const settleTipsBulk = async (req, res, next) => {
   }
 };
 
+// Cancel many tips at once
 const cancelTipsBulk = async (req, res, next) => {
   try {
-    const { ids } = req.body;
+    const { ids } = req.body ?? {};
     const result = await adminService.cancelTipsBulk(ids);
     res.status(200).json(result);
   } catch (error) {
@@ -147,7 +159,7 @@ const cancelTipsBulk = async (req, res, next) => {
   }
 };
 
-// Single tip actions
+// Publish a single tip
 const publishTip = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -159,6 +171,7 @@ const publishTip = async (req, res, next) => {
   }
 };
 
+// Unpublish a single tip
 const unpublishTip = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -169,10 +182,11 @@ const unpublishTip = async (req, res, next) => {
   }
 };
 
+// Settle a single tip
 const settleTip = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { outcome, result: resInfo } = req.body;
+    const { outcome, result: resInfo } = req.body ?? {};
     const tip = await adminService.settleTip(id, outcome, resInfo);
     res.status(200).json({ message: "Tip settled successfully.", tip });
   } catch (error) {
@@ -180,6 +194,7 @@ const settleTip = async (req, res, next) => {
   }
 };
 
+// Cancel a single tip
 const cancelTip = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -190,10 +205,11 @@ const cancelTip = async (req, res, next) => {
   }
 };
 
+// Publish a tip to a product
 const publishTipToProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { productId } = req.body;
+    const { productId } = req.body ?? {};
     const publication = await adminService.publishTipToProduct(id, productId);
     res.status(201).json({ message: "Tip published to product successfully.", publication });
   } catch (error) {
@@ -201,6 +217,7 @@ const publishTipToProduct = async (req, res, next) => {
   }
 };
 
+// Remove a tip publication from a product
 const removeTipPublication = async (req, res, next) => {
   try {
     const { id, productId } = req.params;
@@ -211,10 +228,10 @@ const removeTipPublication = async (req, res, next) => {
   }
 };
 
-// Access Tokens
+// Create a single access token
 const createAccessToken = async (req, res, next) => {
   try {
-    const { body } = req;
+    const body = req.body ?? {};
     const result = await adminService.createAccessToken(body);
     res.status(201).json({ message: "Access token created successfully.", ...result });
   } catch (error) {
@@ -222,9 +239,10 @@ const createAccessToken = async (req, res, next) => {
   }
 };
 
+// Create many access tokens at once
 const createAccessTokensBulk = async (req, res, next) => {
   try {
-    const { body } = req;
+    const body = req.body ?? {};
     const result = await adminService.createAccessTokensBulk(body);
     res.status(201).json({ message: "Access tokens created successfully.", ...result });
   } catch (error) {
@@ -232,6 +250,7 @@ const createAccessTokensBulk = async (req, res, next) => {
   }
 };
 
+// List access tokens with filters and pagination
 const getAccessTokens = async (req, res, next) => {
   try {
     const { query } = req;
@@ -242,6 +261,7 @@ const getAccessTokens = async (req, res, next) => {
   }
 };
 
+// Get a single access token by id
 const getAccessTokenById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -252,10 +272,11 @@ const getAccessTokenById = async (req, res, next) => {
   }
 };
 
+// Update an access token
 const updateAccessToken = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { body } = req;
+    const body = req.body ?? {};
     const accessToken = await adminService.updateAccessToken(id, body);
     res.status(200).json({ message: "Access token updated successfully.", accessToken });
   } catch (error) {
@@ -263,6 +284,7 @@ const updateAccessToken = async (req, res, next) => {
   }
 };
 
+// Revoke an access token
 const revokeAccessToken = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -273,10 +295,11 @@ const revokeAccessToken = async (req, res, next) => {
   }
 };
 
+// Extend an access token by a number of days
 const extendAccessToken = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { days } = req.body;
+    const { days } = req.body ?? {};
     const accessToken = await adminService.extendAccessToken(id, days);
     res.status(200).json({ message: "Access token extended successfully.", accessToken });
   } catch (error) {
@@ -284,10 +307,10 @@ const extendAccessToken = async (req, res, next) => {
   }
 };
 
-// Products
+// Create a product
 const createProduct = async (req, res, next) => {
   try {
-    const { body } = req;
+    const body = req.body ?? {};
     const product = await adminService.createProduct(body);
     res.status(201).json({ message: "Product created successfully.", product });
   } catch (error) {
@@ -295,6 +318,7 @@ const createProduct = async (req, res, next) => {
   }
 };
 
+// List products with filters
 const getProducts = async (req, res, next) => {
   try {
     const { query } = req;
@@ -305,6 +329,7 @@ const getProducts = async (req, res, next) => {
   }
 };
 
+// Get a single product by id
 const getProductById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -315,10 +340,11 @@ const getProductById = async (req, res, next) => {
   }
 };
 
+// Update a product
 const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { body } = req;
+    const body = req.body ?? {};
     const product = await adminService.updateProduct(id, body);
     res.status(200).json({ message: "Product updated successfully.", product });
   } catch (error) {
@@ -326,10 +352,11 @@ const updateProduct = async (req, res, next) => {
   }
 };
 
+// Update a product's status
 const updateProductStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status } = req.body ?? {};
     const product = await adminService.updateProductStatus(id, status);
     res.status(200).json({ message: "Product status updated successfully.", product });
   } catch (error) {

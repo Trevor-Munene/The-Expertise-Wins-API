@@ -1,23 +1,23 @@
-// backend/services/auth.service.js
 const prisma = require("../lib/prisma");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// Helper to create HTTP‑style errors
+// Create an error with an HTTP status the error handler can read
 const createError = (message, statusCode = 400) => {
   const err = new Error(message);
+  err.status = statusCode;
   err.statusCode = statusCode;
   return err;
 };
 
-// ---------- Register ----------
-const registerUser = async (userData) => {
+// Register a new user after checking required and unique fields
+const registerUser = async (userData = {}) => {
   const { email, username, password, firstName, lastName } = userData;
   if (!email || !username || !password) {
     throw createError("Email, username and password are required.");
   }
 
-  // Ensure unique email / username
+  // Check that the email and username are not already taken
   const existing = await prisma.user.findFirst({
     where: {
       OR: [{ email }, { username }],
@@ -53,14 +53,15 @@ const registerUser = async (userData) => {
   return user;
 };
 
-// ---------- Login ----------
+// Sign a JWT for an authenticated user
 const loginUser = async (user) => {
   const payload = { id: user.id, role: user.role };
   const secret = process.env.JWT_SECRET || "default_secret";
   const expiresIn = process.env.JWT_EXPIRES_IN || "7d";
 
   const token = jwt.sign(payload, secret, { expiresIn });
-  // Return minimal user data (no password)
+
+  // Return user data without the password
   const userInfo = {
     id: user.id,
     email: user.email,
@@ -71,13 +72,12 @@ const loginUser = async (user) => {
   return { token, user: userInfo };
 };
 
-// ---------- Logout ----------
-// In stateless JWT flow logout is a client‑side operation. We keep a placeholder.
+// Return a logout message since JWT logout happens on the client
 const logoutUser = async () => {
   return { message: "Logged out successfully." };
 };
 
-// ---------- Get Current User ----------
+// Get the current user's profile
 const getCurrentUser = async (userId) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -98,14 +98,17 @@ const getCurrentUser = async (userId) => {
   return user;
 };
 
-// ---------- Update Password ----------
-const updatePassword = async (userId, passwordData) => {
+// Change a user's password after verifying the current one
+const updatePassword = async (userId, passwordData = {}) => {
   const { oldPassword, newPassword } = passwordData;
   if (!oldPassword || !newPassword) {
     throw createError("Both oldPassword and newPassword are required.");
   }
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { password: true } });
   if (!user) throw createError("User not found.", 404);
+
+  // Reject accounts that have no password set
+  if (!user.password) throw createError("This account has no password set.", 400);
 
   const match = await bcrypt.compare(oldPassword, user.password);
   if (!match) throw createError("Current password is incorrect.", 401);
@@ -119,8 +122,8 @@ const updatePassword = async (userId, passwordData) => {
   return { message: "Password updated successfully.", user: updated };
 };
 
-// ---------- Update Profile (e.g., avatar) ----------
-const updateProfile = async (userId, profileData) => {
+// Update allowed profile fields after checking unique values
+const updateProfile = async (userId, profileData = {}) => {
   const allowedFields = [
     "email",
     "username",
@@ -140,7 +143,7 @@ const updateProfile = async (userId, profileData) => {
     throw createError("No profile fields provided for update.");
   }
 
-  // Ensure unique constraints for email/username/telegramUserId if they are being changed
+  // Check unique fields only when they are being changed
   const conflictChecks = [];
   if (data.email) {
     conflictChecks.push(
