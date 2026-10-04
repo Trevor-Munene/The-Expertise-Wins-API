@@ -1,254 +1,723 @@
+// frontend/src/app/archive/page.jsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CalendarDays, Search, Trophy } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  RefreshCw,
+  Search,
+  Trophy,
+} from "lucide-react";
+
 import { tipsApi } from "../../api/tips.api";
-import { formatTipChannelCard, formatFreeTipChannelCard } from "../../lib/tipChannelFormatter";
+import {
+  formatTipChannelCard,
+  formatFreeTipChannelCard,
+} from "../../lib/tipChannelFormatter";
 
 const PAGE_SIZE = 20;
-const getTodayDate = () => new Date().toISOString().slice(0, 10);
 
-// Default to today; when the API has no data for today it falls back to the most
-// recent day that has records, so switching to another date shows real data.
-const createInitialFilters = () => ({
-  sport: "",
-  tier: "free",
-  day: getTodayDate(),
-  search: "",
-  outcome: "",
-});
+const TIERS = [
+  { id: "free", label: "Free", title: "The Expertise Wins Free Tips" },
+  { id: "vip", label: "VIP", title: "VIP Tips" },
+  { id: "maxbet", label: "MaxBet", title: "MaxBet Tips" },
+];
+
+const OUTCOMES = [
+  { value: "PENDING", label: "Pending" },
+  { value: "WON", label: "Won" },
+  { value: "LOST", label: "Lost" },
+  { value: "VOID", label: "Void" },
+  { value: "PUSH", label: "Push" },
+  { value: "HALF_WON", label: "Half won" },
+  { value: "HALF_LOST", label: "Half lost" },
+];
+
+const focusStyles =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+
+const inputStyles = `min-h-[44px] w-full min-w-0 rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-slate-100 ${focusStyles}`;
+
+const buttonStyles = `inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${focusStyles}`;
+
+// Get the current calendar date in Nairobi.
+function getTodayDate() {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Nairobi",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const getPart = (type) =>
+    parts.find((part) => part.type === type)?.value;
+
+  return `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+}
+
+function createInitialFilters() {
+  return {
+    sport: "",
+    tier: "free",
+    day: getTodayDate(),
+    search: "",
+    outcome: "",
+  };
+}
+
+function createEmptyArchive() {
+  return {
+    data: [],
+    pagination: { page: 1, pages: 0, total: 0 },
+    sports: [],
+    tierSports: {},
+    day: null,
+  };
+}
+
+function normalizeCount(value, fallback = 0) {
+  const number = Number(value);
+
+  return Number.isFinite(number) && number >= 0
+    ? Math.floor(number)
+    : fallback;
+}
+
+function normalizeDay(value) {
+  if (typeof value !== "string") return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+
+  const date = new Date(`${value}T00:00:00Z`);
+
+  return Number.isFinite(date.getTime()) &&
+    date.toISOString().slice(0, 10) === value
+    ? value
+    : null;
+}
+
+function formatDay(value) {
+  const day = normalizeDay(value);
+
+  return day
+    ? new Date(`${day}T00:00:00Z`).toLocaleDateString("en-GB", {
+        timeZone: "UTC",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : null;
+}
+
+// Normalize the existing archive response contract.
+function normalizeArchive(response) {
+  const source = response?.tips;
+
+  if (!source || !Array.isArray(source.data)) {
+    throw new Error("Unexpected archive response");
+  }
+
+  return {
+    data: source.data.filter(
+      (tip) => tip && typeof tip === "object"
+    ),
+    pagination: {
+      page: Math.max(1, normalizeCount(source.pagination?.page, 1)),
+      pages: normalizeCount(source.pagination?.pages),
+      total: normalizeCount(source.pagination?.total),
+    },
+    sports: Array.isArray(source.sports) ? source.sports : [],
+    tierSports:
+      source.tierSports && typeof source.tierSports === "object"
+        ? source.tierSports
+        : {},
+    day: normalizeDay(source.day),
+  };
+}
+
+// Prefer explicit tier membership over a default free assignment.
+function belongsToTier(tip, tier) {
+  if (Array.isArray(tip.tiers) && tip.tiers.length > 0) {
+    return tip.tiers.includes(tier);
+  }
+
+  return (tip.tier || "free") === tier;
+}
 
 export default function ArchivePage() {
-  const [archive, setArchive] = useState({ data: [], pagination: { page: 1, pages: 0, total: 0 }, sports: [], tierSports: {}, tiers: [] });
+  const [archive, setArchive] = useState(createEmptyArchive);
   const [filters, setFilters] = useState(createInitialFilters);
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
+  const [fallbackNotice, setFallbackNotice] = useState("");
+
+  const allowInitialFallbackRef = useRef(true);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
-    let active = true;
-    const loadArchive = async () => {
+    let cancelled = false;
+    const requestId = ++requestIdRef.current;
+
+    const isCurrentRequest = () =>
+      !cancelled && requestId === requestIdRef.current;
+
+    async function loadArchive() {
       setLoading(true);
       setError("");
+
       try {
         const response = await tipsApi.getArchive({
           ...filters,
           page,
           limit: PAGE_SIZE,
         });
-        if (active) setArchive(response?.tips || { data: [], pagination: { page: 1, pages: 0, total: 0 }, sports: [], tiers: [] });
 
-          // When the selected day has no records, fall back to the most recent
-          // day the API reports so the archive is not blank on first load.
-          const total = response?.tips?.pagination?.total ?? 0;
-          if (total === 0 && filters.day && !filters.from && !filters.to) {
-            try {
-              const latest = await tipsApi.getArchive({ limit: 1 });
-              const latestDay = latest?.tips?.day || null;
-              if (latestDay && latestDay !== filters.day) {
-                setFilters((current) => ({ ...current, day: latestDay }));
-                return;
-              }
-            } catch {
-              // Keep the empty state when the fallback lookup fails.
+        if (!isCurrentRequest()) return;
+
+        let nextArchive = normalizeArchive(response);
+
+        // Only the initial view may fall back to the latest available day.
+        if (
+          allowInitialFallbackRef.current &&
+          page === 1 &&
+          filters.day &&
+          nextArchive.data.length === 0 &&
+          nextArchive.pagination.total === 0
+        ) {
+          try {
+            const latestResponse = await tipsApi.getArchive({
+              sport: filters.sport,
+              tier: filters.tier,
+              search: filters.search,
+              outcome: filters.outcome,
+              page: 1,
+              limit: PAGE_SIZE,
+            });
+
+            if (!isCurrentRequest()) return;
+
+            const latestArchive = normalizeArchive(latestResponse);
+
+            if (
+              latestArchive.day &&
+              latestArchive.day !== filters.day &&
+              latestArchive.data.length > 0
+            ) {
+              allowInitialFallbackRef.current = false;
+              setArchive(latestArchive);
+              setFallbackNotice(
+                `No records were returned for ${formatDay(
+                  filters.day
+                )}. Showing the latest available day for this tier: ${formatDay(
+                  latestArchive.day
+                )}.`
+              );
+              setFilters((current) => ({
+                ...current,
+                day: latestArchive.day,
+              }));
+              return;
             }
+          } catch {
+            // Preserve the successful empty result if the fallback fails.
           }
-      } catch (requestError) {
-        if (active) {
-          setArchive({ data: [], pagination: { page: 1, pages: 0, total: 0 }, sports: [], tierSports: {}, tiers: [] });
-          setError(requestError.response?.data?.message || "Unable to load the tip archive.");
         }
+
+        if (!isCurrentRequest()) return;
+
+        allowInitialFallbackRef.current = false;
+        setArchive(nextArchive);
+      } catch (requestError) {
+        if (!isCurrentRequest()) return;
+
+        setArchive(createEmptyArchive());
+
+        const message = requestError?.response?.data?.message;
+
+        setError(
+          typeof message === "string" && message.trim()
+            ? message
+            : "Unable to load the tip archive. Please try again."
+        );
       } finally {
-        if (active) setLoading(false);
+        if (isCurrentRequest()) {
+          setLoading(false);
+        }
       }
-    };
+    }
 
     loadArchive();
-    return () => { active = false; };
-  }, [filters, page]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filters, page, retryCount]);
+
+  // Invalidate pending results immediately when the view changes.
+  const prepareRequest = () => {
+    requestIdRef.current += 1;
+    setLoading(true);
+    setError("");
+    setArchive(createEmptyArchive());
+  };
 
   const changeFilter = (key, value) => {
+    allowInitialFallbackRef.current = false;
+    prepareRequest();
+    setFallbackNotice("");
     setPage(1);
-    setFilters((current) => ({ ...current, [key]: value }));
+
+    setFilters((current) => ({
+      ...current,
+      [key]: value,
+      ...(key === "tier" ? { sport: "" } : {}),
+    }));
   };
 
   const clearFilters = () => {
+    allowInitialFallbackRef.current = false;
+    prepareRequest();
+    setFallbackNotice("");
     setSearchInput("");
     setFilters(createInitialFilters());
     setPage(1);
   };
 
-  const selectedTier = filters.tier || "free";
-  const availableSports = archive.tierSports?.[selectedTier] || archive.sports || [];
-  const groupedTips = ["free", "vip", "maxbet"]
-    .map((tier) => ({
-      tier,
-      tips: archive.data.filter((tip) => tip.tiers?.includes(tier) || (tip.tier || "free") === tier),
-    }))
-    .filter((group) => group.tips.length > 0);
-  const tierTitles = {
-    maxbet: "💰 MAXBET TIPS",
-    vip: "💎 VIP TIPS",
-    free: "🆓 The Expertise Wins Free Tips 📣",
+  const changePage = (nextPage) => {
+    prepareRequest();
+    setPage(nextPage);
   };
 
+  const retryRequest = () => {
+    prepareRequest();
+    setRetryCount((count) => count + 1);
+  };
+
+  const selectedTier = TIERS.find(
+    (tier) => tier.id === filters.tier
+  );
+
+  const tierSports = archive.tierSports?.[filters.tier];
+
+  const availableSports = Array.from(
+    new Set(
+      (Array.isArray(tierSports) ? tierSports : archive.sports).filter(
+        (sport) => typeof sport === "string" && sport.trim()
+      )
+    )
+  );
+
+  // Keep the selected value visible if a filtered response omits it.
+  if (filters.sport && !availableSports.includes(filters.sport)) {
+    availableSports.unshift(filters.sport);
+  }
+
+  const groupedTips = TIERS.filter(
+    (tier) => !filters.tier || tier.id === filters.tier
+  )
+    .map((tier) => ({
+      ...tier,
+      tips: archive.data.filter((tip) => belongsToTier(tip, tier.id)),
+    }))
+    .filter((group) => group.tips.length > 0);
+
+  const servedDayLabel = formatDay(archive.day);
+
   return (
-    <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-      <header className="space-y-3 border-b border-slate-800 pb-7">
-        <Link href="/tips" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-emerald-400">
-          <ArrowLeft className="h-4 w-4" /> Tips
+    <main
+      aria-labelledby="archive-heading"
+      className="mx-auto w-full max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8"
+    >
+      {/* Page header */}
+      <header className="space-y-4 border-b border-slate-800 pb-7">
+        <Link
+          href="/tips"
+          className={`${buttonStyles} px-0 text-slate-400 hover:text-emerald-400`}
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Back to Tips
         </Link>
+
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase text-emerald-400">
-              <CalendarDays className="h-4 w-4" /> Historical record
+            <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400">
+              <CalendarDays className="h-4 w-4" aria-hidden="true" />
+              Historical record
             </p>
-            <h1 className="text-3xl font-black text-slate-100">Tip Archive</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-              Browse the Free, VIP, and MaxBet record transparently by day and by sport.
+
+            <h1
+              id="archive-heading"
+              className="text-3xl font-black tracking-tight text-slate-100 sm:text-4xl"
+            >
+              Tip Archive
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
+              Browse recorded Free, VIP, and MaxBet selections by day,
+              sport, and outcome.
             </p>
           </div>
-          <p className="text-sm text-slate-400" aria-live="polite">
-            {archive.pagination.total} records
+
+          <p
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="text-sm text-slate-400"
+          >
+            {loading
+              ? "Loading archive…"
+              : error
+                ? "Archive unavailable"
+                : `${archive.pagination.total.toLocaleString(
+                    "en-GB"
+                  )} record${archive.pagination.total === 1 ? "" : "s"}`}
           </p>
         </div>
       </header>
 
-      <div className="space-y-4">
-        <section className="rounded-2xl border-slate-800 bg-slate-900 p-4 shadow-lg" aria-label="Archive tip tiers">
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">Archive tiers</p>
-              <p className="mt-1 text-xs text-slate-500">Every archived tier is available to everyone.</p>
-            </div>
-            <Trophy className="h-5 w-5 text-amber-400" />
+      {/* Tier controls */}
+      <section
+        aria-labelledby="archive-tiers-heading"
+        className="rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-5"
+      >
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h2
+              id="archive-tiers-heading"
+              className="text-xs font-bold uppercase tracking-wider text-emerald-400"
+            >
+              Archive tiers
+            </h2>
+            <p className="mt-2 text-xs leading-5 text-slate-400">
+              Choose a tier to explore its recorded selections.
+            </p>
           </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {[{ id: "free", label: "🆓 Free" }, { id: "vip", label: "💎 VIP" }, { id: "maxbet", label: "💰 MaxBet" }].map((tier) => (
-              <button key={tier.id} type="button" onClick={() => changeFilter("tier", tier.id)} className={`rounded-xl border px-4 py-3 text-left text-sm font-bold transition ${filters.tier === tier.id ? "border-emerald-400 bg-emerald-500/15 text-emerald-300" : "border-slate-700 bg-slate-950 text-slate-300 hover:border-slate-500"}`}>
-                {tier.label}<span className="mt-1 block text-[11px] font-normal text-slate-500">Historical preview</span>
-              </button>
-            ))}
-          </div>
-        </section>
+          <Trophy
+            className="h-5 w-5 shrink-0 text-amber-400"
+            aria-hidden="true"
+          />
+        </div>
 
-        <form
-          className="grid grid-cols-1 gap-3 rounded-2xl border-slate-800 bg-slate-900 p-4 sm:grid-cols-2 lg:grid-cols-6"
-          onSubmit={(event) => {
-            event.preventDefault();
-            changeFilter("search", searchInput.trim());
-          }}
+        <div
+          role="group"
+          aria-label="Archive tier"
+          className="grid grid-cols-1 gap-2 sm:grid-cols-3"
         >
-        <label className="space-y-1 text-xs text-slate-400 lg:col-span-2">
-          Search fixtures or selections
-          <span className="relative block">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+          {TIERS.map((tier) => (
+            <button
+              key={tier.id}
+              type="button"
+              aria-pressed={filters.tier === tier.id}
+              aria-controls="archive-results"
+              onClick={() => changeFilter("tier", tier.id)}
+              className={`rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors ${focusStyles} ${
+                filters.tier === tier.id
+                  ? "border-emerald-400 bg-emerald-500/15 text-emerald-300"
+                  : "border-slate-700 bg-slate-950 text-slate-300 hover:border-slate-500"
+              }`}
+            >
+              {tier.label}
+              <span className="mt-1 block text-xs font-normal text-slate-400">
+                Historical selections
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Archive filters */}
+      <form
+        aria-label="Archive filters"
+        className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-5"
+        onSubmit={(event) => {
+          event.preventDefault();
+          changeFilter("search", searchInput.trim());
+        }}
+      >
+        <div className="space-y-2 lg:col-span-2">
+          <label
+            htmlFor="archive-search"
+            className="block text-xs font-semibold text-slate-400"
+          >
+            Search fixtures or selections
+          </label>
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+              aria-hidden="true"
+            />
             <input
+              id="archive-search"
+              type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Team, competition, selection"
-              className="w-full rounded-md border border-slate-700 bg-slate-950 py-2.5 pl-9 pr-3 text-sm text-slate-100 outline-none focus:border-emerald-500"
+              className={`${inputStyles} pl-10`}
             />
-          </span>
-        </label>
-        <label className="space-y-1 text-xs text-slate-400">
-          Sport
-          <select value={filters.sport} onChange={(event) => changeFilter("sport", event.target.value)} className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100">
-            <option value="">All available sports</option>
-            {availableSports.map((sport) => <option key={sport} value={sport}>{sport}</option>)}
-          </select>
-        </label>
-        <label className="space-y-1 text-xs text-slate-400">
-          Tier sports
-          <span className="block rounded-md border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-300">{selectedTier}</span>
-        </label>
-        <label className="space-y-1 text-xs text-slate-400">
-          Recorded outcome
-          <select value={filters.outcome} onChange={(event) => changeFilter("outcome", event.target.value)} className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100">
-            <option value="">Any outcome</option>
-            <option value="PENDING">Pending</option>
-            <option value="WON">Won</option>
-            <option value="LOST">Lost</option>
-            <option value="VOID">Void</option>
-            <option value="PUSH">Push</option>
-            <option value="HALF_WON">Half won</option>
-            <option value="HALF_LOST">Half lost</option>
-          </select>
-        </label>
-        <label className="space-y-1 text-xs text-slate-400 hidden">
-          Tier
-          <select value={filters.tier} onChange={(event) => changeFilter("tier", event.target.value)} className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100">
-            <option value="">All available tiers</option>
-            {archive.tiers.map((tier) => <option key={tier.slug} value={tier.slug}>{tier.name}</option>)}
-          </select>
-        </label>
-        <label className="space-y-1 text-xs text-slate-400">
-          Specific day
-          <input type="date" value={filters.day} onChange={(event) => changeFilter("day", event.target.value)} className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100" />
-        </label>
-        <div className="flex items-end gap-2 lg:col-span-6">
-          <button type="submit" className="inline-flex items-center gap-2 rounded-md bg-emerald-500 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-emerald-400">
-            <Search className="h-4 w-4" /> Search
-          </button>
-          <button type="button" onClick={clearFilters} className="rounded-md border border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-900">
-            Clear filters
-          </button>
+          </div>
         </div>
-        </form>
-      </div>
 
-      {error ? (
-        <div className="border-y border-rose-500/30 py-8 text-center text-sm text-rose-300">{error}</div>
-      ) : loading ? (
-        <div className="space-y-4" aria-label="Loading archive">
-          {[1, 2, 3].map((item) => <div key={item} className="h-48 animate-pulse border-y border-slate-800 bg-slate-900/60" />)}
+        <div className="space-y-2">
+          <label
+            htmlFor="archive-sport"
+            className="block text-xs font-semibold text-slate-400"
+          >
+            Sport
+          </label>
+          <select
+            id="archive-sport"
+            value={filters.sport}
+            onChange={(event) =>
+              changeFilter("sport", event.target.value)
+            }
+            className={inputStyles}
+          >
+            <option value="">All available sports</option>
+            {availableSports.map((sport) => (
+              <option key={sport} value={sport}>
+                {sport}
+              </option>
+            ))}
+          </select>
         </div>
-      ) : archive.data.length ? (
-        <div className="space-y-10" aria-label="Historical tips by tier">
-          {groupedTips.map((group) => (
-            <section key={group.tier} className="space-y-3" aria-label={tierTitles[group.tier]}>
-              <header className="flex items-center justify-between gap-4 border-b border-slate-800 pb-3">
-                <h2 className={`text-base font-black text-slate-100 ${group.tier === "free" ? "normal-case" : "uppercase"}`}>{tierTitles[group.tier]}</h2>
-                <span className="text-xs text-slate-500">{group.tips.length} cards</span>
-              </header>
-              <div className="divide-y divide-slate-800">
-                {group.tips.map((tip, index) => {
-                  const card = group.tier === "free"
-                    ? formatFreeTipChannelCard(tip)
-                    : formatTipChannelCard(tip);
-                  return (
-                    <article key={tip.id} className="py-5">
-                      {group.tier !== "free" && <p className="mb-2 text-[11px] font-bold uppercase text-slate-500">Card {index + 1}</p>}
-                      <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-slate-200">{card}</pre>
-                      <Link href={`/tips/${tip.id}`} className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300">
-                        Preview details <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
-                      {index < group.tips.length - 1 && group.tier !== "free" && <p className="mt-5 text-xs tracking-widest text-slate-700">----------------------------------------</p>}
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-          ))}
+
+        <div className="space-y-2">
+          <label
+            htmlFor="archive-outcome"
+            className="block text-xs font-semibold text-slate-400"
+          >
+            Recorded outcome
+          </label>
+          <select
+            id="archive-outcome"
+            value={filters.outcome}
+            onChange={(event) =>
+              changeFilter("outcome", event.target.value)
+            }
+            className={inputStyles}
+          >
+            <option value="">Any outcome</option>
+            {OUTCOMES.map((outcome) => (
+              <option key={outcome.value} value={outcome.value}>
+                {outcome.label}
+              </option>
+            ))}
+          </select>
         </div>
-      ) : (
-        <div className="border-y border-slate-800 py-16 text-center">
-          <Trophy className="mx-auto mb-3 h-6 w-6 text-slate-500" />
-          <h2 className="text-base font-bold text-slate-200">No archived tips found</h2>
-          <p className="mt-2 text-sm text-slate-500">Try another day, tier, or sport.</p>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="archive-day"
+            className="block text-xs font-semibold text-slate-400"
+          >
+            Specific day
+          </label>
+          <input
+            id="archive-day"
+            type="date"
+            value={filters.day}
+            onChange={(event) =>
+              changeFilter("day", event.target.value)
+            }
+            className={`${inputStyles} [color-scheme:dark]`}
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-3 sm:col-span-2 lg:col-span-5">
+          <button
+            type="submit"
+            className={`${buttonStyles} bg-emerald-500 text-slate-950 hover:bg-emerald-400`}
+          >
+            <Search className="h-4 w-4" aria-hidden="true" />
+            Search
+          </button>
+
+          <button
+            type="button"
+            onClick={clearFilters}
+            className={`${buttonStyles} border border-slate-700 text-slate-300 hover:bg-slate-800`}
+          >
+            Clear Filters
+          </button>
+        </div>
+      </form>
+
+      {/* Served date information */}
+      {!loading && !error && (
+        <div className="space-y-2 text-xs leading-6 text-slate-400">
+          <p>
+            Viewing:{" "}
+            <span className="font-semibold text-slate-200">
+              {selectedTier?.label || "All tiers"}
+            </span>
+            {servedDayLabel && (
+              <>
+                {" "}· Records served for{" "}
+                <span className="font-semibold text-slate-200">
+                  {servedDayLabel}
+                </span>
+              </>
+            )}
+          </p>
+          {fallbackNotice && (
+            <p role="status" className="text-amber-300">
+              {fallbackNotice}
+            </p>
+          )}
         </div>
       )}
 
-      {!loading && archive.pagination.pages > 1 && (
-        <nav className="flex items-center justify-between border-t border-slate-800 pt-5" aria-label="Archive pagination">
-          <button type="button" disabled={page <= 1} onClick={() => setPage((current) => current - 1)} className="inline-flex items-center gap-2 rounded-md border border-slate-700 px-3 py-2 text-sm text-slate-300 disabled:cursor-not-allowed disabled:opacity-40">
-            <ArrowLeft className="h-4 w-4" /> Previous
+      {/* Archive results */}
+      <section
+        id="archive-results"
+        aria-label="Historical tips by tier"
+        aria-busy={loading}
+      >
+        {loading ? (
+          <div className="space-y-4">
+            {[0, 1, 2].map((item) => (
+              <div
+                key={item}
+                aria-hidden="true"
+                className="h-48 rounded-2xl border border-slate-800 bg-slate-900/60 motion-safe:animate-pulse"
+              />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="space-y-4 rounded-2xl border border-rose-500/20 bg-slate-900 p-8 text-center">
+            <h2 className="text-lg font-bold text-slate-100">
+              Unable to Load Archive
+            </h2>
+            <p role="alert" className="text-sm leading-6 text-rose-300">
+              {error}
+            </p>
+            <button
+              type="button"
+              onClick={retryRequest}
+              className={`${buttonStyles} bg-emerald-500 text-slate-950 hover:bg-emerald-400`}
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Try Again
+            </button>
+          </div>
+        ) : groupedTips.length > 0 ? (
+          <div className="space-y-10">
+            {groupedTips.map((group) => (
+              <section
+                key={group.id}
+                aria-labelledby={`${group.id}-archive-heading`}
+                className="space-y-4"
+              >
+                <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                  <h2
+                    id={`${group.id}-archive-heading`}
+                    className="text-lg font-black text-slate-100"
+                  >
+                    {group.title}
+                  </h2>
+                  <span className="text-xs text-slate-400">
+                    {group.tips.length} card
+                    {group.tips.length === 1 ? "" : "s"} on this page
+                  </span>
+                </header>
+
+                <div className="space-y-4">
+                  {group.tips.map((tip, index) => {
+                    const tipId = tip.id ?? tip._id;
+                    const hasTipId =
+                      tipId !== null &&
+                      tipId !== undefined &&
+                      String(tipId).trim() !== "";
+
+                    const card =
+                      group.id === "free"
+                        ? formatFreeTipChannelCard(tip)
+                        : formatTipChannelCard(tip);
+
+                    return (
+                      <article
+                        key={tipId ?? `${group.id}-tip-${index}`}
+                        className="min-w-0 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5"
+                      >
+                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                          Card {(page - 1) * PAGE_SIZE + index + 1}
+                        </h3>
+
+                        <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-slate-200 [overflow-wrap:anywhere]">
+                          {card}
+                        </pre>
+
+                        {hasTipId && (
+                          <Link
+                            href={`/tips/${encodeURIComponent(
+                              String(tipId)
+                            )}`}
+                            className={`${buttonStyles} mt-3 px-0 text-xs text-emerald-400 hover:text-emerald-300`}
+                          >
+                            Preview Details
+                            <ArrowRight
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            />
+                          </Link>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-5 py-12 text-center">
+            <Trophy
+              className="mx-auto mb-4 h-7 w-7 text-slate-400"
+              aria-hidden="true"
+            />
+            <h2 className="text-lg font-bold text-slate-200">
+              No Archived Tips Found
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              No selections match this view. Try another day, tier,
+              sport, or outcome.
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* Archive pagination */}
+      {!loading && !error && archive.pagination.pages > 1 && (
+        <nav
+          aria-label="Archive pagination"
+          className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-5"
+        >
+          <button
+            type="button"
+            disabled={page <= 1}
+            onClick={() => changePage(page - 1)}
+            className={`${buttonStyles} border border-slate-700 text-slate-300 hover:bg-slate-800`}
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Previous
           </button>
-          <span className="text-xs text-slate-500">Page {page} of {archive.pagination.pages}</span>
-          <button type="button" disabled={page >= archive.pagination.pages} onClick={() => setPage((current) => current + 1)} className="inline-flex items-center gap-2 rounded-md border border-slate-700 px-3 py-2 text-sm text-slate-300 disabled:cursor-not-allowed disabled:opacity-40">
-            Next <ArrowRight className="h-4 w-4" />
+
+          <p className="text-xs text-slate-400">
+            Page {page} of {archive.pagination.pages}
+          </p>
+
+          <button
+            type="button"
+            disabled={page >= archive.pagination.pages}
+            onClick={() => changePage(page + 1)}
+            className={`${buttonStyles} border border-slate-700 text-slate-300 hover:bg-slate-800`}
+          >
+            Next
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </nav>
       )}

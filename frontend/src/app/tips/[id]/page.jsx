@@ -1,8 +1,9 @@
 // frontend/src/app/tips/[id]/page.jsx
+// frontend/src/app/tips/[id]/page.jsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -10,6 +11,7 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  RefreshCw,
   ShieldCheck,
   Target,
   Trophy,
@@ -24,54 +26,142 @@ import {
   statusColor,
 } from "../../../lib/utils";
 
+const focusStyles =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-card";
+
+const backLinkStyles = `inline-flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-sm font-semibold text-slate-400 transition-colors hover:text-emerald-400 ${focusStyles}`;
+
+// Normalize enum values for consistent badge styling.
+function normalizeEnum(value) {
+  return typeof value === "string" ? value.trim().toUpperCase() : "";
+}
+
+// Convert enum values into readable labels.
+function formatBadgeLabel(value) {
+  return value.replace(/_/g, " ");
+}
+
+// Validate odds before passing them to the shared formatter.
+function hasValidOdds(value) {
+  return (
+    value !== null &&
+    value !== undefined &&
+    String(value).trim() !== "" &&
+    Number.isFinite(Number(value)) &&
+    Number(value) > 0
+  );
+}
+
+// Return an ISO datetime only when the supplied date is valid.
+function getDateTimeAttribute(value) {
+  if (!value) return undefined;
+
+  const parsed = new Date(value);
+
+  return Number.isFinite(parsed.getTime())
+    ? parsed.toISOString()
+    : undefined;
+}
+
 export default function TipDetailPage() {
-  const { id } = useParams();
-  const router = useRouter();
+  const params = useParams();
+  const id = typeof params?.id === "string" ? params.id : null;
 
   const [tip, setTip] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
-    if (!id) return;
+    let cancelled = false;
 
     async function fetchTip() {
       setLoading(true);
       setError(null);
+      setTip(null);
+
+      if (!id) {
+        setError("The requested tip could not be found.");
+        setLoading(false);
+        return;
+      }
 
       try {
         const response = await tipsApi.getTipById(id);
-        setTip(response?.tip || response);
-      } catch (err) {
+
+        if (cancelled) return;
+
+        const tipData = response?.tip ?? response;
+
+        if (
+          !tipData ||
+          typeof tipData !== "object" ||
+          Array.isArray(tipData)
+        ) {
+          setError("The requested tip could not be found.");
+          return;
+        }
+
+        setTip(tipData);
+      } catch (requestError) {
+        if (cancelled) return;
+
+        const message = requestError?.response?.data?.message;
+
         setError(
-          err.response?.data?.message || "Failed loading tip details."
+          typeof message === "string" && message.trim()
+            ? message
+            : "Failed loading tip details. Please try again shortly."
         );
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
     fetchTip();
-  }, [id]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, retryCount]);
+
+  const handleRetry = () => {
+    setLoading(true);
+    setError(null);
+    setRetryCount((count) => count + 1);
+  };
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="space-y-6 animate-pulse">
-          <div className="h-4 w-32 bg-dark-card rounded" />
+      <div
+        aria-busy="true"
+        className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8"
+      >
+        <p role="status" className="sr-only">
+          Loading tip details…
+        </p>
 
-          <div className="bg-dark-card border border-dark-border rounded-2xl p-6 sm:p-8 space-y-6">
-            <div className="flex justify-between gap-4">
-              <div className="space-y-3">
-                <div className="h-6 w-24 bg-dark-bg rounded-full" />
-                <div className="h-8 w-72 bg-dark-bg rounded" />
+        <div
+          aria-hidden="true"
+          className="space-y-6 motion-safe:animate-pulse"
+        >
+          <div className="h-4 w-32 rounded bg-dark-card" />
+
+          <div className="space-y-6 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-8">
+            <div className="flex flex-col justify-between gap-4 sm:flex-row">
+              <div className="min-w-0 flex-1 space-y-3">
+                <div className="h-6 w-24 rounded-full bg-dark-bg" />
+                <div className="h-8 w-full max-w-xs rounded bg-dark-bg" />
               </div>
-              <div className="h-7 w-24 bg-dark-bg rounded-full" />
+
+              <div className="h-7 w-24 shrink-0 rounded-full bg-dark-bg" />
             </div>
 
-            <div className="h-24 bg-dark-bg rounded-xl" />
-            <div className="h-36 bg-dark-bg rounded-xl" />
-            <div className="h-20 bg-dark-bg rounded-xl" />
+            <div className="h-24 rounded-xl bg-dark-bg" />
+            <div className="h-36 rounded-xl bg-dark-bg" />
+            <div className="h-20 rounded-xl bg-dark-bg" />
           </div>
         </div>
       </div>
@@ -80,292 +170,380 @@ export default function TipDetailPage() {
 
   if (error || !tip) {
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="bg-dark-card border border-dark-border rounded-2xl p-10 text-center space-y-5">
-          <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
-            <XCircle className="w-7 h-7" />
+      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-20 lg:px-8">
+        <section
+          aria-labelledby="tip-error-heading"
+          className="space-y-5 rounded-2xl border border-dark-border bg-dark-card p-6 text-center sm:p-10"
+        >
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-400">
+            <XCircle className="h-7 w-7" aria-hidden="true" />
           </div>
 
-          <div className="space-y-1.5">
-            <h2 className="text-xl font-bold text-slate-100">
+          <div className="space-y-2">
+            <h1
+              id="tip-error-heading"
+              className="text-xl font-bold text-slate-100"
+            >
               Unable to Load Tip
-            </h2>
-            <p className="text-sm text-slate-400">
+            </h1>
+
+            <p
+              role="alert"
+              className="break-words text-sm leading-6 text-slate-400"
+            >
               {error || "The requested tip could not be found."}
             </p>
           </div>
 
-          <button
-            onClick={() => router.push("/tips")}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold rounded-xl transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Back to Tips
-          </button>
-        </div>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              href="/tips"
+              className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-700 ${focusStyles}`}
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+              Back to Tips
+            </Link>
+
+            {id && (
+              <button
+                type="button"
+                onClick={handleRetry}
+                className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-xs font-bold text-slate-950 transition-colors hover:bg-emerald-400 ${focusStyles}`}
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                Try Again
+              </button>
+            )}
+          </div>
+        </section>
       </div>
     );
   }
 
   const matchTitle =
     tip.teams ||
-    `${tip.homeTeam || "Home"} vs ${tip.awayTeam || "Away"}`;
+    (tip.homeTeam || tip.awayTeam
+      ? `${tip.homeTeam || "Home"} vs ${tip.awayTeam || "Away"}`
+      : "Match details unavailable");
 
-  const outcome = tip.result?.outcome || tip.outcome;
-  const status = tip.status || "PUBLISHED";
+  const outcome = normalizeEnum(tip.result?.outcome || tip.outcome);
+  const status = normalizeEnum(tip.status) || "PUBLISHED";
 
-  const sport = tip.sport || "Football";
-  const competition = tip.competition || tip.league || "General";
-  const market = tip.market || "Match Winner";
+  const sport = tip.sport || "Sport unavailable";
+  const competition =
+    tip.competition || tip.league || "Competition unavailable";
+  const market = tip.market || "—";
   const selection = tip.selection || tip.prediction || "—";
 
   const hasResult = Boolean(outcome);
+  const kickoff = tip.kickoff || tip.matchDate;
+  const displayedDate = kickoff || tip.createdAt;
+  const preview = tip.verdict || tip.preview;
+
+  const extraTips = Array.isArray(tip.extraTips)
+    ? tip.extraTips.filter(
+        (extraTip) =>
+          typeof extraTip === "string" ||
+          (extraTip && typeof extraTip === "object")
+      )
+    : [];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
-      {/* Back Navigation */}
-      <Link
-        href="/tips"
-        className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-emerald-400 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
+    <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      {/* Back navigation */}
+      <Link href="/tips" className={backLinkStyles}>
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Back to Tips Hub
       </Link>
 
-      {/* Main Tip Card */}
-      <div className="bg-dark-card border border-dark-border rounded-2xl shadow-xl overflow-hidden">
-        {/* Top Accent */}
-        <div className="h-1 bg-cyan-gradient" />
+      {/* Main tip card */}
+      <article className="min-w-0 overflow-hidden rounded-2xl border border-dark-border bg-dark-card shadow-xl">
+        <div
+          aria-hidden="true"
+          className="h-1 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400"
+        />
 
-        <div className="p-6 sm:p-8 space-y-7">
-          {/* Header / Metadata */}
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5 pb-6 border-b border-dark-border">
-            <div className="space-y-3">
+        <div className="space-y-7 p-5 sm:p-8">
+          {/* Match metadata */}
+          <header className="flex flex-col justify-between gap-5 border-b border-dark-border pb-6 sm:flex-row sm:items-start">
+            <div className="min-w-0 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
+                <span className="max-w-full break-words rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
                   {sport}
                 </span>
 
-                <span className="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-semibold uppercase tracking-wider">
+                <span className="max-w-full break-words rounded-full border border-slate-700 bg-slate-800 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
                   {competition}
                 </span>
               </div>
 
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-slate-100 tracking-tight">
-                  {matchTitle}
-                </h1>
+              <h1 className="break-words text-2xl font-black leading-tight tracking-tight text-slate-100 sm:text-3xl">
+                {matchTitle}
+              </h1>
 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 text-xs text-slate-400">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                    Kick-off:{" "}
-                    {formatDateTime(
-                      tip.kickoff ||
-                        tip.matchDate ||
-                        tip.createdAt
-                    )}
-                  </span>
+              <div className="flex items-start gap-2 text-xs leading-5 text-slate-400">
+                <Clock
+                  className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400"
+                  aria-hidden="true"
+                />
 
-                </div>
+                <span className="min-w-0 break-words">
+                  {kickoff ? "Kick-off: " : "Tip created: "}
+                  <time dateTime={getDateTimeAttribute(displayedDate)}>
+                    {formatDateTime(displayedDate)}
+                  </time>
+                </span>
               </div>
             </div>
 
-            {/* Status */}
-            <div className="shrink-0">
+            <div className="sm:shrink-0">
               {hasResult ? (
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${outcomeColor(
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider ${outcomeColor(
                     outcome
                   )}`}
                 >
-                  <Trophy className="w-3.5 h-3.5" />
-                  Result: {outcome}
+                  <Trophy
+                    className="h-4 w-4 shrink-0"
+                    aria-hidden="true"
+                  />
+                  Result: {formatBadgeLabel(outcome)}
                 </span>
               ) : (
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${statusColor(
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider ${statusColor(
                     status
                   )}`}
                 >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  {status}
+                  <ShieldCheck
+                    className="h-4 w-4 shrink-0"
+                    aria-hidden="true"
+                  />
+                  {formatBadgeLabel(status)}
                 </span>
               )}
             </div>
-          </div>
+          </header>
 
-          {/* Prediction Summary */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
-                <Target className="w-4 h-4" />
+          {/* Prediction summary */}
+          <section
+            aria-labelledby="prediction-heading"
+            className="space-y-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
+                <Target className="h-4 w-4" aria-hidden="true" />
               </div>
 
               <div>
-                <h2 className="text-sm font-bold text-slate-100">
+                <h2
+                  id="prediction-heading"
+                  className="text-sm font-bold text-slate-100"
+                >
                   Prediction Summary
                 </h2>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider">
-                  Published selection
+                <p className="mt-1 text-xs text-slate-400">
+                  Selection details
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Market */}
-              <div className="bg-dark-bg border border-dark-border rounded-xl p-4">
-                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="min-w-0 rounded-xl border border-dark-border bg-dark-bg p-4">
+                <dt className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Market
-                </span>
-
-                <span className="text-sm font-bold text-slate-100">
+                </dt>
+                <dd className="break-words text-sm font-bold leading-6 text-slate-100">
                   {market}
-                </span>
+                </dd>
               </div>
 
-              {/* Selection */}
-              <div className="bg-dark-bg border border-emerald-500/20 rounded-xl p-4">
-                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+              <div className="min-w-0 rounded-xl border border-emerald-500/20 bg-dark-bg p-4">
+                <dt className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Selection
-                </span>
-
-                <span className="text-base font-black text-emerald-400">
+                </dt>
+                <dd className="break-words text-base font-black leading-6 text-emerald-400">
                   {selection}
-                </span>
+                </dd>
               </div>
 
-              {/* Odds */}
-              <div className="bg-dark-bg border border-amber-500/20 rounded-xl p-4">
-                <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+              <div className="min-w-0 rounded-xl border border-amber-500/20 bg-dark-bg p-4">
+                <dt className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Odds
-                </span>
-
-                <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-base font-black">
-                  @{formatOdds(tip.odds)}
-                </span>
+                </dt>
+                <dd className="inline-flex rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-base font-black text-amber-400 tabular-nums">
+                  {hasValidOdds(tip.odds)
+                    ? `@${formatOdds(tip.odds)}`
+                    : "—"}
+                </dd>
               </div>
-            </div>
+            </dl>
           </section>
 
-          {/* Result Information */}
+          {/* Recorded result */}
           {hasResult && (
-            <section className="bg-dark-bg border border-dark-border rounded-xl p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                  <Award className="w-4 h-4" />
+            <section
+              aria-labelledby="result-heading"
+              className="rounded-xl border border-dark-border bg-dark-bg p-5"
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+                  <Award className="h-4 w-4" aria-hidden="true" />
                 </div>
 
                 <div>
-                  <h2 className="text-sm font-bold text-slate-100">
+                  <h2
+                    id="result-heading"
+                    className="text-sm font-bold text-slate-100"
+                  >
                     Recorded Result
                   </h2>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">
-                    Outcome verification
+                  <p className="mt-1 text-xs text-slate-400">
+                    Recorded outcome
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-xs text-slate-400">
-                  Final outcome
-                </span>
-
-                <span
-                  className={`px-3 py-1 rounded-lg text-xs font-bold border ${outcomeColor(
-                    outcome
-                  )}`}
-                >
-                  {outcome}
-                </span>
-              </div>
+              <dl>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <dt className="text-sm text-slate-400">
+                    Final outcome
+                  </dt>
+                  <dd
+                    className={`rounded-lg border px-3 py-1.5 text-xs font-bold ${outcomeColor(
+                      outcome
+                    )}`}
+                  >
+                    {formatBadgeLabel(outcome)}
+                  </dd>
+                </div>
+              </dl>
             </section>
           )}
 
-          {(tip.verdict || tip.preview) && (
-            <section className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
-                  <Target className="h-4 w-4" />
+          {/* Match preview */}
+          {preview && (
+            <section
+              aria-labelledby="preview-heading"
+              className="space-y-4"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
+                  <Target className="h-4 w-4" aria-hidden="true" />
                 </div>
+
                 <div>
-                  <h2 className="text-sm font-bold text-slate-100">Match Preview</h2>
-                  <p className="text-[10px] uppercase text-slate-500">Selection analysis</p>
+                  <h2
+                    id="preview-heading"
+                    className="text-sm font-bold text-slate-100"
+                  >
+                    Match Preview
+                  </h2>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Selection analysis
+                  </p>
                 </div>
               </div>
-              <p className="whitespace-pre-line rounded-xl border border-dark-border bg-dark-bg p-5 text-sm leading-7 text-slate-300">
-                {tip.verdict || tip.preview}
+
+              <p className="whitespace-pre-line break-words rounded-xl border border-dark-border bg-dark-bg p-5 text-sm leading-7 text-slate-300 [overflow-wrap:anywhere]">
+                {preview}
               </p>
             </section>
           )}
 
-          {/* Operator Notes */}
+          {/* Operator notes */}
           {tip.notes && (
-            <section className="space-y-3">
+            <section
+              aria-labelledby="notes-heading"
+              className="space-y-3"
+            >
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-indigo-400" />
-
-                <h2 className="text-xs font-bold text-slate-300 uppercase tracking-widest">
+                <Calendar
+                  className="h-4 w-4 shrink-0 text-indigo-400"
+                  aria-hidden="true"
+                />
+                <h2
+                  id="notes-heading"
+                  className="text-xs font-bold uppercase tracking-wider text-slate-300"
+                >
                   Operator Notes
                 </h2>
               </div>
 
-              <div className="bg-dark-bg border border-dark-border rounded-xl p-4">
-                <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
-                  {tip.notes}
-                </p>
-              </div>
+              <p className="whitespace-pre-line break-words rounded-xl border border-dark-border bg-dark-bg p-4 text-sm leading-6 text-slate-300 [overflow-wrap:anywhere]">
+                {tip.notes}
+              </p>
             </section>
           )}
 
-          {/* Extra Tips */}
-          {Array.isArray(tip.extraTips) && tip.extraTips.length > 0 && (
-            <section className="space-y-3">
+          {/* Additional selections */}
+          {extraTips.length > 0 && (
+            <section
+              aria-labelledby="additional-selections-heading"
+              className="space-y-3"
+            >
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-
-                <h2 className="text-xs font-bold text-slate-300 uppercase tracking-widest">
+                <CheckCircle2
+                  className="h-4 w-4 shrink-0 text-cyan-400"
+                  aria-hidden="true"
+                />
+                <h2
+                  id="additional-selections-heading"
+                  className="text-xs font-bold uppercase tracking-wider text-slate-300"
+                >
                   Additional Selections
                 </h2>
               </div>
 
-              <div className="space-y-2">
-                {tip.extraTips.map((extraTip, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between gap-4 bg-dark-bg border border-dark-border rounded-xl px-4 py-3"
-                  >
-                    <span className="text-xs text-slate-300">
-                      {typeof extraTip === "string"
-                        ? extraTip
-                        : extraTip.selection || extraTip.name || "Additional selection"}
-                    </span>
+              <ul className="space-y-2">
+                {extraTips.map((extraTip, index) => {
+                  const isObject = typeof extraTip === "object";
+                  const extraSelection = isObject
+                    ? extraTip.selection ||
+                      extraTip.name ||
+                      "Additional selection"
+                    : extraTip;
 
-                    {extraTip?.odds && (
-                      <span className="text-xs font-bold text-amber-400">
-                        @{formatOdds(extraTip.odds)}
+                  const extraOdds = isObject
+                    ? extraTip.odds
+                    : undefined;
+
+                  return (
+                    <li
+                      key={
+                        isObject
+                          ? extraTip.id ?? extraTip._id ?? index
+                          : index
+                      }
+                      className="flex items-start justify-between gap-4 rounded-xl border border-dark-border bg-dark-bg px-4 py-3"
+                    >
+                      <span className="min-w-0 break-words text-sm leading-6 text-slate-300">
+                        {extraSelection}
                       </span>
-                    )}
-                  </div>
-                ))}
-              </div>
+
+                      {hasValidOdds(extraOdds) && (
+                        <span className="shrink-0 text-sm font-bold leading-6 text-amber-400 tabular-nums">
+                          <span className="sr-only">Odds: </span>
+                          @{formatOdds(extraOdds)}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             </section>
           )}
-
         </div>
-      </div>
+      </article>
 
-      {/* Bottom Navigation */}
-      <div className="flex items-center justify-between">
-        <Link
-          href="/tips"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-emerald-400 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
+      {/* Bottom navigation */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/tips" className={backLinkStyles}>
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           All Tips
         </Link>
 
-        <span className="text-[10px] text-slate-600 uppercase tracking-wider">
+        <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
           The Expertise Wins
         </span>
       </div>

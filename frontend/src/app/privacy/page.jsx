@@ -1,356 +1,291 @@
+// frontend/src/app/privacy/page.jsx
 import Link from "next/link";
 import {
-Database,
-Eye,
-Heart,
-Lock,
-Mail,
-ShieldCheck,
-UserRound,
+  Database,
+  Eye,
+  Heart,
+  Lock,
+  Mail,
+  ShieldCheck,
+  UserRound,
 } from "lucide-react";
 
 export const metadata = {
-title: "Privacy Policy",
-description:
-"Learn how The Expertise Wins collects, uses, and protects your information.",
+  title: "Privacy Policy",
+  description:
+    "Learn how The Expertise Wins collects, uses, and protects your information.",
 };
 
+const privacySections = [
+  {
+    id: "approach",
+    title: "Our approach",
+    icon: Lock,
+    paragraphs: [
+      "We aim to collect only the information reasonably needed to operate the service, provide account functionality, maintain security, and improve The Expertise Wins.",
+    ],
+  },
+  {
+    id: "information-collected",
+    title: "Information We Collect",
+    icon: Database,
+    paragraphs: [
+      "When you create an account or use The Expertise Wins, we may collect information such as your name, username, email address, account credentials, subscription information, and access-token activity.",
+      "We may also collect basic technical information such as your browser, device, IP address, and diagnostic information where necessary for security and service operation.",
+    ],
+  },
+  {
+    id: "information-use",
+    title: "How We Use Information",
+    icon: Eye,
+    items: [
+      "Creating and managing user accounts.",
+      "Providing free and premium content.",
+      "Managing subscriptions and access tokens.",
+      "Verifying payments and subscription access.",
+      "Providing sports tips and performance analytics.",
+      "Maintaining security and preventing abuse.",
+      "Improving the website and user experience.",
+      "Communicating with you about the service.",
+    ],
+  },
+  {
+    id: "accounts-access",
+    title: "Accounts & Access",
+    icon: UserRound,
+    paragraphs: [
+      "You are responsible for keeping your account credentials secure. Please do not share your password or account credentials with other people.",
+      "Premium access may use access tokens or subscription verification. We may record whether an access token has been redeemed, revoked, or used so that access can be managed correctly.",
+    ],
+  },
+  {
+    id: "sports-data",
+    title: "Sports Tips & Performance Data",
+    icon: ShieldCheck,
+    paragraphs: [
+      "The Expertise Wins maintains information relating to published sports tips, including selections, markets, odds, competitions, results, and performance statistics.",
+      "This information is used to publish tips, track historical performance, and provide analytics. Historical performance does not guarantee future results.",
+    ],
+  },
+  {
+    id: "security",
+    title: "Security",
+    icon: Lock,
+    paragraphs: [
+      "We take reasonable measures to protect information against unauthorized access, alteration, disclosure, or destruction.",
+      "These measures may include authenticated access, password protection, access controls, secure server configuration, and other technical safeguards appropriate to the service.",
+      "No internet service can guarantee absolute security, so we encourage you to use a strong password and keep your account credentials private.",
+    ],
+  },
+  {
+    id: "third-party-services",
+    title: "Third-Party Services",
+    icon: Database,
+    paragraphs: [
+      "Some parts of The Expertise Wins may rely on third-party providers for hosting, infrastructure, payments, communication, analytics, or other functionality.",
+      "These providers may process information according to their own terms and privacy policies.",
+      "Our website may also contain links to external services such as Telegram, social platforms, payment services, and betting platforms. Their own privacy policies apply when you use those services.",
+    ],
+  },
+  {
+    id: "browser-storage",
+    title: "Cookies & Local Storage",
+    icon: Eye,
+    paragraphs: [
+      "The website uses cookies and local storage to store authentication tokens, and local storage to retain account information used by the interface. These support sign-in and account functionality.",
+      "The website may also use cookies, local storage, or similar technologies to remember preferences and support other essential functionality.",
+    ],
+  },
+  {
+    id: "your-information",
+    title: "Your Information",
+    icon: UserRound,
+    paragraphs: [
+      "Depending on applicable law, you may have rights relating to the personal information we hold about you, including the ability to request access, correction, or deletion where applicable.",
+      "Some information may need to be retained where there is a legitimate operational or legal reason to do so.",
+    ],
+  },
+];
+
+const focusStyles =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+
 export default function PrivacyPage() {
-return ( <main className="relative overflow-hidden py-14 sm:py-24">
-{/* Background glow */} <div
-     className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-emerald-500/10 blur-[130px] rounded-full pointer-events-none"
-     aria-hidden="true"
-   />
-
-```
-  <section className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-    {/* Icon */}
-    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-      <ShieldCheck className="w-8 h-8" aria-hidden="true" />
-    </div>
-
-    {/* Heading */}
-    <p className="text-xs font-bold uppercase tracking-widest text-emerald-300 mt-7">
-      Privacy &amp; data
-    </p>
-
-    <h1 className="text-4xl sm:text-6xl font-black text-slate-100 tracking-tight mt-3">
-      Your privacy matters.
-    </h1>
-
-    <p className="text-slate-300 text-base sm:text-lg leading-relaxed mt-6 max-w-2xl mx-auto">
-      Here&apos;s how The Expertise Wins collects, uses, and protects
-      information when you use our website and services.
-    </p>
-
-    <p className="text-xs text-slate-500 mt-4">
-      Last updated: September 30, 2026
-    </p>
-
-    {/* Privacy card */}
-    <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-10 mt-10 text-left shadow-2xl shadow-black/10">
-      {/* Introduction */}
-      <div className="flex items-start gap-4 mb-8">
-        <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 shrink-0">
-          <Lock className="w-5 h-5" aria-hidden="true" />
-        </div>
-
-        <div>
-          <h2 className="text-xl font-bold text-white">
-            Our approach
-          </h2>
-
-          <p className="text-sm text-slate-400 leading-relaxed mt-1">
-            We aim to collect only the information reasonably needed to
-            operate the service, provide account functionality, maintain
-            security, and improve The Expertise Wins.
-          </p>
-        </div>
-      </div>
-
-      {/* Information we collect */}
-      <div className="border-t border-slate-800 pt-8">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700 text-emerald-300 shrink-0">
-            <Database className="w-5 h-5" aria-hidden="true" />
-          </div>
-
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              Information We Collect
-            </h2>
-
-            <div className="text-sm text-slate-400 leading-relaxed mt-3 space-y-4">
-              <p>
-                When you create an account or use The Expertise Wins, we
-                may collect information such as your name, username, email
-                address, account credentials, subscription information,
-                and access-token activity.
-              </p>
-
-              <p>
-                We may also collect basic technical information such as
-                your browser, device, IP address, and diagnostic information
-                where necessary for security and service operation.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* How we use information */}
-      <div className="border-t border-slate-800 pt-8 mt-8">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700 text-emerald-300 shrink-0">
-            <Eye className="w-5 h-5" aria-hidden="true" />
-          </div>
-
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              How We Use Information
-            </h2>
-
-            <div className="text-sm text-slate-400 leading-relaxed mt-3">
-              <ul className="space-y-2 list-disc pl-5">
-                <li>Creating and managing user accounts.</li>
-                <li>Providing free and premium content.</li>
-                <li>Managing subscriptions and access tokens.</li>
-                <li>Verifying payments and subscription access.</li>
-                <li>Providing sports tips and performance analytics.</li>
-                <li>Maintaining security and preventing abuse.</li>
-                <li>Improving the website and user experience.</li>
-                <li>Communicating with you about the service.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Account and access */}
-      <div className="border-t border-slate-800 pt-8 mt-8">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700 text-emerald-300 shrink-0">
-            <UserRound className="w-5 h-5" aria-hidden="true" />
-          </div>
-
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              Accounts &amp; Access
-            </h2>
-
-            <div className="text-sm text-slate-400 leading-relaxed mt-3 space-y-4">
-              <p>
-                You are responsible for keeping your account credentials
-                secure. Please do not share your password or account
-                credentials with other people.
-              </p>
-
-              <p>
-                Premium access may use access tokens or subscription
-                verification. We may record whether an access token has
-                been redeemed, revoked, or used so that access can be
-                managed correctly.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sports data */}
-      <div className="border-t border-slate-800 pt-8 mt-8">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700 text-emerald-300 shrink-0">
-            <ShieldCheck className="w-5 h-5" aria-hidden="true" />
-          </div>
-
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              Sports Tips &amp; Performance Data
-            </h2>
-
-            <div className="text-sm text-slate-400 leading-relaxed mt-3 space-y-4">
-              <p>
-                The Expertise Wins maintains information relating to
-                published sports tips, including selections, markets,
-                odds, competitions, results, and performance statistics.
-              </p>
-
-              <p>
-                This information is used to publish tips, track historical
-                performance, and provide analytics. Historical performance
-                does not guarantee future results.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Security */}
-      <div className="border-t border-slate-800 pt-8 mt-8">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700 text-emerald-300 shrink-0">
-            <Lock className="w-5 h-5" aria-hidden="true" />
-          </div>
-
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              Security
-            </h2>
-
-            <div className="text-sm text-slate-400 leading-relaxed mt-3 space-y-4">
-              <p>
-                We take reasonable measures to protect information against
-                unauthorized access, alteration, disclosure, or destruction.
-              </p>
-
-              <p>
-                These measures may include authenticated access, password
-                protection, access controls, secure server configuration,
-                and other technical safeguards appropriate to the service.
-              </p>
-
-              <p>
-                No internet service can guarantee absolute security, so we
-                encourage you to use a strong password and keep your
-                account credentials private.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Third parties */}
-      <div className="border-t border-slate-800 pt-8 mt-8">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700 text-emerald-300 shrink-0">
-            <Database className="w-5 h-5" aria-hidden="true" />
-          </div>
-
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              Third-Party Services
-            </h2>
-
-            <div className="text-sm text-slate-400 leading-relaxed mt-3 space-y-4">
-              <p>
-                Some parts of The Expertise Wins may rely on third-party
-                providers for hosting, infrastructure, payments,
-                communication, analytics, or other functionality.
-              </p>
-
-              <p>
-                These providers may process information according to their
-                own terms and privacy policies.
-              </p>
-
-              <p>
-                Our website may also contain links to external services
-                such as Telegram, social platforms, payment services, and
-                betting platforms. Their own privacy policies apply when
-                you use those services.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Cookies */}
-      <div className="border-t border-slate-800 pt-8 mt-8">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700 text-emerald-300 shrink-0">
-            <Eye className="w-5 h-5" aria-hidden="true" />
-          </div>
-
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              Cookies &amp; Local Storage
-            </h2>
-
-            <p className="text-sm text-slate-400 leading-relaxed mt-3">
-              The website may use cookies, local storage, or similar
-              technologies to maintain sessions, keep you signed in,
-              remember preferences, and support essential functionality.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Your rights */}
-      <div className="border-t border-slate-800 pt-8 mt-8">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700 text-emerald-300 shrink-0">
-            <UserRound className="w-5 h-5" aria-hidden="true" />
-          </div>
-
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              Your Information
-            </h2>
-
-            <div className="text-sm text-slate-400 leading-relaxed mt-3 space-y-4">
-              <p>
-                Depending on applicable law, you may have rights relating
-                to the personal information we hold about you, including
-                the ability to request access, correction, or deletion
-                where applicable.
-              </p>
-
-              <p>
-                Some information may need to be retained where there is a
-                legitimate operational or legal reason to do so.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Contact */}
-      <div className="border-t border-slate-800 pt-8 mt-8">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-300 shrink-0">
-            <Mail className="w-5 h-5" aria-hidden="true" />
-          </div>
-
-          <div>
-            <h2 className="text-lg font-bold text-white">
-              Questions about your privacy?
-            </h2>
-
-            <p className="text-sm text-slate-400 leading-relaxed mt-3">
-              If you have questions about your information or this Privacy
-              Policy, contact us directly.
-            </p>
-
-            <a
-              href="mailto:midwaymaster10@gmail.com"
-              className="inline-flex items-center gap-2 text-sm font-bold text-emerald-300 hover:text-emerald-200 mt-4 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400/50 px-1 py-1"
-            >
-              <Mail className="w-4 h-4" aria-hidden="true" />
-              midwaymaster10@gmail.com
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Privacy message */}
-    <div className="flex items-center justify-center gap-2 text-xs text-emerald-300 mt-7">
-      <ShieldCheck className="w-4 h-4" aria-hidden="true" />
-      <span>Clear information. Responsible data handling.</span>
-    </div>
-
-    {/* Navigation */}
-    <Link
-      href="/about"
-      className="inline-flex items-center gap-2 text-sm font-bold text-slate-300 hover:text-white mt-8 rounded focus:outline-none focus:ring-2 focus:ring-slate-400/50 px-2 py-1"
+  return (
+    <main
+      aria-labelledby="privacy-heading"
+      className="relative isolate overflow-hidden py-12 sm:py-20 lg:py-24"
     >
-      <Heart
-        className="w-4 h-4 text-rose-400"
+      {/* Background glow */}
+      <div
         aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[350px] w-full max-w-[600px] -translate-x-1/2 rounded-full bg-emerald-500/10 blur-[130px]"
       />
-      Learn more about the project
-    </Link>
-  </section>
-</main>
-);
+
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        {/* Page header */}
+        <header className="text-center">
+          <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-300">
+            <ShieldCheck className="h-8 w-8" aria-hidden="true" />
+          </div>
+
+          <p className="mt-6 text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">
+            Privacy &amp; data
+          </p>
+
+          <h1
+            id="privacy-heading"
+            className="mt-3 text-4xl font-black leading-tight tracking-tight text-slate-100 sm:text-5xl lg:text-6xl"
+          >
+            Your privacy matters.
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
+            Here&apos;s how The Expertise Wins collects, uses, and protects
+            information when you use our website and services.
+          </p>
+
+          <p className="mt-4 text-xs leading-5 text-slate-400">
+            Last updated:{" "}
+            <time dateTime="2026-09-30">September 30, 2026</time>
+          </p>
+        </header>
+
+        {/* Privacy policy content */}
+        <div className="mt-10 rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-2xl shadow-black/10 sm:p-8 lg:p-10">
+          <div className="divide-y divide-slate-800">
+            {privacySections.map((section, index) => {
+              const Icon = section.icon;
+              const headingId = `${section.id}-heading`;
+
+              return (
+                <section
+                  key={section.id}
+                  id={section.id}
+                  aria-labelledby={headingId}
+                  className={`scroll-mt-24 ${
+                    index === 0 ? "pb-8" : "py-8"
+                  }`}
+                >
+                  <div className="flex flex-col items-start gap-3 sm:flex-row sm:gap-4">
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-emerald-300 ${
+                        index === 0
+                          ? "border-emerald-500/20 bg-emerald-500/10"
+                          : "border-slate-700 bg-slate-800"
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <h2
+                        id={headingId}
+                        className="break-words text-lg font-bold leading-7 text-slate-100 sm:text-xl"
+                      >
+                        {section.title}
+                      </h2>
+
+                      {section.paragraphs && (
+                        <div className="mt-3 space-y-3 text-sm leading-7 text-slate-300 sm:text-base">
+                          {section.paragraphs.map((paragraph) => (
+                            <p key={paragraph} className="break-words">
+                              {paragraph}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+
+                      {section.items && (
+                        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-slate-300 marker:text-emerald-400 sm:text-base">
+                          {section.items.map((item) => (
+                            <li key={item} className="break-words pl-1">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </section>
+              );
+            })}
+
+            {/* Privacy contact */}
+            <section
+              id="privacy-contact"
+              aria-labelledby="privacy-contact-heading"
+              className="scroll-mt-24 pt-8"
+            >
+              <div className="flex flex-col items-start gap-3 sm:flex-row sm:gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-500/20 bg-sky-500/10 text-sky-300">
+                  <Mail className="h-5 w-5" aria-hidden="true" />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <h2
+                    id="privacy-contact-heading"
+                    className="text-lg font-bold leading-7 text-slate-100 sm:text-xl"
+                  >
+                    Questions about your privacy?
+                  </h2>
+
+                  <p className="mt-3 text-sm leading-7 text-slate-300 sm:text-base">
+                    If you have questions about your information or this
+                    Privacy Policy, contact us directly.
+                  </p>
+
+                  <a
+                    href="mailto:midwaymaster10@gmail.com"
+                    className={`mt-3 inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-lg py-2 text-sm font-bold text-emerald-300 transition-colors hover:text-emerald-200 ${focusStyles}`}
+                  >
+                    <Mail
+                      className="h-4 w-4 shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="min-w-0 [overflow-wrap:anywhere]">
+                      midwaymaster10@gmail.com
+                    </span>
+                  </a>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        {/* Closing message */}
+        <div className="mt-7 flex items-start justify-center gap-2 text-center text-xs leading-5 text-emerald-300">
+          <ShieldCheck
+            className="mt-0.5 h-4 w-4 shrink-0"
+            aria-hidden="true"
+          />
+          <p>Clear information. Responsible data handling.</p>
+        </div>
+
+        {/* Related pages */}
+        <nav
+          aria-label="Related pages"
+          className="mt-6 flex flex-wrap items-center justify-center gap-3"
+        >
+          <Link
+            href="/about"
+            className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-5 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-700 hover:bg-slate-800 ${focusStyles}`}
+          >
+            <Heart
+              className="h-4 w-4 shrink-0 text-rose-400"
+              aria-hidden="true"
+            />
+            Learn more about the project
+          </Link>
+
+          <Link
+            href="/terms"
+            className={`inline-flex min-h-[44px] items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-slate-300 transition-colors hover:bg-slate-900 hover:text-white ${focusStyles}`}
+          >
+            Read Terms of Service
+          </Link>
+        </nav>
+      </div>
+    </main>
+  );
 }

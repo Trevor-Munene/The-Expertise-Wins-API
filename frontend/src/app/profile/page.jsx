@@ -1,444 +1,994 @@
 // frontend/src/app/profile/page.jsx
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import {
+  Lock,
+  KeyRound,
+  ShieldCheck,
+  Upload,
+  Clock,
+  XCircle,
+  RefreshCw,
+  Eye,
+} from "lucide-react";
+
 import { authApi } from "../../api/auth.api";
 import { subscriptionsApi } from "../../api/subscriptions.api";
 import { productsApi } from "../../api/products.api";
 import { auth } from "../../lib/auth";
 import { formatDate } from "../../lib/utils";
-import toast from "react-hot-toast";
-import { User, Lock, KeyRound, ShieldCheck, Upload, LogOut, CheckCircle2, Clock, XCircle, RefreshCw, Eye, ShieldAlert } from "lucide-react";
 import Modal from "../../components/Modal";
+
+const panelStyles =
+  "min-w-0 rounded-2xl border border-dark-border bg-dark-card p-5 sm:p-6";
+
+const focusStyles =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-card";
+
+const inputStyles = `min-h-[44px] w-full rounded-xl border border-dark-border bg-dark-bg px-3.5 py-3 text-sm text-slate-100 placeholder:text-slate-500 disabled:opacity-60 ${focusStyles}`;
+
+const buttonStyles = `inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${focusStyles}`;
+
+// Preserve explicit null values in wrapped API responses.
+function unwrapResponse(response, key) {
+  if (
+    response &&
+    typeof response === "object" &&
+    Object.prototype.hasOwnProperty.call(response, key)
+  ) {
+    return response[key];
+  }
+
+  return response;
+}
+
+function getList(response, key) {
+  const data = unwrapResponse(response, key);
+
+  return Array.isArray(data)
+    ? data.filter((item) => item && typeof item === "object")
+    : [];
+}
+
+function getErrorMessage(error, fallback) {
+  const message = error?.response?.data?.message;
+
+  return typeof message === "string" && message.trim()
+    ? message
+    : fallback;
+}
+
+function getSuccessMessage(response, fallback) {
+  return typeof response?.message === "string" && response.message.trim()
+    ? response.message
+    : fallback;
+}
+
+function safeFormatDate(value) {
+  if (!value) return "—";
+
+  const parsed = new Date(value);
+
+  return Number.isFinite(parsed.getTime()) ? formatDate(value) : "—";
+}
+
+function normalizeStatus(status) {
+  return typeof status === "string" && status.trim()
+    ? status.trim().toUpperCase()
+    : "UNKNOWN";
+}
+
+function getStatusClasses(status) {
+  switch (normalizeStatus(status)) {
+    case "ACTIVE":
+      return "border-emerald-500/20 bg-emerald-500/10 text-emerald-400";
+    case "EXPIRED":
+    case "CANCELLED":
+    case "REVOKED":
+      return "border-rose-500/20 bg-rose-500/10 text-rose-400";
+    case "PENDING":
+      return "border-amber-500/20 bg-amber-500/10 text-amber-400";
+    default:
+      return "border-dark-border bg-dark-bg text-slate-400";
+  }
+}
 
 export default function ProfilePage() {
   const router = useRouter();
+
   const [user, setUser] = useState(null);
   const [activeSub, setActiveSub] = useState(null);
   const [subHistory, setSubHistory] = useState([]);
-  const [myAccess, setMyAccess] = useState(null);
-  const [myProducts, setMyProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [profileError, setProfileError] = useState("");
+  const [failedSections, setFailedSections] = useState([]);
 
-  // Password update form
-  const [passwordForm, setPasswordForm] = useState({ oldPassword: "", newPassword: "" });
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: "",
+    newPassword: "",
+  });
   const [updatingPassword, setUpdatingPassword] = useState(false);
 
-  // Token redemption form
   const [tokenCode, setTokenCode] = useState("");
   const [redeeming, setRedeeming] = useState(false);
 
-  // Token verification modal state
   const [verifyModalOpen, setVerifyModalOpen] = useState(false);
   const [verifyCodeInput, setVerifyCodeInput] = useState("");
   const [verificationResult, setVerificationResult] = useState(null);
   const [verifying, setVerifying] = useState(false);
 
-  // Avatar upload
   const [avatarFile, setAvatarFile] = useState(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
+
+  const [subscriptionAction, setSubscriptionAction] = useState(null);
+
+  const mountedRef = useRef(false);
+  const profileRequestRef = useRef(0);
+  const verificationRequestRef = useRef(0);
+  const fileInputRef = useRef(null);
+  const busyActionsRef = useRef(new Set());
+
+  // Guard against duplicate submissions before React updates the UI.
+  const beginAction = (name) => {
+    if (busyActionsRef.current.has(name)) return false;
+    busyActionsRef.current.add(name);
+    return true;
+  };
+
+  const endAction = (name) => {
+    busyActionsRef.current.delete(name);
+  };
 
   const loadProfileData = useCallback(async () => {
+    const requestId = ++profileRequestRef.current;
+
     if (!auth.getToken()) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 
-    try {
-      const [meRes, activeSubRes, historyRes, accessRes, productsRes] = await Promise.allSettled([
-        authApi.me(),
-        subscriptionsApi.getActiveSubscription(),
-        subscriptionsApi.getSubscriptionHistory(),
-        subscriptionsApi.getMyAccess(),
-        productsApi.getMyProducts(),
-      ]);
-
-      if (meRes.status === "fulfilled") setUser(meRes.value);
-      if (activeSubRes.status === "fulfilled") setActiveSub(activeSubRes.value?.subscription || activeSubRes.value);
-      if (historyRes.status === "fulfilled") {
-        const hData = historyRes.value?.subscriptions || historyRes.value || [];
-        setSubHistory(Array.isArray(hData) ? hData : []);
-      }
-      if (accessRes.status === "fulfilled") setMyAccess(accessRes.value?.access || accessRes.value);
-      if (productsRes.status === "fulfilled") {
-        const pData = productsRes.value?.products || productsRes.value || [];
-        setMyProducts(Array.isArray(pData) ? pData : []);
-      }
-    } catch (err) {
-      console.error("Error loading user profile", err);
-    } finally {
-      setLoading(false);
+    if (mountedRef.current) {
+      setRefreshing(true);
+      setProfileError("");
     }
+
+    const results = await Promise.allSettled([
+      authApi.me(),
+      subscriptionsApi.getActiveSubscription(),
+      subscriptionsApi.getSubscriptionHistory(),
+      subscriptionsApi.getMyAccess(),
+      productsApi.getMyProducts(),
+    ]);
+
+    if (
+      !mountedRef.current ||
+      requestId !== profileRequestRef.current
+    ) {
+      return;
+    }
+
+    const [meRes, activeRes, historyRes, accessRes, productsRes] = results;
+
+    const sectionResults = [
+      { result: activeRes, label: "Active subscription" },
+      { result: historyRes, label: "Access history" },
+      { result: accessRes, label: "Access details" },
+      { result: productsRes, label: "Available products" },
+    ];
+
+    setFailedSections(
+      sectionResults
+        .filter(({ result }) => result.status === "rejected")
+        .map(({ label }) => label)
+    );
+
+    if (
+      meRes.status === "fulfilled" &&
+      meRes.value &&
+      typeof meRes.value === "object" &&
+      !Array.isArray(meRes.value)
+    ) {
+      setUser(meRes.value);
+    } else {
+      setUser(null);
+      setProfileError(
+        meRes.status === "rejected"
+          ? getErrorMessage(meRes.reason, "Unable to load your profile.")
+          : "Your profile information is unavailable."
+      );
+    }
+
+    const subscription =
+      activeRes.status === "fulfilled"
+        ? unwrapResponse(activeRes.value, "subscription")
+        : null;
+
+    setActiveSub(
+      subscription &&
+        typeof subscription === "object" &&
+        !Array.isArray(subscription)
+        ? subscription
+        : null
+    );
+
+    setSubHistory(
+      historyRes.status === "fulfilled"
+        ? getList(historyRes.value, "subscriptions")
+        : []
+    );
+
+    setLoading(false);
+    setRefreshing(false);
   }, [router]);
 
   useEffect(() => {
+    mountedRef.current = true;
     loadProfileData();
+
+    return () => {
+      mountedRef.current = false;
+      profileRequestRef.current += 1;
+      verificationRequestRef.current += 1;
+    };
   }, [loadProfileData]);
 
-  const handlePasswordUpdate = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [user?.avatarUrl]);
+
+  const handlePasswordUpdate = async (event) => {
+    event.preventDefault();
+
     if (!passwordForm.oldPassword || !passwordForm.newPassword) {
       toast.error("Both old and new password are required");
       return;
     }
 
+    if (!beginAction("password")) return;
     setUpdatingPassword(true);
+
     try {
-      const res = await authApi.updatePassword(passwordForm);
-      toast.success(res.message || "Password updated successfully");
+      const response = await authApi.updatePassword(passwordForm);
+
+      if (!mountedRef.current) return;
+
+      toast.success(
+        getSuccessMessage(response, "Password updated successfully")
+      );
       setPasswordForm({ oldPassword: "", newPassword: "" });
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed updating password");
+    } catch (error) {
+      if (mountedRef.current) {
+        toast.error(getErrorMessage(error, "Failed updating password"));
+      }
     } finally {
-      setUpdatingPassword(false);
+      endAction("password");
+      if (mountedRef.current) setUpdatingPassword(false);
     }
   };
 
-  const handleRedeemToken = async (e) => {
-    e.preventDefault();
-    if (!tokenCode.trim()) {
+  const handleRedeemToken = async (event) => {
+    event.preventDefault();
+
+    const code = tokenCode.trim();
+
+    if (!code) {
       toast.error("Please enter a token code");
       return;
     }
 
+    if (!beginAction("redeem")) return;
     setRedeeming(true);
+
     try {
-      const res = await subscriptionsApi.redeemAccessToken(tokenCode.trim());
-      toast.success(res.message || "Access Token Redeemed!");
+      const response = await subscriptionsApi.redeemAccessToken(code);
+
+      if (!mountedRef.current) return;
+
+      toast.success(getSuccessMessage(response, "Access token redeemed!"));
       setTokenCode("");
-      loadProfileData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Invalid or expired token");
+      await loadProfileData();
+    } catch (error) {
+      if (mountedRef.current) {
+        toast.error(getErrorMessage(error, "Invalid or expired token"));
+      }
     } finally {
-      setRedeeming(false);
+      endAction("redeem");
+      if (mountedRef.current) setRedeeming(false);
     }
   };
 
-  const handleVerifyToken = async (e) => {
-    e.preventDefault();
-    if (!verifyCodeInput.trim()) return;
+  const handleVerifyToken = async (event) => {
+    event.preventDefault();
 
+    const code = verifyCodeInput.trim();
+
+    if (!code) {
+      toast.error("Please enter a token code");
+      return;
+    }
+
+    if (!beginAction("verify")) return;
+
+    const requestId = ++verificationRequestRef.current;
     setVerifying(true);
+    setVerificationResult(null);
+
     try {
-      const res = await subscriptionsApi.verifyAccessToken(verifyCodeInput.trim());
-      setVerificationResult(res);
-      toast.success("Token verification completed!");
-    } catch (err) {
-      setVerificationResult({ valid: false, message: err.response?.data?.message || "Invalid token code" });
-      toast.error("Token verification failed");
+      const response = await subscriptionsApi.verifyAccessToken(code);
+
+      if (
+        !mountedRef.current ||
+        requestId !== verificationRequestRef.current
+      ) {
+        return;
+      }
+
+      // Do not infer validity when the API omits an explicit valid flag.
+      const valid =
+        typeof response?.valid === "boolean" ? response.valid : null;
+
+      setVerificationResult({
+        valid,
+        message: getSuccessMessage(
+          response,
+          valid === true
+            ? "The API reports that this token is valid."
+            : valid === false
+              ? "This token is invalid or unavailable."
+              : "Verification completed. The response did not include an explicit validity status."
+        ),
+      });
+    } catch (error) {
+      if (
+        mountedRef.current &&
+        requestId === verificationRequestRef.current
+      ) {
+        setVerificationResult({
+          valid: null,
+          message: getErrorMessage(
+            error,
+            "Unable to verify this token. Please try again."
+          ),
+          failed: true,
+        });
+      }
     } finally {
-      setVerifying(false);
+      endAction("verify");
+
+      if (mountedRef.current) {
+        setVerifying(false);
+      }
     }
   };
 
-  const handleCancelSubscription = async (subId) => {
-    if (!confirm("Are you sure you want to cancel this active subscription access?")) return;
+  const closeVerificationModal = () => {
+    verificationRequestRef.current += 1;
+    setVerifyModalOpen(false);
+    setVerificationResult(null);
+  };
+
+  const handleSubscriptionAction = async (subId, action) => {
+    if (subId === null || subId === undefined || subId === "") return;
+
+    if (
+      action === "cancel" &&
+      !window.confirm(
+        "Are you sure you want to cancel this active subscription access?"
+      )
+    ) {
+      return;
+    }
+
+    if (!beginAction("subscription")) return;
+    setSubscriptionAction({ id: subId, action });
+
     try {
-      const res = await subscriptionsApi.cancelSubscription(subId);
-      toast.success(res.message || "Subscription cancelled");
-      loadProfileData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed cancelling subscription");
+      const response =
+        action === "cancel"
+          ? await subscriptionsApi.cancelSubscription(subId)
+          : await subscriptionsApi.renewSubscription(subId);
+
+      if (!mountedRef.current) return;
+
+      toast.success(
+        getSuccessMessage(
+          response,
+          action === "cancel"
+            ? "Subscription cancelled"
+            : "Subscription renewed!"
+        )
+      );
+
+      await loadProfileData();
+    } catch (error) {
+      if (mountedRef.current) {
+        toast.error(
+          getErrorMessage(
+            error,
+            action === "cancel"
+              ? "Failed cancelling subscription"
+              : "Failed renewing subscription"
+          )
+        );
+      }
+    } finally {
+      endAction("subscription");
+      if (mountedRef.current) setSubscriptionAction(null);
     }
   };
 
-  const handleRenewSubscription = async (subId) => {
-    try {
-      const res = await subscriptionsApi.renewSubscription(subId);
-      toast.success(res.message || "Subscription renewed!");
-      loadProfileData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed renewing subscription");
+  const handleAvatarSelection = (event) => {
+    const file = event.target.files?.[0] ?? null;
+
+    if (file && file.type && !file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      event.target.value = "";
+      setAvatarFile(null);
+      return;
     }
+
+    setAvatarFile(file);
   };
 
-  const handleAvatarUpload = async (e) => {
-    e.preventDefault();
+  const handleAvatarUpload = async (event) => {
+    event.preventDefault();
+
     if (!avatarFile) {
       toast.error("Please select an image file");
       return;
     }
 
+    if (!beginAction("avatar")) return;
     setUploadingAvatar(true);
+
     try {
-      const res = await authApi.updateAvatar(avatarFile);
-      toast.success(res.message || "Avatar updated successfully");
-      if (res.result?.avatarUrl) {
-        setUser((prev) => ({ ...prev, avatarUrl: res.result.avatarUrl }));
+      const response = await authApi.updateAvatar(avatarFile);
+
+      if (!mountedRef.current) return;
+
+      toast.success(
+        getSuccessMessage(response, "Avatar updated successfully")
+      );
+
+      if (response?.result?.avatarUrl) {
+        setUser((previous) =>
+          previous
+            ? { ...previous, avatarUrl: response.result.avatarUrl }
+            : previous
+        );
       }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed uploading avatar");
+
+      setAvatarFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    } catch (error) {
+      if (mountedRef.current) {
+        toast.error(getErrorMessage(error, "Failed uploading avatar"));
+      }
     } finally {
-      setUploadingAvatar(false);
+      endAction("avatar");
+      if (mountedRef.current) setUploadingAvatar(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="h-64 bg-dark-card border border-dark-border rounded-2xl animate-pulse" />
+      <div
+        aria-busy="true"
+        className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8"
+      >
+        <p role="status" className="sr-only">
+          Loading your profile…
+        </p>
+        <div
+          aria-hidden="true"
+          className="h-64 rounded-2xl border border-dark-border bg-dark-card motion-safe:animate-pulse"
+        />
       </div>
     );
   }
 
+  if (profileError || !user) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+        <section className={`${panelStyles} space-y-4 text-center`}>
+          <XCircle
+            className="mx-auto h-10 w-10 text-rose-400"
+            aria-hidden="true"
+          />
+          <h1 className="text-2xl font-bold text-slate-100">
+            Unable to Load Profile
+          </h1>
+          <p role="alert" className="text-sm leading-6 text-slate-400">
+            {profileError || "Your profile information is unavailable."}
+          </p>
+          <button
+            type="button"
+            onClick={loadProfileData}
+            disabled={refreshing}
+            className={`${buttonStyles} bg-emerald-500 text-slate-950 hover:bg-emerald-400`}
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            {refreshing ? "Loading…" : "Try Again"}
+          </button>
+        </section>
+      </div>
+    );
+  }
+
+  const displayName = user.username || user.email || "Your Profile";
+  const initial = String(displayName).charAt(0).toUpperCase();
+  const activeSubId = activeSub?.id ?? activeSub?._id;
+  const hasActiveSubId =
+    activeSubId !== null &&
+    activeSubId !== undefined &&
+    activeSubId !== "";
+
+  const activeStatus = normalizeStatus(activeSub?.status);
+  const subscriptionBusy = Boolean(subscriptionAction) || refreshing;
+
+  const verificationClasses =
+    verificationResult?.valid === true
+      ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+      : verificationResult?.valid === false || verificationResult?.failed
+        ? "border-rose-500/20 bg-rose-500/10 text-rose-300"
+        : "border-amber-500/20 bg-amber-500/10 text-amber-300";
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      {/* User Profile Header */}
-      <div className="bg-dark-card border border-dark-border rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-cyan-gradient text-slate-950 flex items-center justify-center font-bold text-2xl shadow-lg shadow-cyan-500/20 overflow-hidden">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+    <div className="mx-auto max-w-5xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+      {/* Profile header */}
+      <header
+        className={`${panelStyles} flex flex-col justify-between gap-6 shadow-xl lg:flex-row lg:items-center`}
+      >
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-400 to-teal-400 text-2xl font-bold text-slate-950">
+            {user.avatarUrl && !avatarFailed ? (
+              <img
+                src={user.avatarUrl}
+                alt=""
+                width={64}
+                height={64}
+                onError={() => setAvatarFailed(true)}
+                className="h-full w-full object-cover"
+              />
             ) : (
-              (user?.username || user?.email || "U")[0].toUpperCase()
+              initial
             )}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-100">{user?.username}</h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                {user?.role || "USER"}
+
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="break-words text-xl font-black text-slate-100 sm:text-2xl">
+                {displayName}
+              </h1>
+              <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-bold text-cyan-400">
+                {user.role || "USER"}
               </span>
             </div>
-            <p className="text-slate-400 text-xs mt-1">{user?.email}</p>
+            <p className="mt-2 text-sm text-slate-400 [overflow-wrap:anywhere]">
+              {user.email}
+            </p>
           </div>
         </div>
 
-        {/* Avatar Upload */}
-        <form onSubmit={handleAvatarUpload} className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setAvatarFile(e.target.files[0])}
-            className="w-full min-w-0 text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-dark-bg file:text-slate-200 hover:file:bg-dark-hover cursor-pointer sm:w-64"
-          />
-          <button
-            type="submit"
-            disabled={uploadingAvatar || !avatarFile}
-            className="px-3.5 py-1.5 rounded-xl bg-cyan-gradient hover:opacity-90 text-slate-950 text-xs font-bold transition-all disabled:opacity-50"
+        <form
+          onSubmit={handleAvatarUpload}
+          aria-label="Upload profile avatar"
+          className="flex min-w-0 flex-col gap-3"
+        >
+          <label
+            htmlFor="profile-avatar"
+            className="text-xs font-semibold text-slate-400"
           >
-            {uploadingAvatar ? "Uploading..." : "Upload"}
-          </button>
+            Profile image
+          </label>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              ref={fileInputRef}
+              id="profile-avatar"
+              type="file"
+              accept="image/*"
+              disabled={uploadingAvatar}
+              onChange={handleAvatarSelection}
+              className={`min-w-0 max-w-full rounded-lg text-xs text-slate-400 file:mr-2 file:rounded-lg file:border-0 file:bg-dark-bg file:px-3 file:py-3 file:text-xs file:font-semibold file:text-slate-200 sm:w-64 ${focusStyles}`}
+            />
+            <button
+              type="submit"
+              disabled={uploadingAvatar || !avatarFile}
+              className={`${buttonStyles} bg-cyan-400 text-slate-950 hover:bg-cyan-300`}
+            >
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              {uploadingAvatar ? "Uploading…" : "Upload"}
+            </button>
+          </div>
         </form>
+      </header>
+
+      {/* Profile data status */}
+      <div role="status" aria-live="polite" className="text-xs text-slate-400">
+        {refreshing ? "Refreshing account information…" : ""}
       </div>
 
-      {/* Grid: Active Membership & Token Operations */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Active Membership Status */}
-        <div className="bg-dark-card border border-dark-border rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-100 text-base flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-cyan-400" />
-              Active Subscriptions & Access
-            </h3>
-          </div>
+      {failedSections.length > 0 && (
+        <div
+          role="alert"
+          className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4"
+        >
+          <p className="text-sm leading-6 text-amber-300">
+            Could not load: {failedSections.join(", ")}.
+          </p>
+          <button
+            type="button"
+            onClick={loadProfileData}
+            disabled={refreshing}
+            className={`${buttonStyles} mt-2 text-amber-300 hover:bg-amber-500/10`}
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            Retry
+          </button>
+        </div>
+      )}
 
-          {activeSub ? (
-            <div className="bg-dark-bg border border-cyan-500/20 rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Plan Tier:</span>
-                <span className="font-bold text-cyan-400 uppercase">{activeSub.product?.name || activeSub.tier || "VIP Pass"}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Status:</span>
-                <span className="font-semibold text-emerald-400 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  ACTIVE
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Expires On:</span>
-                <span className="font-medium text-slate-200">{formatDate(activeSub.expiresAt || activeSub.endDate)}</span>
-              </div>
+      {/* Membership and token operations */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <section className={`${panelStyles} space-y-4`}>
+          <h2 className="flex items-center gap-2 text-base font-bold text-slate-100">
+            <ShieldCheck
+              className="h-5 w-5 shrink-0 text-cyan-400"
+              aria-hidden="true"
+            />
+            Active Subscriptions &amp; Access
+          </h2>
 
-              <div className="pt-2 flex items-center gap-2">
+          {failedSections.includes("Active subscription") ? (
+            <p className="text-sm leading-6 text-slate-400">
+              Subscription information is currently unavailable.
+            </p>
+          ) : activeSub ? (
+            <div className="space-y-4 rounded-xl border border-cyan-500/20 bg-dark-bg p-4">
+              <dl className="space-y-3 text-sm">
+                <DetailRow
+                  label="Plan tier"
+                  value={
+                    activeSub.product?.name ||
+                    activeSub.tier ||
+                    "Subscription"
+                  }
+                />
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <dt className="text-slate-400">Status</dt>
+                  <dd
+                    className={`rounded-lg border px-2.5 py-1 text-xs font-bold ${getStatusClasses(activeStatus)}`}
+                  >
+                    {activeStatus}
+                  </dd>
+                </div>
+                <DetailRow
+                  label="Expires on"
+                  value={safeFormatDate(
+                    activeSub.expiresAt || activeSub.endDate
+                  )}
+                />
+              </dl>
+
+              <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => handleCancelSubscription(activeSub.id)}
-                  className="px-3 py-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-lg text-xs font-semibold hover:bg-rose-500/20 transition-colors"
+                  type="button"
+                  disabled={subscriptionBusy || !hasActiveSubId}
+                  onClick={() =>
+                    handleSubscriptionAction(activeSubId, "cancel")
+                  }
+                  className={`${buttonStyles} border border-rose-500/20 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20`}
                 >
-                  Cancel Access
+                  {subscriptionAction?.action === "cancel"
+                    ? "Cancelling…"
+                    : "Cancel Access"}
                 </button>
                 <button
-                  onClick={() => handleRenewSubscription(activeSub.id)}
-                  className="px-3 py-1.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-lg text-xs font-semibold hover:bg-cyan-500/20 transition-colors"
+                  type="button"
+                  disabled={subscriptionBusy || !hasActiveSubId}
+                  onClick={() =>
+                    handleSubscriptionAction(activeSubId, "renew")
+                  }
+                  className={`${buttonStyles} border border-cyan-500/20 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20`}
                 >
-                  Renew Plan
+                  {subscriptionAction?.id === activeSubId &&
+                  subscriptionAction?.action === "renew"
+                    ? "Renewing…"
+                    : "Renew Plan"}
                 </button>
               </div>
             </div>
           ) : (
-            <div className="bg-dark-bg border border-dark-border rounded-xl p-4 text-center space-y-2">
-              <p className="text-slate-400 text-xs">No active paid subscription found.</p>
-              <p className="text-[11px] text-slate-400">Redeem an access token code below to unlock VIP predictions.</p>
+            <div className="space-y-2 rounded-xl border border-dark-border bg-dark-bg p-4 text-center">
+              <p className="text-sm text-slate-300">
+                No active paid subscription found.
+              </p>
+              <p className="text-xs leading-6 text-slate-400">
+                Redeem an access token to unlock premium selections.
+              </p>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Redeem & Verify Access Token */}
-        <div className="bg-dark-card border border-dark-border rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-100 text-base flex items-center gap-2">
-              <KeyRound className="w-5 h-5 text-amber-400" />
+        <section className={`${panelStyles} space-y-4`}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 text-base font-bold text-slate-100">
+              <KeyRound
+                className="h-5 w-5 text-amber-400"
+                aria-hidden="true"
+              />
               Token Code Operations
-            </h3>
-
+            </h2>
             <button
-              onClick={() => setVerifyModalOpen(true)}
-              className="text-xs text-amber-400 font-bold hover:underline flex items-center gap-1"
+              type="button"
+              onClick={() => {
+                setVerificationResult(null);
+                setVerifyModalOpen(true);
+              }}
+              className={`${buttonStyles} px-2 text-amber-400 hover:bg-amber-500/10`}
             >
-              <Eye className="w-3.5 h-3.5" />
+              <Eye className="h-4 w-4" aria-hidden="true" />
               Verify Code
             </button>
           </div>
 
           <form onSubmit={handleRedeemToken} className="space-y-3">
+            <label
+              htmlFor="redeem-token"
+              className="block text-xs font-semibold text-slate-400"
+            >
+              Access token code
+            </label>
             <input
+              id="redeem-token"
               type="text"
+              required
+              autoComplete="off"
+              spellCheck={false}
               value={tokenCode}
-              onChange={(e) => setTokenCode(e.target.value)}
+              disabled={redeeming}
+              onChange={(event) => setTokenCode(event.target.value)}
               placeholder="e.g. VIP-TOK-9921"
-              className="w-full px-4 py-2.5 bg-dark-bg border border-dark-border rounded-xl text-slate-100 text-xs font-mono focus:outline-none focus:border-amber-500"
+              className={`${inputStyles} font-mono`}
             />
             <button
               type="submit"
-              disabled={redeeming}
-              className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition-all shadow-md disabled:opacity-50"
+              disabled={redeeming || !tokenCode.trim()}
+              className={`${buttonStyles} w-full bg-amber-500 text-slate-950 hover:bg-amber-400`}
             >
-              {redeeming ? "Redeeming..." : "Activate Access Code"}
+              {redeeming ? "Redeeming…" : "Activate Access Code"}
             </button>
           </form>
-        </div>
+        </section>
       </div>
 
-      {/* Password Update Form */}
-      <div className="bg-dark-card border border-dark-border rounded-2xl p-6 space-y-4">
-        <h3 className="font-bold text-slate-100 text-base flex items-center gap-2">
-          <Lock className="w-5 h-5 text-indigo-400" />
-          Security & Password Update
-        </h3>
+      {/* Password update */}
+      <section className={`${panelStyles} space-y-5`}>
+        <h2 className="flex items-center gap-2 text-base font-bold text-slate-100">
+          <Lock className="h-5 w-5 text-indigo-400" aria-hidden="true" />
+          Security &amp; Password Update
+        </h2>
 
-        <form onSubmit={handlePasswordUpdate} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-              Current Password
+        <form
+          onSubmit={handlePasswordUpdate}
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+        >
+          <div className="space-y-2">
+            <label
+              htmlFor="current-password"
+              className="block text-xs font-semibold text-slate-400"
+            >
+              Current password
             </label>
             <input
+              id="current-password"
               type="password"
               required
+              autoComplete="current-password"
+              disabled={updatingPassword}
               value={passwordForm.oldPassword}
-              onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
-              placeholder="••••••••"
-              className="w-full px-3.5 py-2 bg-dark-bg border border-dark-border rounded-xl text-xs text-slate-100 focus:outline-none focus:border-indigo-500"
+              onChange={(event) =>
+                setPasswordForm((previous) => ({
+                  ...previous,
+                  oldPassword: event.target.value,
+                }))
+              }
+              className={inputStyles}
             />
           </div>
 
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-              New Password
+          <div className="space-y-2">
+            <label
+              htmlFor="new-password"
+              className="block text-xs font-semibold text-slate-400"
+            >
+              New password
             </label>
             <input
+              id="new-password"
               type="password"
               required
+              autoComplete="new-password"
+              disabled={updatingPassword}
               value={passwordForm.newPassword}
-              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-              placeholder="••••••••"
-              className="w-full px-3.5 py-2 bg-dark-bg border border-dark-border rounded-xl text-xs text-slate-100 focus:outline-none focus:border-indigo-500"
+              onChange={(event) =>
+                setPasswordForm((previous) => ({
+                  ...previous,
+                  newPassword: event.target.value,
+                }))
+              }
+              className={inputStyles}
             />
           </div>
 
-          <div className="sm:col-span-2 pt-2">
+          <div className="sm:col-span-2">
             <button
               type="submit"
               disabled={updatingPassword}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all shadow-md disabled:opacity-50"
+              className={`${buttonStyles} bg-indigo-600 text-white hover:bg-indigo-500`}
             >
-              {updatingPassword ? "Updating Password..." : "Update Password"}
+              {updatingPassword ? "Updating Password…" : "Update Password"}
             </button>
           </div>
         </form>
-      </div>
+      </section>
 
-      {/* Subscription History Table */}
-      <div className="bg-dark-card border border-dark-border rounded-2xl p-6 space-y-4">
-        <h3 className="font-bold text-slate-100 text-base flex items-center gap-2">
-          <Clock className="w-5 h-5 text-slate-400" />
+      {/* Subscription history */}
+      <section className={`${panelStyles} space-y-4`}>
+        <h2 className="flex items-center gap-2 text-base font-bold text-slate-100">
+          <Clock className="h-5 w-5 text-slate-400" aria-hidden="true" />
           Access History
-        </h3>
+        </h2>
 
-        {subHistory.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-dark-bg text-slate-400 uppercase text-[10px] tracking-wider border-b border-dark-border">
+        {failedSections.includes("Access history") ? (
+          <p className="text-sm text-slate-400">
+            Access history is currently unavailable.
+          </p>
+        ) : subHistory.length > 0 ? (
+          <div className="overflow-x-auto rounded-xl border border-dark-border">
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <caption className="sr-only">
+                Subscription history and renewal actions
+              </caption>
+              <thead className="border-b border-dark-border bg-dark-bg text-xs uppercase tracking-wider text-slate-400">
                 <tr>
-                  <th className="px-4 py-3">Product / Tier</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Started</th>
-                  <th className="px-4 py-3">Expires</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th scope="col" className="px-4 py-3">Product / Tier</th>
+                  <th scope="col" className="px-4 py-3">Status</th>
+                  <th scope="col" className="px-4 py-3">Started</th>
+                  <th scope="col" className="px-4 py-3">Expires</th>
+                  <th scope="col" className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-dark-border text-slate-300">
-                {subHistory.map((sub, idx) => (
-                  <tr key={idx}>
-                    <td className="px-4 py-3 font-semibold text-slate-100">{sub.product?.name || sub.tier || "VIP Pass"}</td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-dark-bg text-cyan-400 border border-dark-border">
-                        {sub.status || "ACTIVE"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">{formatDate(sub.createdAt || sub.startDate)}</td>
-                    <td className="px-4 py-3">{formatDate(sub.expiresAt || sub.endDate)}</td>
-                    <td className="px-4 py-3 text-right">
-                      {sub.status === "EXPIRED" && (
-                        <button
-                          onClick={() => handleRenewSubscription(sub.id)}
-                          className="px-2.5 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded text-[11px] font-semibold hover:bg-cyan-500/20"
+                {subHistory.map((sub, index) => {
+                  const subId = sub.id ?? sub._id;
+                  const status = normalizeStatus(sub.status);
+                  const hasId =
+                    subId !== null && subId !== undefined && subId !== "";
+
+                  return (
+                    <tr key={subId ?? `subscription-${index}`}>
+                      <th
+                        scope="row"
+                        className="px-4 py-3 font-semibold text-slate-100"
+                      >
+                        {sub.product?.name || sub.tier || "Subscription"}
+                      </th>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-block rounded-lg border px-2 py-1 text-[11px] font-bold ${getStatusClasses(status)}`}
                         >
-                          Renew
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                          {status}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        {safeFormatDate(sub.startDate || sub.createdAt)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        {safeFormatDate(sub.expiresAt || sub.endDate)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {status === "EXPIRED" && hasId ? (
+                          <button
+                            type="button"
+                            disabled={subscriptionBusy}
+                            onClick={() =>
+                              handleSubscriptionAction(subId, "renew")
+                            }
+                            className={`${buttonStyles} border border-cyan-500/20 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20`}
+                          >
+                            {subscriptionAction?.id === subId &&
+                            subscriptionAction?.action === "renew"
+                              ? "Renewing…"
+                              : "Renew"}
+                          </button>
+                        ) : (
+                          <span className="text-slate-500">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="text-slate-400 text-xs">No prior subscription history recorded.</p>
+          <p className="text-sm text-slate-400">
+            No prior subscription history recorded.
+          </p>
         )}
-      </div>
+      </section>
 
-      {/* Verify Token Modal */}
-      <Modal isOpen={verifyModalOpen} onClose={() => setVerifyModalOpen(false)} title="Verify Access Token Code">
-        <form onSubmit={handleVerifyToken} className="space-y-4 text-xs">
-          <div>
-            <label className="block text-slate-400 font-semibold mb-1">Enter Token Code to Test</label>
+      {/* Token verification */}
+      <Modal
+        isOpen={verifyModalOpen}
+        onClose={closeVerificationModal}
+        title="Verify Access Token Code"
+      >
+        <form onSubmit={handleVerifyToken} className="space-y-4">
+          <div className="space-y-2">
+            <label
+              htmlFor="verify-token"
+              className="block text-sm font-semibold text-slate-400"
+            >
+              Token code
+            </label>
             <input
+              id="verify-token"
               type="text"
               required
+              autoComplete="off"
+              spellCheck={false}
+              disabled={verifying}
               placeholder="e.g. VIP-8842-X99"
               value={verifyCodeInput}
-              onChange={(e) => setVerifyCodeInput(e.target.value)}
-              className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-xl text-slate-100 font-mono"
+              onChange={(event) => {
+                setVerifyCodeInput(event.target.value);
+                setVerificationResult(null);
+              }}
+              className={`${inputStyles} font-mono`}
             />
           </div>
 
+          <p className="text-xs leading-5 text-slate-400">
+            Verification checks the code without redeeming it.
+          </p>
+
           {verificationResult && (
-            <div className={`p-3 rounded-xl border text-xs ${verificationResult.valid ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20"}`}>
-              {verificationResult.valid ? "Token Code is Valid & Available!" : verificationResult.message || "Invalid or used token"}
+            <div
+              role="status"
+              aria-live="polite"
+              className={`rounded-xl border p-4 text-sm leading-6 ${verificationClasses}`}
+            >
+              {verificationResult.message}
             </div>
           )}
 
           <button
             type="submit"
-            disabled={verifying}
-            className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow-md"
+            disabled={verifying || !verifyCodeInput.trim()}
+            className={`${buttonStyles} w-full bg-amber-500 text-slate-950 hover:bg-amber-400`}
           >
-            {verifying ? "Checking..." : "Verify Token Status"}
+            {verifying ? "Checking…" : "Verify Token Status"}
           </button>
         </form>
       </Modal>
+    </div>
+  );
+}
+
+function DetailRow({ label, value }) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <dt className="shrink-0 text-slate-400">{label}</dt>
+      <dd className="min-w-0 break-words text-right font-semibold text-slate-200">
+        {value}
+      </dd>
     </div>
   );
 }

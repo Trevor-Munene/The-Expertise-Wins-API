@@ -1,10 +1,8 @@
 // frontend/src/app/tips/page.jsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { tipsApi } from "../../api/tips.api";
-import TipCard from "../../components/TipCard";
-import { formatTipChannelCard } from "../../lib/tipChannelFormatter";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Search,
   Lock,
@@ -13,83 +11,219 @@ import {
   Sparkles,
   Send,
   Crown,
+  RefreshCw,
 } from "lucide-react";
-import Link from "next/link";
+
+import { tipsApi } from "../../api/tips.api";
+import TipCard from "../../components/TipCard";
+import { formatTipChannelCard } from "../../lib/tipChannelFormatter";
+
+const tabs = [
+  {
+    id: "free",
+    label: "6+ Free Football Tips",
+    viewLabel: "Free Football Tips",
+    icon: Trophy,
+    activeClass:
+      "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20",
+  },
+  {
+    id: "vip",
+    label: "VIP Channel",
+    viewLabel: "Pikk Better VIP",
+    icon: Zap,
+    activeClass:
+      "bg-indigo-500 text-white shadow-md shadow-indigo-500/20",
+  },
+  {
+    id: "maxbet",
+    label: "MaxBet VIP",
+    viewLabel: "Pikk MaxBet VIP",
+    icon: Sparkles,
+    activeClass:
+      "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20",
+  },
+  {
+    id: "all",
+    label: "All Tips",
+    viewLabel: "All Available Tips",
+    icon: null,
+    activeClass: "bg-slate-800 text-slate-100",
+  },
+];
+
+const focusStyles =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+
+const buttonStyles = `inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-3 text-xs font-bold transition-colors ${focusStyles}`;
+
+// Get the current calendar date in Nairobi.
+function getTodayIso() {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Nairobi",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const getPart = (type) =>
+    parts.find((part) => part.type === type)?.value;
+
+  return `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+}
+
+// Validate a date-only value before displaying it.
+function normalizeServedDay(value) {
+  if (typeof value !== "string") return null;
+
+  const day = value.trim();
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+
+  const parsed = new Date(`${day}T00:00:00Z`);
+
+  if (
+    !Number.isFinite(parsed.getTime()) ||
+    parsed.toISOString().slice(0, 10) !== day
+  ) {
+    return null;
+  }
+
+  return day;
+}
+
+// Read the supported list response shapes.
+function extractTips(response) {
+  const candidates = [
+    response?.tips?.data,
+    response?.tips,
+    response?.data?.data,
+    response?.data,
+    response,
+  ];
+
+  const data = candidates.find(Array.isArray);
+
+  return data
+    ? data.filter((tip) => tip && typeof tip === "object")
+    : [];
+}
 
 export default function TipsPage() {
-  const [activeTab, setActiveTab] = useState("free"); // free | vip | maxbet | all
+  const [activeTab, setActiveTab] = useState("free");
   const [tips, setTips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSport, setSelectedSport] = useState("ALL");
   const [requiresAuth, setRequiresAuth] = useState(false);
+  const [accessStatus, setAccessStatus] = useState(null);
   const [servedDay, setServedDay] = useState(null);
+  const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadTips() {
       setLoading(true);
       setRequiresAuth(false);
+      setAccessStatus(null);
+      setError("");
+      setServedDay(null);
+      setTips([]);
 
       try {
-        let res;
+        let response;
 
-        // Send no day at all: the API returns today when today's scrape has
-        // run, and otherwise the most recent day that has published tips. The
-        // archive shows the day it served so the tab can label it.
+        // Let the API choose the latest available published day.
         if (activeTab === "free") {
-          res = await tipsApi.getFreeTips();
+          response = await tipsApi.getFreeTips();
         } else if (activeTab === "vip") {
-          res = await tipsApi.getVipTips();
+          response = await tipsApi.getVipTips();
         } else if (activeTab === "maxbet") {
-          res = await tipsApi.getMaxbetTips();
+          response = await tipsApi.getMaxbetTips();
         } else {
-          res = await tipsApi.getTips();
+          response = await tipsApi.getTips();
         }
 
-        const data =
-          res?.tips?.data ??
-          res?.tips ??
-          res?.data?.data ??
-          res?.data ??
-          res;
-        setTips(Array.isArray(data) ? data : []);
+        // Ignore responses from an earlier tab or an unmounted page.
+        if (cancelled) return;
 
-        // Record the day the API actually served so the header can show it when
-        // today has not been scraped yet.
-        setServedDay(res?.tips?.day || null);
-      } catch (err) {
-        if ([401, 403].includes(err.response?.status)) {
+        setTips(extractTips(response));
+        setServedDay(normalizeServedDay(response?.tips?.day));
+      } catch (requestError) {
+        if (cancelled) return;
+
+        const status = requestError?.response?.status;
+
+        if (status === 401 || status === 403) {
           setRequiresAuth(true);
+          setAccessStatus(status);
+        } else {
+          setError(
+            "We couldn't load the selections. Please try again shortly."
+          );
         }
 
         setTips([]);
+        setServedDay(null);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
     loadTips();
-  }, [activeTab]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, retryCount]);
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
 
   const filteredTips = tips.filter((tip) => {
-    const matchStr = (
-      tip.teams ||
-      `${tip.homeTeam || ""} ${tip.awayTeam || ""} ${
-        tip.competition || ""
-      } ${tip.selection || ""}`
-    ).toLowerCase();
+    const selections = Array.isArray(tip.tips) ? tip.tips : [];
 
-    const matchesSearch = matchStr.includes(searchTerm.toLowerCase());
+    // Search all relevant fields, including premium selections.
+    const searchableText = [
+      tip.teams,
+      tip.homeTeam,
+      tip.awayTeam,
+      tip.competition,
+      tip.league,
+      tip.selection,
+      tip.prediction,
+      tip.market,
+      ...selections.flatMap((selection) => [
+        selection?.selection,
+        selection?.market,
+      ]),
+    ]
+      .filter((value) => value !== null && value !== undefined)
+      .map(String)
+      .join(" ")
+      .toLowerCase();
+
+    const matchesSearch = searchableText.includes(normalizedSearch);
 
     const matchesSport =
       selectedSport === "ALL" ||
-      (tip.sport || "Football").toUpperCase() === selectedSport;
+      String(tip.sport || "Football").trim().toUpperCase() ===
+        selectedSport;
 
     return matchesSearch && matchesSport;
   });
 
-  const todayIso = new Date().toISOString().slice(0, 10);
-  const isHistoricalDay = servedDay && servedDay !== todayIso;
+  const activeView = tabs.find((tab) => tab.id === activeTab);
+  const isPremiumTab = activeTab === "vip" || activeTab === "maxbet";
+  const hasFilters = normalizedSearch !== "" || selectedSport !== "ALL";
+  const hasLoadedContent = !loading && !requiresAuth && !error;
+
+  const isHistoricalDay =
+    hasLoadedContent && servedDay && servedDay < getTodayIso();
+
   const dayLabel = servedDay
     ? new Date(`${servedDay}T00:00:00Z`).toLocaleDateString("en-GB", {
         day: "numeric",
@@ -99,54 +233,69 @@ export default function TipsPage() {
       })
     : null;
 
-  const tabs = [
-    {
-      id: "free",
-      label: "6+ Free Football Tips",
-      icon: Trophy,
-      activeClass:
-        "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20",
-      iconClass: "text-current",
-    },
-    {
-      id: "vip",
-      label: "VIP Channel",
-      icon: Zap,
-      activeClass:
-        "bg-indigo-500 text-white shadow-md shadow-indigo-500/20",
-      iconClass: "text-amber-400",
-    },
-    {
-      id: "maxbet",
-      label: "MaxBet VIP",
-      icon: Sparkles,
-      activeClass:
-        "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20",
-      iconClass: "text-current",
-    },
-    {
-      id: "all",
-      label: "All Tips",
-      icon: null,
-      activeClass: "bg-slate-800 text-slate-100",
-      iconClass: "",
-    },
-  ];
+  const accessHeading = isPremiumTab
+    ? accessStatus === 401
+      ? "Sign In to View Premium Tips"
+      : "Premium Access Required"
+    : accessStatus === 401
+      ? "Sign In Required"
+      : "Access Restricted";
+
+  const accessDescription = isPremiumTab
+    ? "This section requires an active VIP or MaxBet membership. Sign in with your account or activate the access token provided by Admin."
+    : "This view is currently restricted. Sign in with your account or contact Admin if you believe you should have access.";
+
+  const viewStatus = loading
+    ? "Loading selections…"
+    : requiresAuth
+      ? "Access required"
+      : error
+        ? "Selections unavailable"
+        : `${filteredTips.length} selection${
+            filteredTips.length === 1 ? "" : "s"
+          } shown`;
+
+  const handleTabChange = (tabId) => {
+    if (tabId === activeTab) return;
+
+    // Hide the previous view immediately while the next request starts.
+    setLoading(true);
+    setTips([]);
+    setServedDay(null);
+    setError("");
+    setRequiresAuth(false);
+    setAccessStatus(null);
+    setActiveTab(tabId);
+  };
+
+  const handleRetry = () => {
+    setLoading(true);
+    setError("");
+    setRetryCount((count) => count + 1);
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedSport("ALL");
+  };
 
   return (
-    <div className="w-full min-w-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
-          <Sparkles className="w-4 h-4" />
+    <div className="mx-auto w-full min-w-0 max-w-7xl space-y-10 px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+      {/* Page header */}
+      <header className="mx-auto max-w-3xl space-y-4 text-center">
+        <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
+          <Sparkles
+            className="h-4 w-4 shrink-0"
+            aria-hidden="true"
+          />
           <span>Curated Betting Selections</span>
         </div>
 
-        <h1 className="text-3xl sm:text-5xl font-black text-slate-100 tracking-tight">
-          Tips & Predictions Hub
+        <h1 className="text-3xl font-black tracking-tight text-slate-100 sm:text-5xl">
+          Tips &amp; Predictions Hub
         </h1>
 
-        <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+        <p className="mx-auto max-w-2xl text-sm leading-relaxed text-slate-400 sm:text-base">
           Football tips remain free for our community, with at least 6 free
           football selections published daily. VIP and MaxBet access extends
           our coverage into additional sports, markets, curated selections,
@@ -156,267 +305,377 @@ export default function TipsPage() {
         <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
           <Link
             href="/products"
-            className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-lg shadow-emerald-500/20 inline-flex items-center gap-2"
+            className={`${buttonStyles} bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/10 hover:bg-emerald-400`}
           >
-            <Crown className="w-4 h-4" />
+            <Crown className="h-4 w-4" aria-hidden="true" />
             View Membership Access
           </Link>
 
           <a
             href="https://t.me/pikkbetter"
             target="_blank"
-            rel="noreferrer"
-            className="px-5 py-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 font-bold text-xs transition-all inline-flex items-center gap-2"
+            rel="noopener noreferrer"
+            className={`${buttonStyles} border border-sky-500/20 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20`}
           >
-            <Send className="w-4 h-4" />
+            <Send className="h-4 w-4" aria-hidden="true" />
             DM @PikkBetter
+            <span className="sr-only"> (opens in a new tab)</span>
           </a>
         </div>
-      </div>
+      </header>
 
-      {/* Tip Access Guide */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-slate-900 border border-emerald-500/20 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <Trophy className="w-4 h-4 text-emerald-400" />
-            <h3 className="text-sm font-bold text-slate-100">
-              Free Football
-            </h3>
-          </div>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            At least 6 football tips daily, available to the wider community.
-          </p>
+      {/* Access guide */}
+      <section aria-labelledby="access-guide-heading">
+        <h2 id="access-guide-heading" className="sr-only">
+          Tip access levels
+        </h2>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <article className="rounded-2xl border border-emerald-500/20 bg-slate-900 p-5">
+            <div className="mb-2 flex items-center gap-2">
+              <Trophy
+                className="h-4 w-4 shrink-0 text-emerald-400"
+                aria-hidden="true"
+              />
+              <h3 className="text-sm font-bold text-slate-100">
+                Free Football
+              </h3>
+            </div>
+
+            <p className="text-sm leading-6 text-slate-400">
+              At least 6 football tips daily, available to the wider
+              community.
+            </p>
+          </article>
+
+          <article className="rounded-2xl border border-indigo-500/20 bg-slate-900 p-5">
+            <div className="mb-2 flex items-center gap-2">
+              <Zap
+                className="h-4 w-4 shrink-0 text-amber-400"
+                aria-hidden="true"
+              />
+              <h3 className="text-sm font-bold text-slate-100">
+                Pikk Better VIP
+              </h3>
+            </div>
+
+            <p className="text-sm leading-6 text-slate-400">
+              Premium daily selections, multiple sports and markets, with
+              curated reasoning.
+            </p>
+          </article>
+
+          <article className="rounded-2xl border border-amber-500/20 bg-slate-900 p-5">
+            <div className="mb-2 flex items-center gap-2">
+              <Sparkles
+                className="h-4 w-4 shrink-0 text-amber-400"
+                aria-hidden="true"
+              />
+              <h3 className="text-sm font-bold text-slate-100">
+                Pikk MaxBet VIP
+              </h3>
+            </div>
+
+            <p className="text-sm leading-6 text-slate-400">
+              Highest-tier selections with stronger curation and dedicated
+              MaxBet opportunities.
+            </p>
+          </article>
         </div>
+      </section>
 
-        <div className="bg-slate-900 border border-indigo-500/20 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <Zap className="w-4 h-4 text-amber-400" />
-            <h3 className="text-sm font-bold text-slate-100">
-              Pikk Better VIP
-            </h3>
-          </div>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Premium daily selections, multiple sports and markets, with
-            curated reasoning.
-          </p>
-        </div>
+      {/* View controls and filters */}
+      <section
+        aria-labelledby="tips-controls-heading"
+        className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-5"
+      >
+        <h2 id="tips-controls-heading" className="sr-only">
+          Choose a tip category and filter selections
+        </h2>
 
-        <div className="bg-slate-900 border border-amber-500/20 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <h3 className="text-sm font-bold text-slate-100">
-              Pikk MaxBet VIP
-            </h3>
-          </div>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Highest-tier selections with stronger curation and dedicated
-            MaxBet opportunities.
-          </p>
-        </div>
-      </div>
-
-      {/* Tabs & Filters */}
-      <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* Tabs */}
-          <div className="flex min-w-0 max-w-full items-center gap-2 overflow-x-auto pb-1">
+        <div className="flex flex-col gap-4">
+          <div
+            role="group"
+            aria-label="Tip category"
+            className="flex min-w-0 max-w-full items-center gap-2 overflow-x-auto p-1"
+          >
             {tabs.map((tab) => {
               const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
 
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                    activeTab === tab.id
+                  type="button"
+                  onClick={() => handleTabChange(tab.id)}
+                  aria-pressed={isActive}
+                  aria-controls="tips-results"
+                  className={`inline-flex min-h-[44px] shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-4 py-3 text-xs font-bold transition-colors ${focusStyles} ${
+                    isActive
                       ? tab.activeClass
-                      : "bg-slate-950 text-slate-300 hover:bg-slate-800"
+                      : "bg-slate-950 text-slate-300 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
                   {Icon && (
-                    <Icon className={`w-3.5 h-3.5 ${tab.iconClass}`} />
+                    <Icon
+                      className={`h-4 w-4 ${
+                        tab.id === "vip" && !isActive
+                          ? "text-amber-400"
+                          : "text-current"
+                      }`}
+                      aria-hidden="true"
+                    />
                   )}
-                  <span>{tab.label}</span>
+                  {tab.label}
                 </button>
               );
             })}
           </div>
 
-          {/* Filters */}
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative min-w-0 flex-1 lg:w-64">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
+            <div className="relative min-w-0 flex-1">
+              <label htmlFor="tips-search" className="sr-only">
+                Search teams, leagues, markets, or selections
+              </label>
+
               <input
-                type="text"
-                placeholder="Search team, league, selection..."
+                id="tips-search"
+                type="search"
+                placeholder="Search team, league, selection…"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-emerald-500 pl-9"
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className={`min-h-[44px] w-full rounded-xl border border-slate-800 bg-slate-950 py-3 pl-10 pr-3.5 text-sm text-slate-100 placeholder:text-slate-500 ${focusStyles}`}
               />
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                aria-hidden="true"
+              />
             </div>
 
-            <select
-              value={selectedSport}
-              onChange={(e) => setSelectedSport(e.target.value)}
-              className="w-full max-w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-emerald-500 sm:w-auto"
-            >
-              <option value="ALL">All Sports</option>
-              <option value="FOOTBALL">Football</option>
-              <option value="BASKETBALL">Basketball</option>
-              <option value="TENNIS">Tennis</option>
-            </select>
+            <div className="sm:w-48">
+              <label htmlFor="tips-sport" className="sr-only">
+                Filter by sport
+              </label>
+
+              <select
+                id="tips-sport"
+                value={selectedSport}
+                onChange={(event) => setSelectedSport(event.target.value)}
+                className={`min-h-[44px] w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-3 text-sm text-slate-200 ${focusStyles}`}
+              >
+                <option value="ALL">All Sports</option>
+                <option value="FOOTBALL">Football</option>
+                <option value="BASKETBALL">Basketball</option>
+                <option value="TENNIS">Tennis</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Current View Indicator */}
-        <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-[11px] text-slate-400">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-4">
+          <p className="text-xs leading-5 text-slate-400">
             Viewing:{" "}
             <span className="font-bold text-slate-200">
-              {activeTab === "free"
-                ? "Free Football Tips"
-                : activeTab === "vip"
-                ? "Pikk Better VIP"
-                : activeTab === "maxbet"
-                ? "Pikk MaxBet VIP"
-                : "All Available Tips"}
+              {activeView?.viewLabel}
             </span>
           </p>
 
           {isHistoricalDay && (
-            <p className="text-[11px] text-amber-400">
-              No tips scraped today — showing the most recent recorded day,{" "}
+            <p className="text-xs leading-5 text-amber-300">
+              Showing selections served for{" "}
               <span className="font-bold">{dayLabel}</span>.
             </p>
           )}
 
-          <p className="text-[11px] text-slate-500">
-            {filteredTips.length} selection
-            {filteredTips.length === 1 ? "" : "s"} shown
+          <p
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="text-xs text-slate-400"
+          >
+            {viewStatus}
           </p>
         </div>
-      </div>
+      </section>
 
-      {/* Content */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="h-56 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse"
-            />
-          ))}
-        </div>
-      ) : requiresAuth ? (
-        <div className="bg-slate-900 border border-amber-500/20 rounded-2xl p-10 text-center space-y-5 max-w-xl mx-auto shadow-xl">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center mx-auto">
-            <Lock className="w-7 h-7" />
-          </div>
+      {/* Selection results */}
+      <section
+        id="tips-results"
+        aria-labelledby="tips-results-heading"
+        aria-busy={loading}
+      >
+        <h2 id="tips-results-heading" className="sr-only">
+          {activeView?.viewLabel}
+        </h2>
 
-          <div className="space-y-2">
-            <h3 className="text-xl font-bold text-slate-100">
-              Premium Access Required
-            </h3>
-
-            <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-md mx-auto">
-              This section contains premium selections available through an
-              active VIP or MaxBet membership. Sign in with your account or
-              activate the access token provided by Admin.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
-            <Link
-              href="/login"
-              className="px-5 py-2.5 bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-emerald-400 transition-colors"
-            >
-              Sign In
-            </Link>
-
-            <Link
-              href="/products"
-              className="px-5 py-2.5 bg-slate-800 text-slate-200 font-semibold text-xs rounded-xl hover:bg-slate-700 border border-slate-700 transition-colors"
-            >
-              View Access Options
-            </Link>
-          </div>
-        </div>
-      ) : filteredTips.length > 0 ? (
-        activeTab === "vip" || activeTab === "maxbet" ? (
-          <div className="mx-auto max-w-3xl space-y-4">
-            {filteredTips.map((tip, index) => (
-              <article
-                key={tip.id || tip._id}
-                className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900"
-              >
-                <div className="border-b border-slate-800 px-5 py-3 text-[11px] font-bold uppercase text-slate-400">
-                  Card {index + 1}
-                </div>
-                <pre className="whitespace-pre-wrap break-words px-5 py-5 font-mono text-sm leading-7 text-slate-100">
-                  {formatTipChannelCard(tip)}
-                </pre>
-              </article>
-            ))}
-          </div>
-        ) : (
+        {loading ? (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredTips.map((tip) => (
-              <TipCard key={tip.id || tip._id} tip={tip} />
+            {Array.from({ length: 6 }, (_, index) => (
+              <div
+                key={index}
+                aria-hidden="true"
+                className="h-64 rounded-2xl border border-slate-800 bg-slate-900 motion-safe:animate-pulse"
+              />
             ))}
           </div>
-        )
-      ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto">
-            <Search className="w-5 h-5 text-slate-500" />
+        ) : requiresAuth ? (
+          <div className="mx-auto max-w-xl space-y-5 rounded-2xl border border-amber-500/20 bg-slate-900 p-6 text-center shadow-xl sm:p-10">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-400">
+              <Lock className="h-7 w-7" aria-hidden="true" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-slate-100">
+                {accessHeading}
+              </h3>
+              <p className="mx-auto max-w-md text-sm leading-6 text-slate-400">
+                {accessDescription}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link
+                href="/login"
+                className={`${buttonStyles} bg-emerald-500 text-slate-950 hover:bg-emerald-400`}
+              >
+                Sign In
+              </Link>
+
+              <Link
+                href="/products"
+                className={`${buttonStyles} border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700`}
+              >
+                View Access Options
+              </Link>
+            </div>
           </div>
+        ) : error ? (
+          <div
+            role="alert"
+            className="space-y-4 rounded-2xl border border-rose-500/20 bg-slate-900 p-6 text-center sm:p-10"
+          >
+            <h3 className="text-lg font-bold text-slate-100">
+              Unable to Load Tips
+            </h3>
+            <p className="text-sm leading-6 text-slate-400">{error}</p>
 
-          <h3 className="text-sm font-bold text-slate-200">
-            No Tips Found
-          </h3>
+            <button
+              type="button"
+              onClick={handleRetry}
+              className={`${buttonStyles} bg-emerald-500 text-slate-950 hover:bg-emerald-400`}
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Try Again
+            </button>
+          </div>
+        ) : filteredTips.length > 0 ? (
+          isPremiumTab ? (
+            <div className="mx-auto max-w-3xl space-y-4">
+              {filteredTips.map((tip, index) => (
+                <article
+                  key={tip.id ?? tip._id ?? `premium-tip-${index}`}
+                  className="min-w-0 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900"
+                >
+                  <h3 className="border-b border-slate-800 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Card {index + 1}
+                  </h3>
 
-          <p className="text-slate-400 text-xs">
-            No selections match your current search or sport filter.
-          </p>
+                  <pre className="whitespace-pre-wrap break-words px-5 py-5 font-mono text-sm leading-7 text-slate-100 [overflow-wrap:anywhere]">
+                    {formatTipChannelCard(tip)}
+                  </pre>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filteredTips.map((tip, index) => (
+                <TipCard
+                  key={tip.id ?? tip._id ?? `tip-${index}`}
+                  tip={tip}
+                />
+              ))}
+            </div>
+          )
+        ) : (
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-center sm:p-12">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-800 bg-slate-950">
+              <Search
+                className="h-5 w-5 text-slate-400"
+                aria-hidden="true"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-slate-200">
+                {tips.length > 0
+                  ? "No Matching Tips"
+                  : "No Tips Available Yet"}
+              </h3>
+
+              <p className="text-sm leading-6 text-slate-400">
+                {tips.length > 0
+                  ? "No selections match your current search or sport filter."
+                  : "There are no selections available in this view right now. Check back shortly for updates."}
+              </p>
+            </div>
+
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className={`${buttonStyles} border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700`}
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* Community and membership banner */}
+      <section
+        aria-labelledby="membership-heading"
+        className="mx-auto max-w-4xl space-y-4 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-900 p-7 text-center shadow-xl sm:p-8"
+      >
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-400">
+          <Crown className="h-6 w-6" aria-hidden="true" />
         </div>
-      )}
 
-      {/* Community / Access Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-900 border border-amber-500/30 rounded-2xl p-7 sm:p-8 text-center space-y-3 max-w-4xl mx-auto shadow-2xl">
-        <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center mx-auto">
-          <Crown className="w-6 h-6" />
-        </div>
+        <h2
+          id="membership-heading"
+          className="text-lg font-bold text-slate-100 sm:text-xl"
+        >
+          I COME TO HELP &amp; SERVE MY PEOPLE
+        </h2>
 
-        <h3 className="text-lg sm:text-xl font-bold text-slate-100">
-          👑 I COME TO HELP & SERVE MY PEOPLE
-        </h3>
-
-        <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto">
+        <p className="mx-auto max-w-xl text-sm leading-6 text-slate-300">
           Football remains free for our community. For premium sports,
           markets, VIP selections, or MaxBet access, membership is available
           through dedicated international and African-market rates.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+        <div className="flex flex-wrap justify-center gap-3 pt-2">
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20"
+            className={`${buttonStyles} bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/10 hover:bg-amber-400`}
           >
-            <Crown className="w-4 h-4" />
+            <Crown className="h-4 w-4" aria-hidden="true" />
             View Memberships
           </Link>
 
           <a
             href="https://t.me/pikkbetter"
             target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs hover:bg-sky-400 transition-all shadow-lg shadow-sky-500/20"
+            rel="noopener noreferrer"
+            className={`${buttonStyles} bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/10 hover:bg-sky-400`}
           >
-            <Send className="w-4 h-4" />
+            <Send className="h-4 w-4" aria-hidden="true" />
             DM ADMIN @PikkBetter
+            <span className="sr-only"> (opens in a new tab)</span>
           </a>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
