@@ -78,14 +78,100 @@ const cleanPreview = (preview) =>
     .replace(/\s+/g, " ")
     .trim();
 
+const cleanLeagueCandidate = (candidate) =>
+  String(candidate || "")
+    .trim()
+    .replace(/\s+(?:Invites|Tips|Predictions|Preview|Matchups?|Clashes?|Matches?|Today|Live|Now)\s*$/i, "")
+    .replace(/^(?:[A-Z]{2,}\s+(?:and\s+)?[A-Z]{2,}\s+Clash\s+for\s+|[A-Z]{2,}\s+Clash\s+for\s+)/i, "")
+    .replace(/\s+[–—-]\s*.*$/, "")
+    .trim();
+
+const extractLeagueFromTitle = (title) => {
+  if (!title) return null;
+  const isValidLeague = (candidate) => Boolean(
+    candidate && candidate.length >= 2 && candidate.length <= 60 &&
+    !/betting tips|bet of the day|live stream|predictions|tips$/i.test(candidate) &&
+    /^[A-Z]/.test(candidate)
+  );
+  const patterns = [
+    /\bin\s+the\s+([A-Z][A-Za-z0-9\s&]+?)(?:$|\s*[-–—|])/,
+    /\bIn\s+([A-Z]{2,6})(?:\s+[A-Za-z]+)?$/,
+    /\bIn\s+((?:[A-Z][a-z]+\s?){1,3})$/,
+    /[–—]\s*.{0,80}\bat\s+(?:the\s+)?([A-Z][A-Za-z0-9\s&]+?)(?:\s+Strong\b|\s+this\b|\s+tonight\b|$)/,
+  ];
+  for (const pattern of patterns) {
+    const match = title.match(pattern);
+    if (!match) continue;
+    const candidate = cleanLeagueCandidate(match[1]);
+    if (isValidLeague(candidate)) return candidate;
+  }
+  const trailingDash = title.match(/[-–—|]\s*([A-Z][A-Za-z0-9&\s]*\d{4}?[A-Za-z0-9\s&]*)$/);
+  if (trailingDash && isValidLeague(trailingDash[1].trim())) return cleanLeagueCandidate(trailingDash[1]);
+  const verbBridge = title.match(/[–—]\s*.+\b(?:Start|Handle|Win|Begin|Enter|Face|Dominate|Take|Tackle|Compete|Play)\s+((?:[A-Z][A-Za-z0-9]*(?:\s+|\s*&\s*))+\d{4}(?:\s+[A-Za-z]+)*)\s+Strong\s*$/);
+  if (verbBridge) {
+    const candidate = cleanLeagueCandidate(verbBridge[1]);
+    if (isValidLeague(candidate)) return candidate;
+  }
+  const yearBeforeStrong = title.match(/([A-Z][A-Za-z0-9]+(?:\s+[A-Z][A-Za-z0-9]+)*\s+\d{4}(?:\s+[A-Z][A-Za-z]+)*)\s+Strong\s*$/);
+  if (yearBeforeStrong) {
+    const candidate = cleanLeagueCandidate(yearBeforeStrong[1]);
+    if (isValidLeague(candidate)) return candidate;
+  }
+  const atMatch = title.match(/\bat\s+(?:the\s+)?([A-Z][A-Za-z0-9\s&]+?)(?:\s+Strong\b|\s+this\b|\s+tonight\b|$|\s*[-–—|])/);
+  if (atMatch) {
+    const candidate = cleanLeagueCandidate(atMatch[1]);
+    if (isValidLeague(candidate) && (/\d{4}/.test(candidate) || candidate.split(/\s+/).length >= 3)) return candidate;
+  }
+  return null;
+};
+
 const leagueText = (tip) => {
+  if (!tip) return "";
+  const directLeague = String(tip.league || "").trim();
+  const competition = String(tip.competition || "").trim();
+  const previewTitle = String(tip.previewTitle || "").trim();
   const sport = String(tip.sport || "").trim();
-  const genericSport = /^(football|soccer|cricket|volleyball|esports|baseball|basketball|tennis|rugby|boxing|golf|ice hockey|darts|snooker|horse racing|american football)$/i;
-  for (const value of [tip.league, tip.competition]) {
-    const candidate = String(value || "").trim();
-    if (!candidate || candidate.toLowerCase() === sport.toLowerCase() || genericSport.test(candidate)) continue;
-    if (/bet of the day|tennis bet of the day|betting tips/i.test(candidate)) continue;
-    return normalizeLabel(candidate);
+  const genericSportNames = /^(football|soccer|cricket|volleyball|esports|baseball|basketball|tennis|rugby|boxing|golf|ice hockey|darts|snooker|horse racing|american football|rugby league|rugby union|australian rules)$/i;
+  const placeholders = /^(some data here|n\/a|na|null|undefined|unknown|tbd|to be determined)$/i;
+  const isProbableLocation = (value) => /(North Carolina|California|Florida|Texas|Georgia|Arizona|South Carolina|Nevada|Ohio|Tennessee|Washington|Pennsylvania|New York|England|Scotland|Wales|Ireland|France|Spain|Germany|Italy|Portugal|United States|USA|Canada|Mexico|Australia|New Zealand|South Africa|Japan|Korea|Brazil|Argentina)/i.test(String(value || "").trim());
+  const isMeaningful = (value) => {
+    const lower = String(value || "").toLowerCase();
+    return Boolean(lower && !placeholders.test(lower) && !/bet of the day|tennis bet of the day|betting tips/i.test(lower) && lower !== sport.toLowerCase() && !genericSportNames.test(lower) && !(sport.toLowerCase() === "golf" && isProbableLocation(value)));
+  };
+  for (const candidate of [directLeague, competition]) {
+    if (isMeaningful(candidate)) return normalizeLabel(candidate);
+  }
+  const fixtureTournament = [tip.homeTeam, tip.awayTeam, previewTitle].find((value) => {
+    if (!value) return false;
+    const clean = normalizeLabel(value);
+    return Boolean(clean && clean.toLowerCase() !== "field" && !(sport.toLowerCase() === "golf" && isProbableLocation(clean)) && /championship|open|masters|cup|classic|international|finals|tour|pga|wta|atp|tournament/i.test(clean));
+  });
+  if (fixtureTournament) return normalizeLabel(fixtureTournament);
+  if (previewTitle) {
+    const extracted = extractLeagueFromTitle(previewTitle);
+    if (extracted) return normalizeLabel(extracted);
+    const titleLooksLikeTournament = !/\s+(?:v|vs)\s+/i.test(previewTitle) && !/bet of the day|betting tips|predictions|tips/i.test(previewTitle) && (sport.toLowerCase() === "golf" || /championship|open|masters|cup|classic|international|finals|tour/i.test(previewTitle));
+    if (titleLooksLikeTournament) return normalizeLabel(previewTitle);
+  }
+  if (tip.preview || tip.verdict) {
+    const narrative = String(tip.preview || tip.verdict || "");
+    const locationMatch = narrative.match(/\bin\s+(?:the\s+)?([A-Z][A-Za-z0-9\s&]+?)(?:[.!?]|$)/);
+    if (locationMatch) {
+      const candidate = normalizeLabel(locationMatch[1]);
+      if (candidate && !/bet of the day|betting tips|predictions|tips/i.test(candidate) && !(sport.toLowerCase() === "golf" && isProbableLocation(candidate))) return candidate;
+    }
+    const eventLocationMatch = narrative.match(/\b(?:at|in)\s+([A-Z][A-Za-z0-9\s&]+?)(?:[.!?]|$)/);
+    if (eventLocationMatch) {
+      const candidate = normalizeLabel(eventLocationMatch[1]);
+      if (candidate && !/bet of the day|betting tips|predictions|tips/i.test(candidate) && !(sport.toLowerCase() === "golf" && isProbableLocation(candidate))) return candidate;
+    }
+  }
+  if (sport.toLowerCase() === "tennis") {
+    const venueMatch = String(tip.preview || tip.verdict || "").match(/\bin\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)/);
+    if (venueMatch) {
+      const candidate = normalizeLabel(venueMatch[1]);
+      if (candidate && candidate !== "US" && candidate !== "Open") return `WTA ${candidate}`;
+    }
   }
   return "";
 };
@@ -129,7 +215,8 @@ export function formatTipChannelCard(tip) {
       const name = normalizeLabel(selection.selection || selection.market || "Tip");
       const odds = formatOdds(selection.odds);
       const units = Number(selection.units ?? selection.stakeUnits ?? 1);
-      lines.push(`${name}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(selection.outcome)}`);
+      const selectionWithMarket = formatSelection(selection.selection, selection.market);
+      lines.push(`${selectionWithMarket || name}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(selection.outcome)}`);
     }
   } else {
     const odds = formatOdds(mainTip.odds);

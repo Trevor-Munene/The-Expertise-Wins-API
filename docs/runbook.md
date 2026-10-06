@@ -24,36 +24,40 @@ The current CLI loop is **produce → publish manually → paste marked results 
 Docker keeps Node.js, npm dependencies, and PostgreSQL in containers instead of using host-installed project tools. Install Docker Desktop with Linux container support enabled, then run these commands from the repository root in PowerShell:
 
 ```powershell
+if (-not (Test-Path backend/.env)) { Copy-Item backend/.env.example backend/.env }
+if (-not (Test-Path frontend/.env)) { Copy-Item frontend/.env.example frontend/.env }
 docker compose config --quiet
 docker compose up -d db
 docker compose ps
 ```
 
-PostgreSQL is exposed on `localhost:55432`. The app container talks to PostgreSQL using the Compose service name `db`; do not change that URL to `localhost` from inside a container.
+The frontend, API, and PostgreSQL are available on `localhost:3001`, `localhost:3000`, and `localhost:5432`. The app container reaches PostgreSQL as `db:5432`; do not use `localhost` from inside a container.
 
 ### Initialize the API database
 
-From the repository root, copy `backend/.env.example` to `backend/.env`. Keep the admin password in this ignored local file; do not commit it. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` there. Then initialize the schema and check the historical dump files:
+From the repository root, create the two ignored application env files. Keep the admin password and JWT secret in `backend/.env`; do not commit them. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` there. Then initialize the schema and check the historical dump files:
 
 ```powershell
 if (-not (Test-Path backend/.env)) { Copy-Item backend/.env.example backend/.env }
+if (-not (Test-Path frontend/.env)) { Copy-Item frontend/.env.example frontend/.env }
+docker compose config --quiet
 docker compose run --rm app npm run --prefix backend prisma:generate
 docker compose run --rm app npm run --prefix backend prisma:migrate -- --name init
 docker compose run --rm app npm run --prefix backend seed:check
 docker compose up -d app
 ```
 
-The first `docker compose run app` builds the shared development image, including frontend dependencies; that initial build can take a few minutes. Subsequent commands reuse the image. Once the API is running at `http://localhost:3180`, sign up the configured email through `POST /api/auth/register` with a username and the password from `backend/.env`. Then import the dated dumps and promote that account:
+The first `docker compose run app` builds the shared development image, including frontend dependencies; that initial build can take a few minutes. Subsequent commands reuse the image. Once the API is running at `http://localhost:3000`, sign up the configured email through `POST /api/auth/register` with a username and the password from `backend/.env`. Then import the dated dumps and promote that account:
 
 ```powershell
 docker compose run --rm app npm run --prefix backend seed
 ```
 
-The seed imports the historical tips from the current 10 dated dumps, creates missing Free/VIP/MaxBet products, and assigns each tip to a published tier based on the CLI classification rules. The 10 dumps hold **288 tip records**. Free football is public; VIP and MaxBet lists require access. The seed is safe to rerun and preserves already-settled outcomes. It promotes the existing `ADMIN_EMAIL` account without changing its password. If no account exists, it creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. The seeded database remains in the named `postgres_data` volume when containers stop.
+The current repository has **12 dated dumps with 352 tip records**. The live database also has 352 tips, but the dump outcomes and database outcomes differ for 18 tips; see [`roadmap.md`](./roadmap.md) and reconcile them before treating performance as authoritative. The seed creates missing Free/VIP/MaxBet products and assigns each tip to a published tier based on the CLI classification rules. Free football is public; VIP and MaxBet lists require access. It preserves outcomes already stored in the database. It promotes an existing `ADMIN_EMAIL` account without changing its password, or creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. Database data remains in the named `postgres_data` volume when containers stop.
 
-> Prefer `npm run sync` over calling the seed directly — see [Syncing the CLI dumps to a database](#syncing-the-cli-dumps-to-a-database).
+> Prefer the Docker sync command over calling the seed directly — see [Syncing the CLI dumps to a database](#syncing-the-cli-dumps-to-a-database).
 
-The API health endpoint is `http://localhost:3180/`; the frontend is at `http://localhost:3181` after the app service starts. See [`packages/backend.md`](./packages/backend.md) for host-based PostgreSQL setup and known API authorization gaps.
+The API health endpoint is `http://localhost:3000/`; the frontend is at `http://localhost:3001` after the app service starts. See [`packages/backend.md`](./packages/backend.md) for database setup and known API authorization gaps.
 
 The first time you run the CLI, install its dependencies into the persistent Docker volume, then run its tests:
 
@@ -79,52 +83,31 @@ docker compose down
 
 To also erase PostgreSQL data and dependency/cache volumes, use `docker compose down --volumes`. This is destructive and resets the isolated environment.
 
-Do not expose the API publicly yet: tip create/update/result/delete routes accept any authenticated JWT without enforcing role or ownership, and several tip routes still need stricter access controls. This does not prevent local route testing. See [`packages/backend.md`](./packages/backend.md) for the current readiness notes.
+The Docker configuration and endpoint checks document local development readiness only. Production readiness, including security configuration, backup/restore, monitoring, and real-user acceptance, remains open. See [`roadmap.md`](./roadmap.md) for V1 acceptance items.
 
-## Host-based web development (API + frontend)
+## Local CLI workflow with Docker services
 
-You can run PostgreSQL in Docker while running the API and frontend directly on the host. This is the path verified on 2026-10-04 and is the quickest way to iterate on the web app.
-
-```powershell
-# 1. Start only the database in Docker
-docker compose up -d db
-
-# 2. Create env files
-Copy-Item backend/.env.example backend/.env
-Copy-Item frontend/.env.example frontend/.env
-```
-
-Then edit the two files so they agree with each other:
-
-- `backend/.env` → set `DATABASE_URL="postgresql://tew:tew_local_dev@localhost:55432/expertise_wins?schema=public"`, set a strong `JWT_SECRET`, keep `PORT=3000`, and set `CORS_ORIGIN="http://localhost:3001,http://localhost:3181"`.
-- `frontend/.env` → set `NEXT_PUBLIC_API_URL=http://localhost:3000/api` and `NEXT_PUBLIC_APP_URL=http://localhost:3001`.
-
-> **Do not skip this.** `.env.example` ships `postgresql://USER:PASSWORD@...` placeholders. Starting the API without a real `backend/.env` makes **every** route return HTTP 500, and a frontend pointed at the wrong port renders pages with no data. Both failures look identical to a broken frontend.
-
-Then install, migrate, seed, and run:
+The API, frontend, database, migrations, and sync pipeline run in Docker. You can still run the scrape and settlement commands locally so you can edit and review their files directly. Install the CLI dependencies once, then use the root commands:
 
 ```powershell
-npm install
-npm install --prefix backend
-npm install --prefix frontend
-
-npm run --prefix backend prisma:generate
-npm run --prefix backend prisma:migrate
-npm run --prefix backend seed:check
-npm run --prefix backend seed
-
-npm run dev
+npm ci --prefix cli
+npm run expertise
+npm run settlement
 ```
 
-The API is then at `http://localhost:3000` and the frontend at `http://localhost:3001`. Verify with `GET http://localhost:3000/` (health) and `POST http://localhost:3000/api/auth/login` (auth).
+These commands update the shared dump and settlement files without starting local API or database processes. Sync the reviewed data into the Docker database with:
 
-> Regenerate the Prisma client whenever `schema.prisma` changes. A stale client omits newly added models and produces runtime errors on any route that touches them.
+```powershell
+docker compose run --rm app npm run sync
+```
+
+The same CLI commands can run inside Docker using `docker compose run --rm app npm run expertise` and `docker compose run --rm app npm run settlement`. Before the first scrape in Docker, install CLI dependencies into its persistent volume with `docker compose run --rm --no-deps app npm ci --prefix cli`. The repository bind mount keeps CLI output in your workspace.
 
 ---
 
-## Host-based CLI (alternative)
+## Optional CLI dependencies on the host
 
-If you prefer not to use Docker for the CLI, install Node.js and npm on the host, then install CLI dependencies:
+Install Node.js and npm on the host only if you want to run scrape and settlement commands outside Docker. Install CLI dependencies:
 
 ```powershell
 npm ci --prefix cli
@@ -140,11 +123,11 @@ npm ci --prefix cli
 | `npm run expertise` | **Full daily run** — scrape → normalize → save → print cards |
 | `npm run --prefix cli start` | Print cards from the **existing** snapshot (no scraping) |
 | `npm run settlement` | **Settle results** from the pasted template and print the settled report |
-| `npm run sync` | Push the local dumps into the development database |
-| `npm run sync:prod` | Push the local dumps into the production database |
-| `npm run sync:dry` | Validate the dumps without writing to any database |
-| `npm run expertise:sync` | Scrape, print, then sync in one step |
-| `npm run settlement:sync` | Settle, then sync in one step |
+| `docker compose run --rm app npm run sync` | Push local dumps into the Docker database |
+| `docker compose run --rm app npm run sync:prod` | Push the local dumps into the production database |
+| `docker compose run --rm app npm run sync:dry` | Validate the dumps without writing to any database |
+| `npm run expertise:sync` | Host workflow: scrape, print, then sync (requires local CLI/backend dependencies) |
+| `npm run settlement:sync` | Host workflow: settle, then sync (requires local CLI/backend dependencies) |
 | `npm run --prefix cli test` | Run the CLI FreeTips, contract, and settlement tests |
 | `npm run --prefix cli test:settlement` | Run only the CLI settlement tests |
 
@@ -152,17 +135,17 @@ npm ci --prefix cli
 
 ## Syncing the CLI dumps to a database
 
-The CLI writes local JSON; the web app reads PostgreSQL. `npm run sync` bridges the two, and the same script serves local development and production — only the env file differs.
+The CLI writes local JSON; the web app reads PostgreSQL. The Docker sync command bridges the two. `npm run sync:prod` targets production and reads `.env.production`.
 
 ```powershell
-# Push the local dumps to the development database (backend/.env)
-npm run sync
+# Push local dumps into the Docker database
+docker compose run --rm app npm run sync
 
 # Push to production (.env.production)
-npm run sync:prod
+docker compose run --rm app npm run sync:prod
 
 # Validate the dumps without writing
-npm run sync:dry
+docker compose run --rm app npm run sync:dry
 ```
 
 Configure production once:
@@ -177,16 +160,16 @@ The script validates every dump before writing, masks the database password in i
 ### Daily routine
 
 ```powershell
-# Morning: scrape, print cards, publish to the database
+# Morning: scrape and print cards locally, then publish to Docker PostgreSQL
 npm run expertise
-npm run sync
+docker compose run --rm app npm run sync
 
 # Later: paste yesterday's results into settlement/settlement-template.txt
 npm run settlement
-npm run sync
+docker compose run --rm app npm run sync
 ```
 
-`npm run expertise:sync` and `npm run settlement:sync` chain both steps.
+Scrape and settlement files are shared with the Docker app through the workspace bind mount. Keep the API and database in Docker while using local CLI commands.
 
 ---
 
@@ -373,9 +356,9 @@ npm run --prefix cli test
 | Settlement marks the wrong outcome | Matcher hit a substring line first — reorder the lines for that fixture (most specific first). |
 | `node` / `npm` not found | Use the full path, e.g. `"C:\Program Files\nodejs\npm.cmd" run settlement`. |
 | Cards look empty | The snapshot is empty or was reset for a new day. Run `npm run expertise`. |
-| Every web page returns 500 / loads with no data | `backend/.env` is missing or still has `USER:PASSWORD` placeholders, or `frontend/.env` points at the wrong API port. See [Host-based web development](#host-based-web-development-api--frontend). |
-| `/tips` or `/archive` shows no records | These routes default to **today's UTC date**. Run the CLI scrape for today, or pick a day that has data (the API accepts `?day=YYYY-MM-DD`). The newest dump is `freetips-4th Oct 2026.json`. |
-| Win rate and ROI show `0` | Every seeded tip has outcome `PENDING`. Settle results through the CLI workflow, then re-run the backend seed. |
+| Every web page returns 500 / loads with no data | Check that both `backend/.env` and `frontend/.env` exist, then run `docker compose logs app`. Confirm the frontend API URL is `http://localhost:3000/api` and the backend database URL is `db:5432` inside Docker. |
+| `/tips` or `/archive` shows no records | These routes prefer today's published tips and otherwise fall back to the most recent day with records. Check the `day` value in the response and inspect the dated dumps if no tips are available. The newest dump in this snapshot is `freetips-6th Oct 2026.json`. |
+| Win rate and ROI do not match the CLI data | As of 2026-10-06, the live database has 18 losses while the 12 dumps have 51 pending tips and no losses. Reconcile the current data snapshot before relying on performance totals. |
 
 ---
 

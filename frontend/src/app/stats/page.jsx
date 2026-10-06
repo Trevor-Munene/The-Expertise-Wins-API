@@ -270,16 +270,6 @@ export default function StatsPage() {
   const hasFailed = (key) =>
     failedRequests.some((request) => request.key === key);
 
-  // A 403 means the visitor lacks the product, not that the API is broken, so
-  // it is reported as a clear access message instead of a generic failure.
-  const accessErrors = [
-    ...new Set(
-      failedRequests
-        .map((request) => request.message)
-        .filter(Boolean)
-    ),
-  ];
-
   const periodLabel = PERIOD_OPTIONS.find(
     (option) => option.id === period
   )?.label;
@@ -409,11 +399,6 @@ export default function StatsPage() {
             Use Refresh Metrics to try again.
           </p>
 
-          {accessErrors.length > 0 && (
-            <p className="mt-2 text-sm leading-6 text-amber-300">
-              {accessErrors.join(" ")}
-            </p>
-          )}
         </div>
       )}
 

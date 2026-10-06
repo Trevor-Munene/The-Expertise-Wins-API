@@ -8,7 +8,6 @@ const sourceMetadataKeys = new Set([
   "url",
   "beturl",
   "bookmaker",
-  "previewtitle",
   "sourcename",
   "sourceurl",
   "provider",
@@ -120,13 +119,13 @@ const getBusinessDayRange = (dayKey) => {
   };
 };
 
-// Live publication uses publishedAt as the day key. Legacy rows without it
-// fall back to scrape time, then creation time.
+// Tips belong to the day they were scraped. Older manually-created records
+// without a scrape timestamp fall back to publication time, then creation.
 const buildTipDayFilter = (range) => ({
   OR: [
-    { publishedAt: range },
-    { publishedAt: null, scrapedAt: range },
-    { publishedAt: null, scrapedAt: null, createdAt: range },
+    { scrapedAt: range },
+    { scrapedAt: null, publishedAt: range },
+    { scrapedAt: null, publishedAt: null, createdAt: range },
   ],
 });
 
@@ -142,7 +141,7 @@ const assertHistoricalDay = (dayKey) => {
   return dayKey;
 };
 
-// Reuse the live-day timestamp fallback when filtering historical publications.
+// Use the same scrape-day bucketing for historical and live selections.
 const buildPublishedDayFilter = buildTipDayFilter;
 
 // Add optional sport and outcome filters from the query
@@ -151,19 +150,16 @@ const addTipFilters = (where, query) => {
   if (query.outcome) where.outcome = query.outcome.toUpperCase();
 };
 
-// Live tip lists default to today, with yesterday available for a daily
-// settlement-to-publication transition. Any explicit day is still constrained
-// to today or the immediately preceding business day.
+// Live tip lists are pinned to today's business date. Historical selections
+// are available through the archive endpoint only.
 const addLiveDayFilter = (where, query) => {
   const day = query.day ? assertDayKey(query.day, "Day") : getTodayKey();
 
   const today = getTodayKey();
-  const previousDay = shiftDayKey(today, -1);
-  if (day !== today && day !== previousDay) {
-    throw createError("Live tips are only available for today or the previous day.", 400);
+  if (day !== today) {
+    throw createError("Live tips are only available for the current day. Use the archive for previous days.", 400);
   }
 
-  where.outcome = "PENDING";
   where.AND = [buildTipDayFilter(getBusinessDayRange(day))];
 
   return day;
@@ -218,7 +214,7 @@ const findTipPage = async (where, query, day = null, productSlug = null) => {
   };
 };
 
-// List pending tips published to any active public product
+// List today's selections published to any active public product
 const getTips = async (query = {}) => {
   const where = {
     status: { not: "CANCELLED" },
@@ -236,7 +232,7 @@ const getTips = async (query = {}) => {
   return findTipPage(where, query, day);
 };
 
-// List pending free product tips
+// List today's Free product selections
 const getFreeTips = async (query = {}) => {
   const freeProduct = await prisma.product.findUnique({ where: { slug: "free" } });
 
@@ -281,7 +277,7 @@ const hasProductAccess = async (userId, productSlug, isAdmin = false) => {
   return product;
 };
 
-// List pending tips for a paid product after checking access
+// List today's paid-product selections after checking access
 const getProtectedTips = async (userId, productSlug, query = {}, isAdmin = false) => {
   const product = await hasProductAccess(userId, productSlug, isAdmin);
   const visibleProductIds = [product.id];
@@ -322,14 +318,8 @@ const getLatestPublishedDay = async () => {
   return new Date(latest.scrapedAt).toISOString().slice(0, 10);
 };
 
-// List products whose tips can be shown, currently every active product
-const getVisibleProducts = async () => {
-  return prisma.product.findMany({
-    where: { status: "ACTIVE" },
-    select: { id: true, slug: true, name: true },
-  });
-
-  /*
+// List products a visitor can see on individual tip details, matching live access.
+const getVisibleProducts = async (userId, isAdmin = false) => {
   const where = { status: "ACTIVE" };
 
   if (isAdmin) {
@@ -353,26 +343,32 @@ const getVisibleProducts = async () => {
     where: { ...where, OR: visibleProductConditions },
     select: { id: true, slug: true, name: true },
   });
-  */
 };
+
+// Archived results are part of the public performance record, regardless of
+// whether the visitor has purchased access to the live product.
+const getArchiveProducts = async () => prisma.product.findMany({
+  where: { status: "ACTIVE" },
+  select: { id: true, slug: true, name: true },
+});
 
 // List archived tips with tier, sport, outcome, search and date filters
 const getArchive = async (query, userId, isAdmin = false) => {
-  const visibleProducts = await getVisibleProducts(userId, isAdmin);
-  const visibleTiers = visibleProducts.map(({ slug, name }) => ({ slug, name }));
+  const archiveProducts = await getArchiveProducts();
+  const visibleTiers = archiveProducts.map(({ slug, name }) => ({ slug, name }));
 
   // Validate the requested tier
   const requestedTier = String(query.tier || "").toLowerCase();
   if (requestedTier && !archiveTiers.includes(requestedTier)) {
     throw createError("Unsupported archive tier.", 400);
   }
-  if (requestedTier && !visibleProducts.some((product) => product.slug === requestedTier)) {
+  if (requestedTier && !archiveProducts.some((product) => product.slug === requestedTier)) {
     throw createError("Archive tier not found.", 404);
   }
 
   const selectedProducts = requestedTier
-    ? visibleProducts.filter((product) => product.slug === requestedTier)
-    : visibleProducts;
+    ? archiveProducts.filter((product) => product.slug === requestedTier)
+    : archiveProducts;
   const visibleProductIds = selectedProducts.map((product) => product.id);
 
   if (visibleProductIds.length === 0) {
@@ -478,7 +474,7 @@ const getArchive = async (query, userId, isAdmin = false) => {
 
   // Collect the distinct sports available in each visible tier
   const tierSports = {};
-  for (const product of visibleProducts) {
+  for (const product of archiveProducts) {
     const tierTips = await prisma.tip.findMany({
       where: {
         ...where,
@@ -531,8 +527,13 @@ const getTipById = async (tipId, userId, isAdmin = false) => {
   // Keep only publications for visible products
   const visibleProducts = await getVisibleProducts(userId, isAdmin);
   const visibleProductIds = new Set(visibleProducts.map((product) => product.id));
+  const tipTimestamp = tip.scrapedAt || tip.publishedAt || tip.createdAt;
+  const tipDay = tipTimestamp
+    ? new Date(new Date(tipTimestamp).getTime() + BUSINESS_UTC_OFFSET_MS).toISOString().slice(0, 10)
+    : getTodayKey();
+  const isHistorical = tipDay < getTodayKey();
   const visiblePublications = tip.publications.filter((publication) =>
-    visibleProductIds.has(publication.product.id)
+    isHistorical || visibleProductIds.has(publication.product.id)
   );
 
   if (visiblePublications.length === 0) throw createError("Tip not found.", 404);

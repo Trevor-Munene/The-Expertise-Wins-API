@@ -6,6 +6,9 @@ services:
     working_dir: /workspace
     command: ["npm", "run", "dev"]
     init: true
+    env_file:
+      - ./backend/.env
+      - ./frontend/.env
     volumes:
       - .:/workspace
       - root_node_modules:/workspace/node_modules
@@ -14,21 +17,13 @@ services:
       - cli_node_modules:/workspace/cli/node_modules
       - frontend_next_cache:/workspace/frontend/.next
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-tew}:${POSTGRES_PASSWORD:-tew_local_dev}@db:5432/${POSTGRES_DB:-expertise_wins}?schema=public
-      JWT_SECRET: ${JWT_SECRET:-local-docker-dev-secret-change-before-use}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
-      PORT: 3000
-      CORS_ORIGIN: "http://localhost:${FRONTEND_HOST_PORT:-3181},http://localhost:3001"
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-this-local-password}
-      NEXT_PUBLIC_API_URL: http://localhost:${API_HOST_PORT:-3180}/api
-      NEXT_PUBLIC_APP_URL: http://localhost:${FRONTEND_HOST_PORT:-3181}
-      NEXT_PUBLIC_SITE_URL: http://localhost:${FRONTEND_HOST_PORT:-3181}
+      # Override the host-facing URL from backend/.env only inside Docker.
+      DATABASE_URL: postgresql://tew:tew_local_dev@db:5432/expertise_wins?schema=public
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
     ports:
-      - "${API_HOST_PORT:-3180}:3000"
-      - "${FRONTEND_HOST_PORT:-3181}:3001"
+      - "3000:3000"
+      - "3001:3001"
     depends_on:
       db:
         condition: service_healthy
@@ -40,7 +35,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-tew}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tew_local_dev}
     ports:
-      - "${POSTGRES_HOST_PORT:-55432}:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

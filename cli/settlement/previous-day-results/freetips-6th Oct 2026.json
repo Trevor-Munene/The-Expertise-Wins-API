@@ -52,7 +52,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -385,7 +385,7 @@
     "country": null,
     "homeTeam": "Cibona",
     "awayTeam": "Galatasaray",
-    "kickoff": "7h 58m",
+    "kickoff": null,
     "market": "Asian Handicap",
     "selection": "Galatasaray -6.5",
     "odds": 1.9,
@@ -412,7 +412,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -423,7 +423,7 @@
     "country": null,
     "homeTeam": "Rytas",
     "awayTeam": "Baku Sabah",
-    "kickoff": "8h 28m",
+    "kickoff": null,
     "market": "Total Points",
     "selection": "Over 177.5",
     "odds": 1.85,
@@ -450,7 +450,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -461,7 +461,7 @@
     "country": null,
     "homeTeam": "Cedevita Olimpija",
     "awayTeam": "Hapoel Jerusalem",
-    "kickoff": "8h 28m",
+    "kickoff": null,
     "market": "Asian Handicap",
     "selection": "Hapoel J. -2.5",
     "odds": 1.95,
@@ -488,7 +488,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -499,7 +499,7 @@
     "country": null,
     "homeTeam": "Bosna Sarajevo",
     "awayTeam": "PAOK",
-    "kickoff": "9h 28m",
+    "kickoff": null,
     "market": "Total Points",
     "selection": "Under 166.5",
     "odds": 1.85,
@@ -526,7 +526,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -537,7 +537,7 @@
     "country": null,
     "homeTeam": "England",
     "awayTeam": "Czechia",
-    "kickoff": "10h 43m",
+    "kickoff": "25m",
     "market": "Win to Nil",
     "selection": "England Win to Nil",
     "odds": 1.83,
@@ -597,7 +597,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -608,7 +608,7 @@
     "country": null,
     "homeTeam": "Scotland",
     "awayTeam": "Slovenia",
-    "kickoff": "10h 43m",
+    "kickoff": "25m",
     "market": "Full Time Result",
     "selection": "Scotland Win",
     "odds": 1.7,
@@ -652,7 +652,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -663,7 +663,7 @@
     "country": null,
     "homeTeam": "Luxembourg",
     "awayTeam": "Bulgaria",
-    "kickoff": "10h 43m",
+    "kickoff": "25m",
     "market": "Full-Time Result",
     "selection": "Luxembourg Win",
     "odds": 2.1,
@@ -690,7 +690,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -701,7 +701,7 @@
     "country": null,
     "homeTeam": "Angola",
     "awayTeam": "Malawi",
-    "kickoff": "10h 58m",
+    "kickoff": "40m",
     "market": "To Win",
     "selection": "Angola",
     "odds": 1.73,
@@ -728,7 +728,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -739,7 +739,7 @@
     "country": null,
     "homeTeam": "Saudi Arabia",
     "awayTeam": "UAE",
-    "kickoff": "10h 58m",
+    "kickoff": "40m",
     "market": "Double Chance",
     "selection": "UAE",
     "odds": 1.72,
@@ -759,18 +759,18 @@
       },
       {
         "bookmaker": "Stake.com",
-        "selection": "1-1",
-        "market": "Correct Score",
-        "odds": 7,
+        "selection": "Draw",
+        "market": "Full Time Result",
+        "odds": 3.4,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
         "outcome": null
       },
       {
         "bookmaker": "Stake.com",
-        "selection": "Draw",
-        "market": "Full Time Result",
-        "odds": 3.4,
+        "selection": "1-1",
+        "market": "Correct Score",
+        "odds": 7,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
         "outcome": null
@@ -785,21 +785,21 @@
     "outcome": null,
     "extraTips": [
       {
-        "selection": "1-1",
-        "market": "Correct Score",
-        "odds": 7,
-        "stakeUnits": 1,
-        "outcome": null
-      },
-      {
         "selection": "Draw",
         "market": "Full Time Result",
         "odds": 3.4,
         "stakeUnits": 1,
         "outcome": null
+      },
+      {
+        "selection": "1-1",
+        "market": "Correct Score",
+        "odds": 7,
+        "stakeUnits": 1,
+        "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -810,7 +810,7 @@
     "country": null,
     "homeTeam": "Argentina",
     "awayTeam": "Benin",
-    "kickoff": "14h 58m",
+    "kickoff": "4h 40m",
     "market": "Handicap",
     "selection": "Argentina -4",
     "odds": 1.8,
@@ -854,7 +854,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -865,7 +865,7 @@
     "country": null,
     "homeTeam": "USA",
     "awayTeam": "Canada",
-    "kickoff": "15h 58m",
+    "kickoff": "5h 40m",
     "market": "Full-Time Result",
     "selection": "USA Win",
     "odds": 2.05,
@@ -892,7 +892,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
   },
   {
     "source": "freetips",
@@ -903,7 +903,7 @@
     "country": null,
     "homeTeam": "Mexico",
     "awayTeam": "Chile",
-    "kickoff": "18h 28m",
+    "kickoff": "8h 10m",
     "market": "Full-Time Result",
     "selection": "Mexico Win",
     "odds": 1.6,
@@ -963,6 +963,191 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T08:02:14.543Z"
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Tennis",
+    "competition": "Tennis Bet of the Day",
+    "league": "Tennis Bet of the Day",
+    "country": null,
+    "homeTeam": "Arthur Fery",
+    "awayTeam": "Marin Cilic",
+    "kickoff": "15:30",
+    "market": "To Win Match",
+    "selection": "Marin Cilic (11/8)",
+    "odds": 2.38,
+    "stakeUnits": 2,
+    "previewTitle": "Tennis Bet of the Day",
+    "preview": "Arthur Fery has lost 3 of his 4 matches and Marin Cilic has won 16 of his last 21 matches against players outside the Top 20 on hard courts.",
+    "verdict": "Arthur Fery has lost 3 of his 4 matches and Marin Cilic has won 16 of his last 21 matches against players outside the Top 20 on hard courts.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Marin Cilic (11/8)",
+        "market": "To Win Match",
+        "odds": 2.38,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/betting/tennis-bet-of-the-day/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Esports",
+    "competition": "Esports",
+    "league": "Esports",
+    "country": null,
+    "homeTeam": "NRG",
+    "awayTeam": "T1",
+    "kickoff": "15h 40m",
+    "market": "Over/Under",
+    "selection": "Over 2.5 Maps",
+    "odds": 1.95,
+    "stakeUnits": 3,
+    "previewTitle": "NRG vs T1 Betting Tips – Two Strong Title Contenders Clash in VALORANT Champions Quarterfinals",
+    "preview": "NRG enter this match as favourites. They have looked more consistent this season and have shown explosive form at VALORANT Champions 2026. T1 haven’t been as impressive during the group stage, but this is a very experienced roster with solid individual players who can challenge any team in the world.The map pool between these two teams is an important factor, as NRG have been posting significantly better numbers on T1’s favourite maps – Summit, Lotus, and Haven. However, T1 tend to be just as potent on Abyss and Ascent, so there is a good chance we will see all three maps play out.",
+    "verdict": "NRG enter this match as favourites. They have looked more consistent this season and have shown explosive form at VALORANT Champions 2026. T1 haven’t been as impressive during the group stage, but this is a very experienced roster with solid individual players who can challenge any team in the world.The map pool between these two teams is an important factor, as NRG have been posting significantly better numbers on T1’s favourite maps – Summit, Lotus, and Haven. However, T1 tend to be just as potent on Abyss and Ascent, so there is a good chance we will see all three maps play out.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Over 2.5 Maps",
+        "market": "Over/Under",
+        "odds": 1.95,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/esports/nrg-vs-t1-betting-tips-20261006-0008/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-10-06T18:22:19.775Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Esports",
+    "competition": "VALORANT Champions",
+    "league": "VALORANT Champions",
+    "country": null,
+    "homeTeam": "Paper Rex",
+    "awayTeam": "LOUD",
+    "kickoff": "18h 40m",
+    "market": "Moneyline",
+    "selection": "Paper Rex To Win",
+    "odds": 1.68,
+    "stakeUnits": 3,
+    "previewTitle": "Paper Rex vs LOUD Betting Tips – Paper Rex Can Stop LOUD at VALORANT Champions",
+    "preview": "This match pits two of the world's best teams against each other. Paper Rex have been the most consistent and one of the most successful squads of 2026, whereas LOUD have recently found serious momentum and look like the most in-form team in the scene.LOUD have also improved their map pool to an extent where they look well-equipped to deal with Paper Rex. However, while LOUD have some strong points, PR are more experienced and more consistent, making it hard to question their tag as favourites.",
+    "verdict": "This match pits two of the world's best teams against each other. Paper Rex have been the most consistent and one of the most successful squads of 2026, whereas LOUD have recently found serious momentum and look like the most in-form team in the scene.LOUD have also improved their map pool to an extent where they look well-equipped to deal with Paper Rex. However, while LOUD have some strong points, PR are more experienced and more consistent, making it hard to question their tag as favourites.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Paper Rex To Win",
+        "market": "Moneyline",
+        "odds": 1.68,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/esports/paper-rex-vs-loud-betting-tips-20261006-0010/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [],
+    "scrapedAt": "2026-10-06T18:22:19.776Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Ice Hockey",
+    "competition": "Ice Hockey",
+    "league": "Ice Hockey",
+    "country": null,
+    "homeTeam": "Dynamo Moscow",
+    "awayTeam": "Shanghai Dragons",
+    "kickoff": "22h 10m",
+    "market": "Game Total",
+    "selection": "Under 5.5",
+    "odds": 1.68,
+    "stakeUnits": 3,
+    "previewTitle": "Dynamo Moscow vs Shanghai Dragons Predictions & Betting Tips - Back the Underdogs",
+    "preview": "Back Shanghai Dragons to win including overtime and shootouts, Dynamo Moscow under 2.5 team goals and Under 5.5 total goals. Shanghai’s six-game points streak and improved defensive form make the visitors an appealing underdog.",
+    "verdict": "Back Shanghai Dragons to win including overtime and shootouts, Dynamo Moscow under 2.5 team goals and Under 5.5 total goals. Shanghai’s six-game points streak and improved defensive form make the visitors an appealing underdog.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 5.5",
+        "market": "Game Total",
+        "odds": 1.68,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Shanghai Dragons",
+        "market": "Money Line",
+        "odds": 2.23,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Dynamo Under 2.5",
+        "market": "Team Total",
+        "odds": 2.03,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": null
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/ice-hockey/dynamo-moscow-vs-shanghai-dragons-predictions-betting-tips-20261006-0004/",
+    "status": "pending",
+    "result": null,
+    "outcome": null,
+    "extraTips": [
+      {
+        "selection": "Shanghai Dragons",
+        "market": "Money Line",
+        "odds": 2.23,
+        "stakeUnits": 2,
+        "outcome": null
+      },
+      {
+        "selection": "Dynamo Under 2.5",
+        "market": "Team Total",
+        "odds": 2.03,
+        "stakeUnits": 2,
+        "outcome": null
+      }
+    ],
+    "scrapedAt": "2026-10-06T18:22:19.776Z"
   }
 ]

@@ -16,10 +16,8 @@ import {
 } from "lucide-react";
 
 import { tipsApi } from "../../api/tips.api";
-import {
-  formatFreeTipChannelCard,
-  formatTipChannelCard,
-} from "../../lib/tipChannelFormatter";
+import TipCard from "../../components/TipCard";
+import VipChannelTipCard from "../../components/VipChannelTipCard";
 
 const tabs = [
   {
@@ -96,11 +94,7 @@ function normalizeServedDay(value) {
   return day;
 }
 
-/*
- * The page asks for today's tips first, then falls back to yesterday's dump
- * while today's scrape/publish has not happened yet. The API only allows those
- * two adjacent business days, and settled tips stay out of the live view.
- */
+/* The live tips view is restricted to today's Nairobi business date. */
 
 // Read the supported list response shapes.
 function extractTips(response) {
@@ -133,7 +127,7 @@ function isFootballTip(tip) {
 }
 
 function isTipForDay(tip, day) {
-  const timestamp = tip?.publishedAt ?? tip?.scrapedAt ?? tip?.createdAt;
+  const timestamp = tip?.scrapedAt ?? tip?.publishedAt ?? tip?.createdAt;
   if (!timestamp) return false;
 
   const parsed = new Date(timestamp);
@@ -239,34 +233,6 @@ function getKickoffMinutes(tip) {
   return Number.MAX_SAFE_INTEGER;
 }
 
-function getTierLabel(tip) {
-  const tier = getTipTier(tip);
-
-  if (tier === "MAXBET") return "MAXBET";
-  if (tier === "VIP") return "VIP";
-  if (tier === "FREE") return "FREE";
-
-  return "TIP";
-}
-
-function getTierStyles(tip) {
-  const tier = getTipTier(tip);
-
-  if (tier === "FREE") {
-    return "border-emerald-500/20 bg-emerald-500/10 text-emerald-400";
-  }
-
-  if (tier === "VIP") {
-    return "border-indigo-500/20 bg-indigo-500/10 text-indigo-300";
-  }
-
-  if (tier === "MAXBET") {
-    return "border-amber-500/20 bg-amber-500/10 text-amber-400";
-  }
-
-  return "border-slate-700 bg-slate-800 text-slate-300";
-}
-
 export default function TipsPage() {
   const [activeTab, setActiveTab] = useState("free");
   const [tips, setTips] = useState([]);
@@ -292,9 +258,6 @@ export default function TipsPage() {
 
       try {
         const day = getCurrentDayKey();
-        const previousDate = new Date(`${day}T00:00:00Z`);
-        previousDate.setUTCDate(previousDate.getUTCDate() - 1);
-        const previousDay = previousDate.toISOString().slice(0, 10);
         let response;
 
         if (activeTab === "all") {
@@ -312,16 +275,11 @@ export default function TipsPage() {
             {
               tier: "FREE",
               request: () => tipsApi.getFreeTips({ day, limit: 100 }),
-              requestPrevious: () => tipsApi.getFreeTips({ day: previousDay, limit: 100 }),
             },
           ];
 
           const settledSources = await Promise.allSettled(
-            sources.flatMap((source) =>
-              source.tier === "FREE"
-                ? [source.request(), source.requestPrevious()]
-                : [source.request()]
-            )
+            sources.map((source) => source.request())
           );
 
           if (cancelled) return;
@@ -330,15 +288,9 @@ export default function TipsPage() {
           let requestFailed = false;
           const merged = [];
 
-          let freeTipsAvailableToday = false;
-          const sourceIndexes = [
-            { tier: "MAXBET", day },
-            { tier: "VIP", day },
-            { tier: "FREE", day },
-            { tier: "FREE", day: previousDay },
-          ];
+          const sourceIndexes = ["MAXBET", "VIP", "FREE"];
           settledSources.forEach((result, index) => {
-            const { tier, day: tipDay } = sourceIndexes[index];
+            const tier = sourceIndexes[index];
             if (result.status === "rejected") {
               const status = result.reason?.response?.status;
               if (status === 401 || status === 403) accessDenied = true;
@@ -346,27 +298,12 @@ export default function TipsPage() {
               return;
             }
 
-            const sourceTips = extractTips(result.value);
-            if (tier === "FREE" && tipDay === day && sourceTips.length > 0) {
-              freeTipsAvailableToday = true;
-            }
-            for (const tip of sourceTips) {
-              // Stamp tier and source day so ordering and fallback stay consistent.
-              merged.push({ ...tip, _tier: tier, _sourceDay: tipDay });
+            for (const tip of extractTips(result.value)) {
+              merged.push({ ...tip, _tier: tier });
             }
           });
 
-          const todayTips = merged.filter((tip) => tip._sourceDay === day);
-          const previousFreeTips = merged.filter(
-            (tip) => tip._tier === "FREE" && tip._sourceDay === previousDay
-          );
-          const displayedAllTips = [
-            ...todayTips.filter((tip) => getTipTier(tip) === "MAXBET"),
-            ...todayTips.filter((tip) => getTipTier(tip) === "VIP"),
-            ...(freeTipsAvailableToday
-              ? todayTips.filter((tip) => getTipTier(tip) === "FREE")
-              : previousFreeTips),
-          ];
+          const displayedAllTips = merged.filter((tip) => isTipForDay(tip, day));
           const orderedAllTips = displayedAllTips.map((tip, index) => ({ tip, index }));
           orderedAllTips.sort((a, b) => {
             const tierDifference = getTierRank(a.tip) - getTierRank(b.tip);
@@ -379,13 +316,7 @@ export default function TipsPage() {
           });
 
           setTips(orderedAllTips.map(({ tip }) => tip));
-          setServedDay(
-            freeTipsAvailableToday || todayTips.length
-              ? day
-              : displayedAllTips.length > 0
-                ? previousDay
-                : day
-          );
+          setServedDay(day);
 
           // Only block the whole view when every source failed.
           if (merged.length === 0) {
@@ -402,13 +333,9 @@ export default function TipsPage() {
           return;
         }
 
-        // Pin every tier to today first. The free public channel has a daily
-        // carry-over: show yesterday's published tips until today's are ready.
+        // Every tier is pinned to today's business date.
         if (activeTab === "free") {
           response = await tipsApi.getFreeTips({ day, limit: 100 });
-          if (extractTips(response).length === 0) {
-            response = await tipsApi.getFreeTips({ day: previousDay, limit: 100 });
-          }
         } else if (activeTab === "vip") {
           response = await tipsApi.getVipTips({ day, limit: 100 });
         } else {
@@ -419,9 +346,8 @@ export default function TipsPage() {
         if (cancelled) return;
 
         const responseDay = normalizeServedDay(response?.tips?.day);
-        const servedTipDay = activeTab === "free" && responseDay ? responseDay : day;
         const list = extractTips(response)
-          .filter((tip) => isTipForDay(tip, servedTipDay))
+          .filter((tip) => isTipForDay(tip, day))
           .map((tip) => ({
             ...tip,
             _tier: activeTab === "free" ? "FREE" : activeTab === "vip" ? "VIP" : "MAXBET",
@@ -434,7 +360,7 @@ export default function TipsPage() {
             );
 
         setTips(orderedList);
-        setServedDay(responseDay === servedTipDay ? responseDay : servedTipDay);
+        setServedDay(responseDay === day ? responseDay : day);
       } catch (requestError) {
         if (cancelled) return;
 
@@ -468,7 +394,7 @@ export default function TipsPage() {
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   /*
-   * Every tab shows today's pending tips for its own tier.
+   * Every tab shows today's selections and their current outcomes for its tier.
    *
    * Free additionally restricts to football only. "All" keeps every tip from
    * every tier and is reordered by tier below.
@@ -481,17 +407,8 @@ export default function TipsPage() {
       return false;
     }
 
-    // Only unsettled selections belong on the live tips page.
-    const normalizeOutcome = (value) =>
-      String(value ?? "PENDING")
-        .trim()
-        .toUpperCase();
-    const isPending = normalizeOutcome(tip.outcome) === "PENDING";
-
-    if (!isPending) {
-      return false;
-    }
-
+    // Show every selection scraped today, including already-settled results.
+    // This keeps the daily record transparent until tomorrow's fresh scrape.
     // Search all relevant fields, including premium selections.
     const searchableText = [
       tip.teams,
@@ -911,32 +828,22 @@ export default function TipsPage() {
             </button>
           </div>
         ) : displayedTips.length > 0 ? (
-          <div className="mx-auto max-w-3xl space-y-4">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {displayedTips.map((tip, index) => (
-              <article
+              <div
                 key={tip.id ?? tip._id ?? `tip-${index}`}
-                className="min-w-0 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900"
+                className="min-w-0"
               >
-                <h3 className="flex items-center justify-between gap-3 border-b border-slate-800 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-                  <span>Card {index + 1}</span>
-
-                  {activeTab === "all" && (
-                    <span
-                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${getTierStyles(
-                        tip
-                      )}`}
-                    >
-                      {getTierLabel(tip)}
-                    </span>
-                  )}
-                </h3>
-
-                <pre className="whitespace-pre-wrap break-words px-5 py-5 font-mono text-sm leading-7 text-slate-100 [overflow-wrap:anywhere]">
-                  {activeTab === "free"
-                    ? formatFreeTipChannelCard(tip)
-                    : formatTipChannelCard(tip)}
-                </pre>
-              </article>
+                {getTipTier(tip) === "FREE" ? (
+                  <TipCard tip={tip} tier="FREE" />
+                ) : (
+                  <VipChannelTipCard
+                    tip={tip}
+                    tier={getTipTier(tip)}
+                    cardNumber={index + 1}
+                  />
+                )}
+              </div>
             ))}
           </div>
         ) : (

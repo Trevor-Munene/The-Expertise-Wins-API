@@ -85,7 +85,7 @@ function isFootballTip(tip) {
 }
 
 function isTipForToday(tip) {
-  const timestamp = tip?.publishedAt ?? tip?.scrapedAt ?? tip?.createdAt;
+  const timestamp = tip?.scrapedAt ?? tip?.publishedAt ?? tip?.createdAt;
   if (!timestamp) return false;
 
   const parsed = new Date(timestamp);
@@ -142,12 +142,10 @@ export default function HomePage() {
 
       try {
         const [tipsRes, statsRes, oddsRes] = await Promise.allSettled([
-          // Prefer today's free football picks and fall back to yesterday's
-          // still-pending picks until today's scrape is published. Both requests
-          // are scoped to the public Free product.
+          // The home page only shows free football picks published today.
           tipsApi.getFreeTips({
             day: getNairobiDate(),
-            limit: 6,
+            limit: 100,
           }),
           statsApi.getOverview(),
           statsApi.getOddsStats(),
@@ -156,30 +154,18 @@ export default function HomePage() {
         if (!mounted) return;
 
         if (tipsRes.status === "fulfilled") {
-          let tipsData =
+          const tipsData =
             tipsRes.value?.tips?.data ??
             tipsRes.value?.data ??
             tipsRes.value ??
             [];
 
-          if (Array.isArray(tipsData) && tipsData.length === 0) {
-            const previousTipsRes = await tipsApi.getFreeTips({
-              day: getNairobiDate(-1),
-              limit: 6,
-            });
-            tipsData =
-              previousTipsRes?.tips?.data ??
-              previousTipsRes?.data ??
-              previousTipsRes ??
-              [];
-          }
-
           if (Array.isArray(tipsData)) {
             setFreeTips(
               tipsData
                 .filter((tip) => tip && typeof tip === "object")
+                .filter(isTipForToday)
                 .filter(isFootballTip)
-                .slice(0, 6)
             );
           } else {
             setFreeTips([]);

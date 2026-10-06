@@ -16,53 +16,23 @@ All documentation lives in [`docs/`](./docs):
 
 | Document | What it covers |
 |---|---|
-| [`docs/runbook.md`](./docs/runbook.md) | How to run the project — Docker and host workflows, seeding, syncing, CLI operations |
+| [`docs/runbook.md`](./docs/runbook.md) | Docker-first setup, database initialization, syncing, and local CLI operations |
 | [`docs/roadmap.md`](./docs/roadmap.md) | Development phases, current status, and open work |
+| [`docs/v2-ideation.md`](./docs/v2-ideation.md) | Open, non-committal V2 ideas for discussion |
 | [`docs/packages/backend.md`](./docs/packages/backend.md) | Express API, Prisma schema, route map, database setup |
 | [`docs/packages/frontend.md`](./docs/packages/frontend.md) | Next.js app, pages, API layer, SEO notes |
 | [`docs/packages/cli.md`](./docs/packages/cli.md) | Scraper, normalizer, card formatting, settlement, syncing |
 
-## Quick Start (Host Development)
+## Quick Start (Docker)
 
-The API and frontend both need a reachable PostgreSQL database and local env files. **Skipping the env files is the most common cause of every endpoint returning a 500** — see [`docs/runbook.md`](./docs/runbook.md) for the full troubleshooting table.
-
-```powershell
-# 1. Install
-npm install
-npm install --prefix backend
-npm install --prefix frontend
-npm install --prefix cli
-
-# 2. Create env files (gitignored)
-Copy-Item backend/.env.example backend/.env
-Copy-Item frontend/.env.example frontend/.env
-
-# 3. Point backend/.env at your database, then set ADMIN_EMAIL / ADMIN_PASSWORD
-#    Host default: postgresql://tew:tew_local_dev@localhost:55432/expertise_wins?schema=public
-
-# 4. Start the Docker database
-docker compose up -d db
-
-# 5. Generate the Prisma client, apply the schema, load historical tips
-npm run --prefix backend prisma:generate
-npm run --prefix backend prisma:migrate -- --name init
-npm run sync
-
-# 6. Run the API (port 3000) and frontend (port 3001)
-npm run dev
-```
-
-For the fully containerized path, see [`docs/runbook.md`](./docs/runbook.md).
-
-## Docker Development
-
-Docker runs the whole stack — API, frontend, and PostgreSQL — in containers, so you don't need Node or PostgreSQL installed on the host.
+Docker runs the API, frontend, and PostgreSQL. Node.js is only needed on the host if you choose to run the CLI locally.
 
 Install Docker Desktop with Linux container support enabled. From the repository root in PowerShell, configure the local admin password in the ignored `backend/.env` file, then initialize the database:
 
 ```powershell
-docker compose config --quiet
 if (-not (Test-Path backend/.env)) { Copy-Item backend/.env.example backend/.env }
+if (-not (Test-Path frontend/.env)) { Copy-Item frontend/.env.example frontend/.env }
+docker compose config --quiet
 docker compose up -d db
 docker compose run --rm app npm run --prefix backend prisma:generate
 docker compose run --rm app npm run --prefix backend prisma:migrate -- --name init
@@ -75,14 +45,17 @@ Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `backend/.env` before syncing. The syn
 
 The first `docker compose run app` builds the shared image, including frontend dependencies, and can take a few minutes; later runs reuse the image.
 
-Run the CLI inside the container (install CLI dependencies once first):
+Run daily CLI commands on the host when you want to edit and inspect dumps directly. Install CLI dependencies once:
 
 ```powershell
-docker compose run --rm --no-deps app npm ci --prefix cli
-docker compose run --rm --no-deps app npm run --prefix cli test
-docker compose run --rm --no-deps app npm run expertise
-docker compose run --rm --no-deps app npm run sync
+npm ci --prefix cli
+npm run expertise
+npm run settlement
 ```
+
+These commands write to the shared CLI files; they do not start another API or database. Sync reviewed dumps into the Docker database with `docker compose run --rm app npm run sync`. The scrape and settlement commands can also run in Docker with `docker compose run --rm app npm run expertise` and `docker compose run --rm app npm run settlement`.
+
+Before the first CLI run in Docker, install its dependencies into the persistent volume with `docker compose run --rm --no-deps app npm ci --prefix cli`.
 
 Stop the services while preserving data:
 
@@ -92,51 +65,38 @@ docker compose down
 
 `docker compose down --volumes` also erases PostgreSQL data and dependency caches. That is destructive and resets the environment.
 
-### Container Ports
-
-Inside containers the API listens on `3000` and the frontend on `3001`; Compose publishes them on host ports that can be overridden with a root `.env` file (gitignored):
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `API_HOST_PORT` | `3180` | Host port mapped to the API's `3000` |
-| `FRONTEND_HOST_PORT` | `3181` | Host port mapped to the frontend's `3001` |
-| `POSTGRES_HOST_PORT` | `55432` | Host port mapped to PostgreSQL's `5432` |
-| `POSTGRES_DB` | `expertise_wins` | Database name |
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` | `tew` / `tew_local_dev` | Database credentials |
-| `JWT_SECRET` | local dev placeholder | **Set a strong value before any real deployment** |
-
-The API container connects to PostgreSQL using the Compose service name `db`, not `localhost`. Dependencies and database data live in Docker volumes, so `docker compose down` keeps them. Defaults are for local development only.
+The API, frontend, and PostgreSQL use the same ports on the host and in their containers: API `3000`, frontend `3001`, and database `5432`. Frontend settings live in `frontend/.env`; API/database and admin settings live in `backend/.env`. The API container connects to PostgreSQL at `db:5432`; host-run CLI sync uses `localhost:5432`. Dependency and database data live in Docker volumes, so `docker compose down` keeps them.
 
 ## Daily Workflow
 
 ```powershell
-# Morning: scrape, print today's channel cards, publish to the database
+# Morning: scrape and print cards locally, then sync the reviewed dumps into Docker
 npm run expertise
-npm run sync
+docker compose run --rm app npm run sync
 
 # Later: paste yesterday's results into cli/settlement/settlement-template.txt
 npm run settlement
-npm run sync
+docker compose run --rm app npm run sync
 ```
 
-`npm run expertise:sync` and `npm run settlement:sync` chain both steps. `npm run sync:prod` does the same against production, configured through `.env.production`.
+`docker compose run --rm app npm run sync:prod` targets production and uses `.env.production`.
 
 ## Default Ports
 
 | Service | Host URL | Docker Compose URL |
 |---|---|---|
-| Backend API | `http://localhost:3000` | `http://localhost:3180` |
-| Frontend | `http://localhost:3001` | `http://localhost:3181` |
-| PostgreSQL | `localhost:55432` | `localhost:55432` (inside containers: `db:5432`) |
+| Backend API | `http://localhost:3000` | `http://localhost:3000` (inside containers: `app:3000`) |
+| Frontend | `http://localhost:3001` | `http://localhost:3001` |
+| PostgreSQL | `localhost:5432` | `localhost:5432` (inside containers: `db:5432`) |
 
-With Docker Compose, `npm run sync` and `npm run sync:prod` also run inside the container using the Compose database.
+Use `docker compose run --rm app npm run sync` to run the local sync against the Compose database. `docker compose run --rm app npm run sync:prod` remains an explicit production operation and uses `.env.production`.
 
 ## API Areas
 
 | Area | Current purpose |
 |---|---|
 | Authentication | Registration, login, profiles, password changes, and avatar upload |
-| Tips | Public Free tips, entitlement-gated VIP/MaxBet tips, and a tier-aware historical archive. Public and admin tips listings are read-only; CLI dump → review → sync is the only tip write path. |
+| Tips | Public Free tips, entitlement-gated VIP/MaxBet tips, a tier-aware historical archive, and admin curation under `/api/admin/tips`. Routine daily production and settlement use CLI dump → review → sync. |
 | Statistics | Win rate, ROI, odds, sport/market/competition breakdowns, time-filtered analytics, and admin-only application usage |
 | Products and access | Product tiers plus access tokens, which are **always issued by an admin to a registered user** |
 | Administration | User, access-token, and product management; admin routes and mutation services enforce an active `ADMIN` role. Daily tip production/settlement remains CLI dump → review → sync. |
@@ -151,29 +111,30 @@ Tokens are issued **only by an admin** and **only for a specific registered, act
 - A token can only be redeemed by the account it was issued to, while signed in. Anonymous redemption is no longer supported.
 - A token's owner cannot be changed after creation, so access cannot be transferred.
 - Revoke disables a token while retaining its record; `DELETE /api/admin/subscription-tokens/:id` permanently deletes it.
-- Run backend service-logic tests with `npm run --prefix backend test`; tests use mocked persistence and do not require PostgreSQL.
+- Run backend service-logic checks in Docker with `docker compose run --rm --no-deps app npm run --prefix backend test`; they use mocked persistence and do not require PostgreSQL.
 
-## Current Readiness
+## Current Readiness (6 October 2026)
 
-Verified locally on **2026-10-04** with a host-based stack (Next.js dev server + Node API + Dockerized PostgreSQL).
+The current development stack runs in Docker with the API on `localhost:3000`, the frontend on `localhost:3001`, and PostgreSQL on `localhost:5432`. On 6 October, the Compose configuration was validated, PostgreSQL reported healthy, and the API health, stats summary, and frontend home endpoints returned HTTP 200. This confirms current service startup and basic reachability; it is not a fresh end-to-end acceptance of login, admin workflows, or production deployment.
 
-| Application | Current status | Boundaries |
+| Area | Implemented in V1 | Still needs work or validation |
 |---|---|---|
-| CLI | Scrape/normalize/export, card formatting, settlement, and database sync are implemented and tested. | Writes JSON locally; it does not publish to Telegram. Settlement is manual — results are pasted as markers. |
-| Backend API | Public tips reads, admin authorization, token revoke/delete, and service-logic tests with mocked persistence. | `npm run --prefix backend test` does not require a database; perform real-user/database-backed acceptance manually. |
-| Frontend | Next.js site and admin UI are available; client-side role checks are presentation only. | UI-to-API workflows and real-user behavior remain operator-tested; no frontend integration suite is included. |
+| CLI | Scrape/normalize/export, channel-card formatting, local JSON dumps, manual marker-based settlement, and repeatable database sync. | No automatic Telegram posting or live-score settlement. Scrape and settlement output still needs operator review. |
+| Backend | Express/Prisma REST API, JWT authentication, public and entitlement-gated reads, admin curation, access-token management, and aggregate statistics. | No developer API key/product service. Complete real-user and database-backed acceptance and reconcile dump outcomes against current database outcomes. |
+| Frontend | Next.js public pages, account/profile pages, archive, stats, products, and admin pages for users, tips, tokens, and products. | No automated UI-to-API acceptance suite. Current HTTP checks do not verify every workflow. |
+| Operations | Docker Compose app and database, separate backend/frontend env files, and standardized ports. | Deployment, backup/restore, and production readiness have not been accepted. |
 
-Authentication, data retrieval, settlement, token issuance, and admin workflows were confirmed working end-to-end on 2026-10-04. This is a local development baseline, not production approval.
+An earlier manual browser/API review was recorded on 4 October against a smaller data set. Keep it as historical evidence; use the dated status in [`docs/roadmap.md`](./docs/roadmap.md) for the current snapshot. V2 possibilities are collected separately in [`docs/v2-ideation.md`](./docs/v2-ideation.md) and are not committed scope.
 
 ### Operational Notes
 
-- **Data:** the dumps in `cli/settlement/previous-day-results/` hold **325 tip records** across 11 days, which map to 325 rows in the database. Every dumped record is currently settled as a win, so the published win rate and ROI reflect those results.
-- **Settlement flows to the database.** `npm run settlement` records results in the dump (defaulting to yesterday's file, or an explicit `--date`) and `npm run sync` publishes them, so win rate and ROI update automatically.
+- **Data snapshot (6 October):** the 12 dated dumps contain **352 tips** (301 wins and 51 pending). The running database also has 352 tips, but reports 301 wins, 18 losses, and 33 pending (319 settled; 94.36% win rate and 109.63% ROI). These outcome states do not currently reconcile; investigate before treating either source as the authoritative settled record.
+- **Settlement flows to the database.** `npm run settlement` records results in the dump (defaulting to yesterday's file, or an explicit `--date`); `docker compose run --rm app npm run sync` publishes them, so win rate and ROI update automatically.
 - **Settlement defaults are channel-aware.** An unmarked free-channel pick settles as a win; an unmarked paid-group pick settles as a loss. Explicit `✅✅` / `❎❎` markers always override the default.
 - **Empty "today" views fall back.** Tip and archive lists return today when today's scrape has run, and otherwise the most recent day that has records, so the pages are never blank before the daily scrape. The tips page labels when it is showing an earlier day.
 - **Admins see every tier.** The tips page loads Free, VIP, and MaxBet for an admin account; the public tips list intentionally exposes only the public (Free) product.
-- **Syncing is safe and idempotent.** `npm run sync` validates every dump before writing, masks the database password in its output, and refuses to run against a half-configured environment. Running it repeatedly never duplicates tips or discards settled results.
-- **Regenerate the Prisma client** after any `schema.prisma` change (`npm run --prefix backend prisma:generate`). A stale client silently omits newly added models and causes runtime failures in code that references them.
+- **Syncing is safe and idempotent.** The Docker sync command validates every dump before writing, masks the database password in its output, and refuses to run against a half-configured environment. Running it repeatedly never duplicates tips or discards settled results.
+- **Regenerate the Prisma client** after any `schema.prisma` change (`docker compose run --rm app npm run --prefix backend prisma:generate`). A stale client silently omits newly added models and causes runtime failures in code that references them.
 
 ## License
 

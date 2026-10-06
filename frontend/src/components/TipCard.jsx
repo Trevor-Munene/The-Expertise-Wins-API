@@ -18,8 +18,15 @@ function formatBadgeLabel(value) {
   return value.replace(/_/g, " ");
 }
 
-export default function TipCard({ tip }) {
+export default function TipCard({ tip, tier }) {
   if (!tip) return null;
+
+  const tierValue = String(tier || tip._tier || tip.tier || tip.publications?.[0]?.product?.slug || "free").toUpperCase();
+  const tierStyles = tierValue === "MAXBET"
+    ? { border: "border-amber-400/40", glow: "shadow-amber-950/30", accent: "text-amber-300", badge: "border-amber-400/30 bg-amber-400/10 text-amber-300", label: "MAXBET" }
+    : tierValue === "VIP"
+      ? { border: "border-indigo-400/40", glow: "shadow-indigo-950/30", accent: "text-indigo-300", badge: "border-indigo-400/30 bg-indigo-400/10 text-indigo-300", label: "VIP" }
+      : { border: "border-emerald-400/40", glow: "shadow-emerald-950/30", accent: "text-emerald-300", badge: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300", label: "FREE" };
 
   const matchTitle =
     tip.teams ||
@@ -64,7 +71,8 @@ export default function TipCard({ tip }) {
       : undefined;
 
   return (
-    <article className="group flex h-full min-w-0 flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg shadow-black/10 transition-colors hover:border-slate-700">
+    <article className={`group relative flex h-full min-w-0 flex-col justify-between overflow-hidden rounded-2xl border ${tierStyles.border} bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-5 shadow-xl ${tierStyles.glow} transition duration-300 hover:-translate-y-1 hover:shadow-2xl`}>
+      <div className={`pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-current to-transparent opacity-60 ${tierStyles.accent}`} />
       <div>
         {/* Tip header */}
         <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
@@ -83,6 +91,11 @@ export default function TipCard({ tip }) {
           >
             {formatBadgeLabel(displayResult)}
           </span>
+        </div>
+
+        <div className="mb-3 flex items-center gap-2">
+          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${tierStyles.badge}`}>{tierStyles.label} PICK</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Daily selection</span>
         </div>
 
         {/* Match title */}
@@ -113,7 +126,7 @@ export default function TipCard({ tip }) {
               />
               Selection
             </dt>
-            <dd className="min-w-0 break-words text-right font-extrabold leading-5 text-emerald-400">
+            <dd className={`min-w-0 break-words text-right font-extrabold leading-5 ${tierStyles.accent}`}>
               {selection}
             </dd>
           </div>

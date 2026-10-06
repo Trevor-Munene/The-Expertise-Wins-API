@@ -13,7 +13,7 @@ tipsRouter.get("/free", tipsController.getFreeTips);
 tipsRouter.get("/vip", authenticateJWT, tipsController.getVipTips);
 tipsRouter.get("/maxbet", authenticateJWT, tipsController.getMaxbetTips);
 
-// List archived tips for guests and logged in members
+// Public historical record across all active tiers; current VIP lists remain gated.
 tipsRouter.get("/archive", optionalAuthenticateJWT, tipsController.getArchive);
 
 // Get a single tip, registered after named routes so they match first

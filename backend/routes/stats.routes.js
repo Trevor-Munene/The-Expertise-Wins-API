@@ -9,9 +9,7 @@ const statsRouter = Router();
 // Get the overall performance overview
 statsRouter.get("/", statsController.getOverview);
 
-// Get win rate, ROI and average odds for ?period= and ?product= in one payload.
-// Optional auth keeps guests on overall numbers; paid products return a clean
-// 403 from the service instead of an unauthenticated crash.
+// Get public win rate, ROI and average odds for ?period= and ?product= in one payload.
 statsRouter.get(
   "/summary",
   optionalAuthenticateJWT,
@@ -29,9 +27,7 @@ statsRouter.get("/month", statsController.getMonthlyStats);
 statsRouter.get("/year", statsController.getYearlyStats);
 statsRouter.get("/all-time", statsController.getAllTimeStats);
 
-// Get performance per product, requiring login for paid products.
-// Optional auth means the service decides access: guests see the free product
-// and receive a 403 message for VIP/MaxBet rather than an auth error page.
+// Public product performance lets visitors review every published tier.
 statsRouter.get("/free", statsController.getFreeStats);
 statsRouter.get("/vip", optionalAuthenticateJWT, statsController.getVipStats);
 statsRouter.get("/maxbet", optionalAuthenticateJWT, statsController.getMaxbetStats);

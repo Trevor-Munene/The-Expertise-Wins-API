@@ -60,21 +60,21 @@ npm run --prefix cli test:settlement
 - `settlement/previous-day-results/` contains dated JSON dumps that settlement reads and updates.
 - `settlement/settlement-template.txt` is the manual result-input template.
 
-The CLI operates independently of the backend database. The `npm run sync` script bridges the two: it reads the local dumps and writes them into PostgreSQL.
+The CLI scrape and settlement commands operate independently of the backend database. Sync local dumps into Docker PostgreSQL with `docker compose run --rm app npm run sync`.
 
 ## Syncing with the Database
 
 The CLI ships one sync script that works the same for local development and production. It reuses the backend seed pipeline, which upserts tips by a deterministic id, so it is safe to run repeatedly.
 
 ```bash
-# Push the local dumps to the development database (backend/.env)
-npm run sync
+# Push local dumps to Docker PostgreSQL
+docker compose run --rm app npm run sync
 
 # Push to production (.env.production)
-npm run sync:prod
+docker compose run --rm app npm run sync:prod
 
 # Validate the dumps without writing anything
-npm run sync:dry
+docker compose run --rm app npm run sync:dry
 ```
 
 Configure production once by copying the template:
@@ -92,22 +92,20 @@ The script prints the target host with the password masked, and refuses to run w
 # Morning: scrape and print today's cards
 npm run expertise
 
-# Publish the scrape to the database
-npm run sync
+# Publish the scrape to Docker PostgreSQL
+docker compose run --rm app npm run sync
 
 # Later: paste yesterday's results into the settlement template, then settle
 npm run settlement
 
 # Publish the results
-npm run sync
+docker compose run --rm app npm run sync
 ```
 
-`npm run expertise:sync` and `npm run settlement:sync` chain the two steps when you want them in a single command.
+`npm run expertise:sync` and `npm run settlement:sync` are optional host-only convenience scripts. They require the local database at `localhost:5432` and both CLI and backend dependencies installed; the Docker sync workflow above is the standard path.
 
 ## Current Data State
 
-As of 2026-10-05, `settlement/previous-day-results/` contains **11 dated dumps spanning 25th September to 5th October 2026**, holding **325 tip records**, which map to 325 rows in the database. Every dumped record is currently marked settled with a `win` outcome. The dumps are disjoint: each tip belongs to exactly one day.
+As of **2026-10-06**, `settlement/previous-day-results/` contains **12 dated dumps from 25 September through 6 October 2026**, with **352 tip records**. The dump files contain 301 wins and 51 pending tips; the live database reports 301 wins, 18 losses, and 33 pending. The total number of records agrees, but the outcomes differ for 18 tips. Reconcile this before using the database and dumps together as a final performance record.
 
-The newest dump is `freetips-4th Oct 2026.json`. Because `/api/tips` and `/api/archive` default to the current UTC day, the web pages show no records until a dump exists for today — this is expected behavior, not a fault.
-
-Settling 3rd October against the pasted template verifies the channel-aware defaults: free-channel picks without a marker settle as wins, and paid-group picks without a marker settle as losses. Review the printed report before syncing.
+The newest dump is `freetips-6th Oct 2026.json`. `/api/tips` and `/api/archive` prefer today's published data and otherwise fall back to the most recent day with records. Review settlement output before syncing it into Docker PostgreSQL.

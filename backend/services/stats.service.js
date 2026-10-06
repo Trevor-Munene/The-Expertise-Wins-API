@@ -310,16 +310,11 @@ const resolveProductSlug = (productId) => {
 // Build one summary for a period and an optional product. This is the single
 // payload the metric cards read from, so win rate, ROI and average odds always
 // describe the same set of tips.
-const getSummaryStats = async ({ periodId = "all-time", productId = "ALL", userId, isAdmin = false } = {}) => {
+const getSummaryStats = async ({ periodId = "all-time", productId = "ALL" } = {}) => {
   const periodStart = resolvePeriodStart(periodId);
   const productSlug = resolveProductSlug(productId);
 
   const timeWhere = periodStart ? { createdAt: { gte: periodStart } } : {};
-
-  // Access is checked before any query so a guest cannot probe product stats
-  if (productSlug) {
-    await verifyProductAccess(userId, productSlug, isAdmin);
-  }
 
   const performance = productSlug
     ? await getProductStats(productSlug, timeWhere)
@@ -353,15 +348,13 @@ const getFreeStats = async () => {
   return getProductStats("free");
 };
 
-// Get stats for the VIP product after checking access
-const getVipStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "vip", isAdmin);
+// Published VIP performance is public so visitors can assess the record.
+const getVipStats = async () => {
   return getProductStats("vip");
 };
 
-// Get stats for the MaxBet product after checking access
-const getMaxbetStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "maxbet", isAdmin);
+// Published MaxBet performance is public so visitors can assess the record.
+const getMaxbetStats = async () => {
   return getProductStats("maxbet");
 };
 
@@ -375,27 +368,23 @@ const getFreeMonthlyStats = async () => {
   return getProductStats("free", { createdAt: { gte: getPeriodStart(30) } });
 };
 
-// Get VIP product stats for the last 7 days after checking access
-const getVipWeeklyStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "vip", isAdmin);
+// Get public VIP product stats for the last 7 days
+const getVipWeeklyStats = async () => {
   return getProductStats("vip", { createdAt: { gte: getPeriodStart(7) } });
 };
 
-// Get VIP product stats for the last 30 days after checking access
-const getVipMonthlyStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "vip", isAdmin);
+// Get public VIP product stats for the last 30 days
+const getVipMonthlyStats = async () => {
   return getProductStats("vip", { createdAt: { gte: getPeriodStart(30) } });
 };
 
-// Get MaxBet product stats for the last 7 days after checking access
-const getMaxbetWeeklyStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "maxbet", isAdmin);
+// Get public MaxBet product stats for the last 7 days
+const getMaxbetWeeklyStats = async () => {
   return getProductStats("maxbet", { createdAt: { gte: getPeriodStart(7) } });
 };
 
-// Get MaxBet product stats for the last 30 days after checking access
-const getMaxbetMonthlyStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "maxbet", isAdmin);
+// Get public MaxBet product stats for the last 30 days
+const getMaxbetMonthlyStats = async () => {
   return getProductStats("maxbet", { createdAt: { gte: getPeriodStart(30) } });
 };
 
@@ -681,34 +670,6 @@ const getProductReports = async () => {
       performance: await getProductStats(product.slug),
     }))
   );
-};
-
-// Check that a user can view a product, allowing free products and admins
-const verifyProductAccess = async (userId, productSlug, isAdmin = false) => {
-  const product = await getProduct(productSlug);
-
-  if (product.slug === "free" || isAdmin) return product;
-
-  /*
-   * A signed out visitor has no user id. Prisma treats a null filter value as
-   * "equals NULL", which would match an unassigned token and hand paid stats to
-   * anyone, so an anonymous request is denied before the lookup runs.
-   */
-  if (!userId) throw createError("You do not have access to this product.", 403);
-
-  const accessToken = await prisma.accessToken.findFirst({
-    where: {
-      productId: product.id,
-      assignedUserId: userId,
-      status: "ACTIVE",
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-    },
-    select: { id: true },
-  });
-
-  if (!accessToken) throw createError("You do not have access to this product.", 403);
-
-  return product;
 };
 
 // Build performance stats for products the user can access
