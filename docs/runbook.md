@@ -53,7 +53,7 @@ The first `docker compose run app` builds the shared development image, includin
 docker compose run --rm app npm run --prefix backend seed
 ```
 
-The current repository has **12 dated dumps with 352 tip records**. The live database also has 352 tips, but the dump outcomes and database outcomes differ for 18 tips; see [`roadmap.md`](./roadmap.md) and reconcile them before treating performance as authoritative. The seed creates missing Free/VIP/MaxBet products and assigns each tip to a published tier based on the CLI classification rules. Free football is public; VIP and MaxBet lists require access. It preserves outcomes already stored in the database. It promotes an existing `ADMIN_EMAIL` account without changing its password, or creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. Database data remains in the named `postgres_data` volume when containers stop.
+The current repository has **12 dated dumps with 356 tip records**. After sync, the live database also has 356 tips; 8 tip outcomes differ between the dump files and database. The current dump snapshot contains 301 wins and 55 pending; the database reports 304 wins, 5 losses, and 47 pending. See [`roadmap.md`](./roadmap.md) and reconcile before treating performance as authoritative. The seed creates missing Free/VIP/MaxBet products and assigns each tip to a published tier based on the CLI classification rules. Free football is public; VIP and MaxBet lists require access. It preserves valid outcomes already settled in the database. It promotes an existing `ADMIN_EMAIL` account without changing its password, or creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. Database data remains in the named `postgres_data` volume when containers stop.
 
 > Prefer the Docker sync command over calling the seed directly — see [Syncing the CLI dumps to a database](#syncing-the-cli-dumps-to-a-database).
 
@@ -358,7 +358,7 @@ npm run --prefix cli test
 | Cards look empty | The snapshot is empty or was reset for a new day. Run `npm run expertise`. |
 | Every web page returns 500 / loads with no data | Check that both `backend/.env` and `frontend/.env` exist, then run `docker compose logs app`. Confirm the frontend API URL is `http://localhost:3000/api` and the backend database URL is `db:5432` inside Docker. |
 | `/tips` or `/archive` shows no records | These routes prefer today's published tips and otherwise fall back to the most recent day with records. Check the `day` value in the response and inspect the dated dumps if no tips are available. The newest dump in this snapshot is `freetips-6th Oct 2026.json`. |
-| Win rate and ROI do not match the CLI data | As of 2026-10-06, the live database has 18 losses while the 12 dumps have 51 pending tips and no losses. Reconcile the current data snapshot before relying on performance totals. |
+| Win rate and ROI do not match the CLI data | As of 2026-10-06 after sync, the database reports 304 wins, 5 losses, and 47 pending while the 12 dumps report 301 wins and 55 pending. Reconcile the eight outcome differences before relying on performance totals. |
 
 ---
 

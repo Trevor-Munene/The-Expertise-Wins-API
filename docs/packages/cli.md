@@ -106,6 +106,6 @@ docker compose run --rm app npm run sync
 
 ## Current Data State
 
-As of **2026-10-06**, `settlement/previous-day-results/` contains **12 dated dumps from 25 September through 6 October 2026**, with **352 tip records**. The dump files contain 301 wins and 51 pending tips; the live database reports 301 wins, 18 losses, and 33 pending. The total number of records agrees, but the outcomes differ for 18 tips. Reconcile this before using the database and dumps together as a final performance record.
+As of **2026-10-06 after local sync**, `settlement/previous-day-results/` contains **12 dated dumps from 25 September through 6 October 2026**, with **356 tip records**. The dump files contain 301 wins and 55 pending tips; the live database reports 304 wins, 5 losses, and 47 pending. Eight outcomes differ. Reconcile this before using the database and dumps together as a final performance record.
 
 The newest dump is `freetips-6th Oct 2026.json`. `/api/tips` and `/api/archive` prefer today's published data and otherwise fall back to the most recent day with records. Review settlement output before syncing it into Docker PostgreSQL.

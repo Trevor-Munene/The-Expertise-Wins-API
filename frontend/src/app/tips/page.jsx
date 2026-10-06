@@ -555,6 +555,12 @@ export default function TipsPage() {
           and premium opportunities.
         </p>
 
+        <p className="mx-auto max-w-2xl rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3 text-sm leading-6 text-slate-300">
+          We review and settle tips once a day. Selections remain pending until
+          that review is complete; results are then reflected in the archive and
+          performance stats.
+        </p>
+
         <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
           <Link
             href="/products"

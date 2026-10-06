@@ -65,7 +65,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="flex min-h-screen flex-col bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-slate-950">
+      <body className="flex min-h-screen flex-col text-slate-100 antialiased selection:bg-emerald-400 selection:text-slate-950">
         <Script id="theme-preference" strategy="beforeInteractive">
           {`try {
   var savedTheme = localStorage.getItem("tew-theme");

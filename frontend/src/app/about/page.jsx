@@ -96,7 +96,7 @@ export default function AboutPage() {
             className="text-4xl font-black leading-tight tracking-tight text-slate-100 sm:text-5xl lg:text-6xl"
           >
             Making sports insight more{" "}
-            <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="brand-gradient-text">
               clear, useful, and accountable.
             </span>
           </h1>
@@ -222,7 +222,7 @@ export default function AboutPage() {
 
           <section
             aria-labelledby="contact-heading"
-            className="min-w-0 space-y-4 rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 to-emerald-500/10 p-5 sm:p-8"
+            className="min-w-0 space-y-4 rounded-2xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/10 via-slate-900/80 to-amber-400/[0.06] p-5 sm:p-8"
           >
             <h2
               id="contact-heading"
@@ -278,7 +278,7 @@ export default function AboutPage() {
         {/* Developer contributions */}
         <section
           aria-labelledby="contributions-heading"
-          className="mt-6 min-w-0 overflow-hidden rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-500/10 via-slate-900/70 to-cyan-500/10 p-5 sm:p-8"
+          className="mt-6 min-w-0 overflow-hidden rounded-2xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/10 via-slate-900/70 to-amber-400/[0.06] p-5 sm:p-8"
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0 max-w-2xl">

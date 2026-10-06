@@ -20,10 +20,10 @@ module.exports = {
           cyan: "#00c6ff",
         },
         dark: {
-          bg: "#050811",
-          card: "#0a0f1d",
-          border: "#161f36",
-          hover: "#11182c",
+          bg: "#050c0a",
+          card: "#0b1513",
+          border: "#20332e",
+          hover: "#101c1a",
         },
       },
       backgroundImage: {

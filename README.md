@@ -128,7 +128,7 @@ An earlier manual browser/API review was recorded on 4 October against a smaller
 
 ### Operational Notes
 
-- **Data snapshot (6 October):** the 12 dated dumps contain **352 tips** (301 wins and 51 pending). The running database also has 352 tips, but reports 301 wins, 18 losses, and 33 pending (319 settled; 94.36% win rate and 109.63% ROI). These outcome states do not currently reconcile; investigate before treating either source as the authoritative settled record.
+- **Data snapshot (6 October, after sync):** the 12 dated dumps contain **356 tips** (301 wins and 55 pending). The running database also has 356 tips, reporting 304 wins, 5 losses, and 47 pending (309 settled; 98.38% win rate and 119.67% ROI). Eight outcomes still differ between the dump and database states; reconcile before treating either as the authoritative settled record.
 - **Settlement flows to the database.** `npm run settlement` records results in the dump (defaulting to yesterday's file, or an explicit `--date`); `docker compose run --rm app npm run sync` publishes them, so win rate and ROI update automatically.
 - **Settlement defaults are channel-aware.** An unmarked free-channel pick settles as a win; an unmarked paid-group pick settles as a loss. Explicit `✅✅` / `❎❎` markers always override the default.
 - **Empty "today" views fall back.** Tip and archive lists return today when today's scrape has run, and otherwise the most recent day that has records, so the pages are never blank before the daily scrape. The tips page labels when it is showing an earlier day.

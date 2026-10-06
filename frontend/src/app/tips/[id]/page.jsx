@@ -260,7 +260,7 @@ export default function TipDetailPage() {
       <article className="min-w-0 overflow-hidden rounded-2xl border border-dark-border bg-dark-card shadow-xl">
         <div
           aria-hidden="true"
-          className="h-1 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400"
+          className="h-1 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400"
         />
 
         <div className="space-y-7 p-5 sm:p-8">
@@ -283,7 +283,7 @@ export default function TipDetailPage() {
 
               <div className="flex items-start gap-2 text-xs leading-5 text-slate-400">
                 <Clock
-                  className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400"
+                  className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400"
                   aria-hidden="true"
                 />
 
@@ -331,7 +331,7 @@ export default function TipDetailPage() {
             className="space-y-4"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
                 <Target className="h-4 w-4" aria-hidden="true" />
               </div>
 
@@ -428,7 +428,7 @@ export default function TipDetailPage() {
               className="space-y-4"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
                   <Target className="h-4 w-4" aria-hidden="true" />
                 </div>
 
@@ -484,7 +484,7 @@ export default function TipDetailPage() {
             >
               <div className="flex items-center gap-2">
                 <CheckCircle2
-                  className="h-4 w-4 shrink-0 text-cyan-400"
+                  className="h-4 w-4 shrink-0 text-emerald-400"
                   aria-hidden="true"
                 />
                 <h2

@@ -49,7 +49,7 @@ const REPORT_METHODS = {
 };
 
 const focusStyles =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
 
 const panelStyles =
   "min-w-0 rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6";
@@ -315,7 +315,7 @@ export default function StatsPage() {
       {/* Page header */}
       <header className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
         <div className="min-w-0 space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cyan-300">
+          <div className="brand-kicker">
             <BarChart3 className="h-4 w-4" aria-hidden="true" />
             Performance Analytics
           </div>
@@ -329,7 +329,8 @@ export default function StatsPage() {
 
           <p className="max-w-2xl text-sm leading-6 text-slate-400">
             Track tip performance across periods, sports, markets,
-            competitions, and products.
+            competitions, and products. Results are reviewed and settled once a
+            day, so the latest figures update after settlement.
           </p>
         </div>
 
@@ -497,7 +498,7 @@ export default function StatsPage() {
               className="flex items-center gap-2 text-lg font-bold text-slate-100"
             >
               <FileText
-                className="h-5 w-5 shrink-0 text-cyan-400"
+                className="h-5 w-5 shrink-0 text-emerald-400"
                 aria-hidden="true"
               />
               Performance Reports
@@ -520,7 +521,7 @@ export default function StatsPage() {
 
         <div className="space-y-5 rounded-xl border border-slate-800 bg-slate-950 p-4 sm:p-5">
           <div className="flex flex-col justify-between gap-2 border-b border-slate-800 pb-4 sm:flex-row sm:items-center">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-300">
               {reportType} Performance Report
             </h3>
 
@@ -565,7 +566,7 @@ export default function StatsPage() {
               <ReportMetric
                 label="Win Rate"
                 value={formatMetricPercent(reportOverview?.winRate)}
-                valueClassName="text-cyan-400"
+                valueClassName="text-emerald-400"
               />
               <ReportMetric
                 label="Wins Recorded"
@@ -599,7 +600,7 @@ function OptionGroup({
   options,
   value,
   onChange,
-  activeClass = "bg-cyan-400 text-slate-950",
+  activeClass = "bg-emerald-400 text-slate-950",
   compact = false,
 }) {
   return (
@@ -637,8 +638,8 @@ function OptionGroup({
 
 const breakdownStyles = {
   cyan: {
-    text: "text-cyan-400",
-    bar: "bg-gradient-to-r from-cyan-400 to-teal-400",
+    text: "text-emerald-300",
+    bar: "bg-gradient-to-r from-emerald-400 to-emerald-200",
   },
   indigo: {
     text: "text-indigo-400",

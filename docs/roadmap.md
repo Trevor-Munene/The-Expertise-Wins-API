@@ -21,11 +21,11 @@ On 6 October, Compose configuration validation passed; the database was healthy;
 
 ### Data snapshot
 
-The running stats API reports **352 tips: 301 wins, 18 losses, and 33 pending** (319 settled; 94.36% win rate, 109.63% ROI, average odds 2.65). The 12 dated JSON dumps also total 352 tips, but list **301 wins and 51 pending**, with no losses. The database and dump outcomes therefore disagree for 18 tips; reconcile the settlement source of truth before relying on the combined record. The newest dump is `freetips-6th Oct 2026.json`. These numbers are a dated development snapshot and will change as tips are settled and synced.
+After the verified local Docker sync on 6 October, the stats API reports **356 tips: 304 wins, 5 losses, and 47 pending** (309 settled; 98.38% win rate, 119.67% ROI, average odds 2.64). The 12 dated JSON dumps also total 356 tips, listing **301 wins and 55 pending**, with no losses. Eight outcomes therefore differ between the dump and database; reconcile the settlement source of truth before relying on the combined record. The newest dump is `freetips-6th Oct 2026.json`. These are a dated development snapshot and will change as tips are settled and synced.
 
 ### V1 acceptance still open
 
-- Reconcile the database outcomes with the dated CLI dumps and document which state is authoritative after corrections.
+- Reconcile the eight database outcome differences with the dated CLI dumps and document which state is authoritative after corrections.
 - Exercise the actual registration/login, access-token, entitlement, admin, scrape, settlement, and sync workflows with real users and a fresh database.
 - Add repeatable UI-to-API acceptance coverage and verify migration, backup, and restore procedures.
 - Align sitemap, robots, and metadata domains before deployment.
@@ -209,7 +209,7 @@ V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They 
 
 * [x] Keep the public tips router read-only and protect admin curation and token management with active-admin authorization
 * [x] Add backend service-logic tests with mocked persistence
-* [ ] Reconcile the 352 database records with the dated dump outcomes
+* [ ] Reconcile the eight differing outcomes across the 356 database and dated dump records
 * [ ] Complete operator real-user and fresh-database acceptance of V1
 * [ ] Add UI-to-API acceptance coverage
 * [ ] Verify backup and restore procedures
@@ -232,7 +232,7 @@ V2 automation, developer API services, commercial installation packaging, deeper
 | **Phase 5** | Pricing & Multi-Currency Tiers | ✅ Completed |
 | **Phase 5.5** | Settlement Engine | ✅ Completed |
 | **Phase 6** | Performance Analytics & ROI Engine | ✅ Aggregate metrics and sport/market breakdowns are implemented; current settlement totals need reconciliation |
-| **Phase 7** | Prisma ORM, Docker PostgreSQL & Historical Seed | ✅ Compose database is healthy and seeded; 352-record outcome discrepancy remains |
+| **Phase 7** | Prisma ORM, Docker PostgreSQL & Historical Seed | ✅ Compose database is healthy and seeded; eight outcome differences remain between the 356 database and dump records |
 | **Phase 8** | Express REST API, Archive & JWT Auth | ✅ Public tips API is read-only; admin curation is active-admin-only, token revoke/delete and mocked-persistence service tests are in place; V1 acceptance is operator real-user/database testing |
 | **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | 🟡 Docker home route is live; full current browser acceptance, automated end-to-end coverage, and sitemap/domain alignment remain |
 | **Phase 10** | CLI ↔ Database Sync | ✅ Docker sync command is available and idempotent; daily scrape, review, settlement, and sync remain operator-driven |

@@ -531,7 +531,9 @@ export default function ArchivePage() {
               Browse recorded Free, VIP, and MaxBet
               selections by day, sport, and outcome.
               Today&apos;s active tips are intentionally
-              excluded from this historical view.
+              excluded from this historical view. Results are reviewed and
+              settled once a day, so the latest completed day appears after
+              settlement.
             </p>
           </div>
 

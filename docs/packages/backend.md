@@ -36,7 +36,7 @@ The current Docker Compose configuration validates, PostgreSQL is healthy, and t
 
 ### Known Data State
 
-The live stats API snapshot reports **352 tips: 301 wins, 18 losses, and 33 pending**, with a 94.36% win rate, 109.63% ROI, and average odds of 2.65. The repository's 12 dated dumps total 352 records but report 301 wins and 51 pending. Those outcome states differ for 18 tips and still need reconciliation. Metrics change as records are settled and synced; see [`../roadmap.md`](../roadmap.md) for the dated project status.
+After the verified local sync on **2026-10-06**, the stats API reports **356 tips: 304 wins, 5 losses, and 47 pending**, with a 98.38% win rate, 119.67% ROI, and average odds of 2.64. The repository's 12 dated dumps total 356 records but report 301 wins and 55 pending. Eight outcomes differ and still need reconciliation. Metrics change as records are settled and synced; see [`../roadmap.md`](../roadmap.md) for the dated project status.
 
 Tip lists return today's published records when present, otherwise the most recent day with data.
 
@@ -112,7 +112,7 @@ Tip ids are derived from the dump filename and the tip's position within it, so 
 
 > Prefer `docker compose run --rm app npm run sync` over calling the seed directly: it validates the dumps first and checks the database credentials before writing.
 
-> The repository currently contains **12 dated dumps with 352 tip records**. Run `seed:check` first to validate dump data without writing to PostgreSQL.
+> The repository currently contains **12 dated dumps with 356 tip records**. Run `seed:check` first to validate dump data without writing to PostgreSQL.
 
 ## Syncing the Database
 

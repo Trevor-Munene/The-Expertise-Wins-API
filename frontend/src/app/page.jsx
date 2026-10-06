@@ -39,7 +39,7 @@ const features = [
     description:
       "Published selections can be tracked through their outcomes, creating a record that can be reviewed through the performance dashboard.",
     icon: TrendingUp,
-    iconStyles: "bg-teal-500/10 text-teal-400",
+    iconStyles: "bg-emerald-500/10 text-emerald-300",
   },
   {
     title: "Simple Premium Access",
@@ -237,11 +237,11 @@ export default function HomePage() {
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-72 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 blur-3xl"
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-72 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr from-emerald-500/20 to-amber-400/5 blur-3xl"
         />
 
         <div className="mx-auto max-w-4xl space-y-6 text-center">
-          <div className="inline-flex max-w-full items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 sm:text-xs">
+          <div className="brand-kicker max-w-full justify-center">
             <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>Sports Intelligence &amp; Daily Curation</span>
           </div>
@@ -251,7 +251,7 @@ export default function HomePage() {
             className="text-4xl font-black leading-tight tracking-tight text-slate-100 sm:text-5xl lg:text-6xl"
           >
             Data-Driven Selections.
-            <span className="mt-2 block bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+            <span className="brand-gradient-text mt-2 block">
               Tracked Daily Performance.
             </span>
           </h1>
@@ -351,7 +351,8 @@ export default function HomePage() {
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-400">
               Start with the public selections and follow the results over time.
-              All daily dates use Kenyan time.
+              We settle tips once a day after reviewing results; selections stay
+              pending until then. All daily dates use Kenyan time.
             </p>
           </div>
 
@@ -465,7 +466,7 @@ export default function HomePage() {
       {/* Final call to action */}
       <section aria-labelledby="get-started-heading" className="mx-auto max-w-4xl px-4 pb-8 sm:px-6 lg:px-8">
         <div className="relative isolate overflow-hidden rounded-2xl border border-emerald-500/20 bg-slate-900 p-6 text-center sm:p-10">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-emerald-500/10 via-transparent to-cyan-500/5" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-emerald-500/10 via-transparent to-amber-400/[0.04]" />
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-400">
               <Sparkles className="h-4 w-4" aria-hidden="true" />

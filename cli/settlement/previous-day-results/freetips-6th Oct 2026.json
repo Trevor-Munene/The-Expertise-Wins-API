@@ -52,7 +52,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.545Z"
   },
   {
     "source": "freetips",
@@ -412,7 +412,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -450,7 +450,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -488,7 +488,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -526,7 +526,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -537,7 +537,7 @@
     "country": null,
     "homeTeam": "England",
     "awayTeam": "Czechia",
-    "kickoff": "25m",
+    "kickoff": null,
     "market": "Win to Nil",
     "selection": "England Win to Nil",
     "odds": 1.83,
@@ -597,7 +597,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -608,7 +608,7 @@
     "country": null,
     "homeTeam": "Scotland",
     "awayTeam": "Slovenia",
-    "kickoff": "25m",
+    "kickoff": null,
     "market": "Full Time Result",
     "selection": "Scotland Win",
     "odds": 1.7,
@@ -652,7 +652,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -663,7 +663,7 @@
     "country": null,
     "homeTeam": "Luxembourg",
     "awayTeam": "Bulgaria",
-    "kickoff": "25m",
+    "kickoff": null,
     "market": "Full-Time Result",
     "selection": "Luxembourg Win",
     "odds": 2.1,
@@ -690,7 +690,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -701,7 +701,7 @@
     "country": null,
     "homeTeam": "Angola",
     "awayTeam": "Malawi",
-    "kickoff": "40m",
+    "kickoff": "4m",
     "market": "To Win",
     "selection": "Angola",
     "odds": 1.73,
@@ -728,7 +728,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -739,7 +739,7 @@
     "country": null,
     "homeTeam": "Saudi Arabia",
     "awayTeam": "UAE",
-    "kickoff": "40m",
+    "kickoff": "4m",
     "market": "Double Chance",
     "selection": "UAE",
     "odds": 1.72,
@@ -799,7 +799,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -810,7 +810,7 @@
     "country": null,
     "homeTeam": "Argentina",
     "awayTeam": "Benin",
-    "kickoff": "4h 40m",
+    "kickoff": "4h 4m",
     "market": "Handicap",
     "selection": "Argentina -4",
     "odds": 1.8,
@@ -854,7 +854,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -865,7 +865,7 @@
     "country": null,
     "homeTeam": "USA",
     "awayTeam": "Canada",
-    "kickoff": "5h 40m",
+    "kickoff": "5h 4m",
     "market": "Full-Time Result",
     "selection": "USA Win",
     "odds": 2.05,
@@ -892,7 +892,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -903,7 +903,7 @@
     "country": null,
     "homeTeam": "Mexico",
     "awayTeam": "Chile",
-    "kickoff": "8h 10m",
+    "kickoff": "7h 34m",
     "market": "Full-Time Result",
     "selection": "Mexico Win",
     "odds": 1.6,
@@ -963,7 +963,7 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -1001,7 +1001,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -1012,7 +1012,7 @@
     "country": null,
     "homeTeam": "NRG",
     "awayTeam": "T1",
-    "kickoff": "15h 40m",
+    "kickoff": "15h 4m",
     "market": "Over/Under",
     "selection": "Over 2.5 Maps",
     "odds": 1.95,
@@ -1039,7 +1039,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T18:22:19.775Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -1050,7 +1050,7 @@
     "country": null,
     "homeTeam": "Paper Rex",
     "awayTeam": "LOUD",
-    "kickoff": "18h 40m",
+    "kickoff": "18h 4m",
     "market": "Moneyline",
     "selection": "Paper Rex To Win",
     "odds": 1.68,
@@ -1077,7 +1077,7 @@
     "result": null,
     "outcome": null,
     "extraTips": [],
-    "scrapedAt": "2026-10-06T18:22:19.776Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   },
   {
     "source": "freetips",
@@ -1088,7 +1088,7 @@
     "country": null,
     "homeTeam": "Dynamo Moscow",
     "awayTeam": "Shanghai Dragons",
-    "kickoff": "22h 10m",
+    "kickoff": "21h 34m",
     "market": "Game Total",
     "selection": "Under 5.5",
     "odds": 1.68,
@@ -1148,6 +1148,6 @@
         "outcome": null
       }
     ],
-    "scrapedAt": "2026-10-06T18:22:19.776Z"
+    "scrapedAt": "2026-10-06T18:56:36.546Z"
   }
 ]
