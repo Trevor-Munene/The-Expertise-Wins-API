@@ -7,6 +7,16 @@ export const statsApi = {
     return data;
   },
 
+  // Get win rate, ROI and average odds for a period and optional product.
+  // This is the endpoint the metric cards read, so the three figures always
+  // come from one server side computation over one set of tips.
+  async getSummaryStats({ period, product } = {}) {
+    const { data } = await apiClient.get("/stats/summary", {
+      params: { period, product },
+    });
+    return data;
+  },
+
   // Get application usage for admins
   async getUsageStats() {
     const { data } = await apiClient.get("/stats/usage");

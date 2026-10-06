@@ -76,7 +76,7 @@ const generalSteps = [
 ];
 
 const focusStyles =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
 
 const contextItems = [
   {
@@ -102,13 +102,13 @@ export default function BookiesPage() {
       {/* Background glow */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[400px] w-full max-w-[700px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[130px]"
+        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[400px] w-full max-w-[700px] -translate-x-1/2 rounded-full bg-emerald-500/10 blur-[130px]"
       />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Page header */}
         <header className="mx-auto max-w-3xl text-center">
-          <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-cyan-300">
+          <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-emerald-300">
             <Gift className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>Where we place our bets</span>
           </div>
@@ -118,7 +118,7 @@ export default function BookiesPage() {
             className="mt-5 text-4xl font-black leading-tight tracking-tight text-slate-100 sm:text-5xl lg:text-6xl"
           >
             Bet where{" "}
-            <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-emerald-400 to-emerald-400 bg-clip-text text-transparent">
               we do.
             </span>
           </h1>
@@ -175,7 +175,7 @@ export default function BookiesPage() {
             {bookmakers.map((bookmaker) => {
               const isCyan = bookmaker.accent === "cyan";
               const accentText = isCyan
-                ? "text-cyan-400"
+                ? "text-emerald-400"
                 : "text-amber-400";
 
               return (
@@ -187,7 +187,7 @@ export default function BookiesPage() {
                   <div
                     aria-hidden="true"
                     className={`absolute inset-x-0 top-0 h-1 ${
-                      isCyan ? "bg-cyan-400" : "bg-amber-400"
+                      isCyan ? "bg-emerald-400" : "bg-amber-400"
                     }`}
                   />
 
@@ -294,12 +294,12 @@ export default function BookiesPage() {
             className="min-w-0 rounded-3xl border border-slate-800 bg-slate-900/60 p-5 sm:p-8"
           >
             <div className="mb-6 flex items-start gap-3">
-              <div className="shrink-0 rounded-xl bg-cyan-500/10 p-2.5 text-cyan-400">
+              <div className="shrink-0 rounded-xl bg-emerald-500/10 p-2.5 text-emerald-400">
                 <Sparkles className="h-5 w-5" aria-hidden="true" />
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-cyan-400">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">
                   Before you register
                 </p>
                 <h2
@@ -311,12 +311,12 @@ export default function BookiesPage() {
               </div>
             </div>
 
-            <StepList steps={generalSteps} accentClass="text-cyan-400" />
+            <StepList steps={generalSteps} accentClass="text-emerald-400" />
           </section>
 
           <section
             aria-labelledby="responsible-betting-heading"
-            className="min-w-0 rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 p-5 sm:p-8"
+            className="min-w-0 rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-emerald-500/10 p-5 sm:p-8"
           >
             <ShieldCheck
               className="mb-4 h-8 w-8 text-emerald-400"
@@ -361,7 +361,7 @@ export default function BookiesPage() {
         >
           <Link
             href="/tips"
-            className={`inline-flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-cyan-400 transition-colors hover:bg-slate-900 hover:text-cyan-300 ${focusStyles}`}
+            className={`inline-flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-emerald-400 transition-colors hover:bg-slate-900 hover:text-emerald-300 ${focusStyles}`}
           >
             Explore free tips
             <ArrowRight className="h-4 w-4" aria-hidden="true" />

@@ -15,29 +15,22 @@ adminRouter.get("/users/:id", adminController.getUserById);
 adminRouter.patch("/users/:id", adminController.updateUser);
 adminRouter.patch("/users/:id/status", adminController.updateUserStatus);
 
-// Create and list tips
+// Admin curation endpoints. These require the active-admin middleware above;
+// normal daily publication and settlement should still use the CLI dump workflow.
 adminRouter.post("/tips", adminController.createTip);
 adminRouter.get("/tips", adminController.getTips);
-
-// Register bulk tip routes before "/tips/:id" so "bulk" is not matched as an id
 adminRouter.patch("/tips/bulk", adminController.updateTipsBulk);
 adminRouter.post("/tips/bulk/publish", adminController.publishTipsBulk);
 adminRouter.post("/tips/bulk/unpublish", adminController.unpublishTipsBulk);
 adminRouter.post("/tips/bulk/settle", adminController.settleTipsBulk);
 adminRouter.post("/tips/bulk/cancel", adminController.cancelTipsBulk);
-
-// Read, update and delete a single tip
 adminRouter.get("/tips/:id", adminController.getTipById);
 adminRouter.patch("/tips/:id", adminController.updateTip);
 adminRouter.delete("/tips/:id", adminController.deleteTip);
-
-// Run actions on a single tip
 adminRouter.post("/tips/:id/publish", adminController.publishTip);
 adminRouter.post("/tips/:id/unpublish", adminController.unpublishTip);
 adminRouter.post("/tips/:id/settle", adminController.settleTip);
 adminRouter.post("/tips/:id/cancel", adminController.cancelTip);
-
-// Manage tip publications per product
 adminRouter.post("/tips/:id/publications", adminController.publishTipToProduct);
 adminRouter.delete("/tips/:id/publications/:productId", adminController.removeTipPublication);
 
@@ -48,6 +41,7 @@ adminRouter.get("/subscription-tokens", adminController.getAccessTokens);
 adminRouter.get("/subscription-tokens/:id", adminController.getAccessTokenById);
 adminRouter.patch("/subscription-tokens/:id", adminController.updateAccessToken);
 adminRouter.post("/subscription-tokens/:id/revoke", adminController.revokeAccessToken);
+adminRouter.delete("/subscription-tokens/:id", adminController.deleteAccessToken);
 adminRouter.post("/subscription-tokens/:id/extend", adminController.extendAccessToken);
 
 // Manage products

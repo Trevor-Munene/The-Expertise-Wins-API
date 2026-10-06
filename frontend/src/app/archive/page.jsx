@@ -13,10 +13,8 @@ import {
 } from "lucide-react";
 
 import { tipsApi } from "../../api/tips.api";
-import {
-  formatTipChannelCard,
-  formatFreeTipChannelCard,
-} from "../../lib/tipChannelFormatter";
+import TipCard from "../../components/TipCard";
+import VipChannelTipCard from "../../components/VipChannelTipCard";
 
 const PAGE_SIZE = 20;
 
@@ -111,7 +109,9 @@ function createEmptyArchive() {
     },
     sports: [],
     tierSports: {},
+    tiers: [],
     day: null,
+    latestDay: getLatestArchiveDate(),
   };
 }
 
@@ -231,10 +231,27 @@ function normalizeArchive(response, requestedDay) {
         ? source.tierSports
         : {},
 
+    // The API reports which tiers the current visitor may actually see.
+    tiers: Array.isArray(source.tiers)
+      ? source.tiers
+          .map((tier) =>
+            typeof tier === "string"
+              ? { slug: tier }
+              : tier
+          )
+          .filter((tier) => tier?.slug)
+      : [],
+
     day:
       responseDay ||
       normalizedRequestedDay ||
       null,
+
+    // The API reports the newest day it will ever serve, so the client uses
+    // the same bound the backend applies instead of guessing.
+    latestDay:
+      normalizeDay(source.latestDay) ||
+      latestAllowedDate,
   };
 }
 
@@ -404,6 +421,19 @@ export default function ArchivePage() {
     setRetryCount((count) => count + 1);
   };
 
+  /*
+   * Only show the tiers the API confirmed this visitor can see. Falling back to
+   * all three keeps the UI usable before the first response lands.
+   */
+  const visibleTierIds =
+    archive.tiers.length > 0
+      ? archive.tiers.map((tier) => tier.slug)
+      : ["free"];
+
+  const selectableTiers = TIERS.filter(
+    (tier) => visibleTierIds.includes(tier.id)
+  );
+
   const selectedTier = TIERS.find(
     (tier) => tier.id === filters.tier
   );
@@ -436,7 +466,7 @@ export default function ArchivePage() {
     availableSports.unshift(filters.sport);
   }
 
-  const groupedTips = TIERS.filter(
+  const groupedTips = selectableTiers.filter(
     (tier) =>
       !filters.tier ||
       tier.id === filters.tier
@@ -454,6 +484,13 @@ export default function ArchivePage() {
   const servedDayLabel = formatDay(
     archive.day
   );
+
+  /*
+   * Bound every date control by the newest day the API will serve, so today
+   * can never be selected or requested.
+   */
+  const latestArchiveDay =
+    archive.latestDay || getLatestArchiveDate();
 
   return (
     <main
@@ -494,7 +531,9 @@ export default function ArchivePage() {
               Browse recorded Free, VIP, and MaxBet
               selections by day, sport, and outcome.
               Today&apos;s active tips are intentionally
-              excluded from this historical view.
+              excluded from this historical view. Results are reviewed and
+              settled once a day, so the latest completed day appears after
+              settlement.
             </p>
           </div>
 
@@ -550,7 +589,7 @@ export default function ArchivePage() {
           aria-label="Archive tier"
           className="grid grid-cols-1 gap-2 sm:grid-cols-3"
         >
-          {TIERS.map((tier) => (
+          {selectableTiers.map((tier) => (
             <button
               key={tier.id}
               type="button"
@@ -702,7 +741,7 @@ export default function ArchivePage() {
             id="archive-day"
             type="date"
             value={filters.day}
-            max={getLatestArchiveDate()}
+            max={latestArchiveDay}
             onChange={(event) =>
               changeFilter(
                 "day",
@@ -835,54 +874,22 @@ export default function ArchivePage() {
                       const tipId =
                         tip.id ?? tip._id;
 
-                      const hasTipId =
-                        tipId !== null &&
-                        tipId !== undefined &&
-                        String(tipId).trim() !== "";
-
-                      const card =
-                        group.id === "free"
-                          ? formatFreeTipChannelCard(
-                              tip
-                            )
-                          : formatTipChannelCard(
-                              tip
-                            );
-
                       return (
                         <article
                           key={
                             tipId ??
                             `${group.id}-tip-${index}`
                           }
-                          className="min-w-0 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5"
+                          className="min-w-0"
                         >
-                          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-                            Card{" "}
-                            {(page - 1) *
-                              PAGE_SIZE +
-                              index +
-                              1}
-                          </h3>
-
-                          <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-slate-200 [overflow-wrap:anywhere]">
-                            {card}
-                          </pre>
-
-                          {hasTipId && (
-                            <Link
-                              href={`/tips/${encodeURIComponent(
-                                String(tipId)
-                              )}`}
-                              className={`${buttonStyles} mt-3 px-0 text-xs text-emerald-400 hover:text-emerald-300`}
-                            >
-                              Preview Details
-
-                              <ArrowRight
-                                className="h-4 w-4"
-                                aria-hidden="true"
-                              />
-                            </Link>
+                          {group.id === "free" ? (
+                            <TipCard tip={tip} tier="FREE" />
+                          ) : (
+                            <VipChannelTipCard
+                              tip={tip}
+                              tier={group.id}
+                              cardNumber={(page - 1) * PAGE_SIZE + index + 1}
+                            />
                           )}
                         </article>
                       );

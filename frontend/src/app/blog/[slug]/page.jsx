@@ -72,10 +72,10 @@ export default function BlogPostPage({ params }) {
           className="
             inline-flex items-center gap-2
             text-xs font-bold text-slate-400
-            hover:text-cyan-400
+            hover:text-emerald-400
             focus:outline-none
             focus-visible:ring-2
-            focus-visible:ring-cyan-500
+            focus-visible:ring-emerald-500
             focus-visible:ring-offset-2
             focus-visible:ring-offset-slate-950
             rounded-sm
@@ -93,9 +93,9 @@ export default function BlogPostPage({ params }) {
           <span
             className="
               px-3 py-1
-              bg-cyan-500/10
-              text-cyan-400
-              border border-cyan-500/20
+              bg-emerald-500/10
+              text-emerald-400
+              border border-emerald-500/20
               rounded-full
               text-xs
               font-extrabold
@@ -108,7 +108,7 @@ export default function BlogPostPage({ params }) {
 
           <div className="flex items-center gap-1.5 text-xs text-slate-400">
             <Clock
-              className="w-4 h-4 text-cyan-400"
+              className="w-4 h-4 text-emerald-400"
               aria-hidden="true"
             />
             <span>{post.readTime}</span>
@@ -147,10 +147,10 @@ export default function BlogPostPage({ params }) {
             className="
               w-8 h-8
               rounded-full
-              bg-cyan-400/10
-              border border-cyan-400/20
+              bg-emerald-400/10
+              border border-emerald-400/20
               flex items-center justify-center
-              text-cyan-400
+              text-emerald-400
               font-bold
             "
             aria-hidden="true"
@@ -200,7 +200,7 @@ export default function BlogPostPage({ params }) {
           prose-p:text-slate-300
           prose-p:leading-8
 
-          prose-a:text-cyan-400
+          prose-a:text-emerald-400
           prose-a:font-medium
           prose-a:no-underline
           hover:prose-a:underline
@@ -214,10 +214,10 @@ export default function BlogPostPage({ params }) {
           prose-ol:my-6
           prose-li:my-2
           prose-li:text-slate-300
-          prose-li:marker:text-cyan-400
+          prose-li:marker:text-emerald-400
 
           prose-blockquote:my-8
-          prose-blockquote:border-l-cyan-500
+          prose-blockquote:border-l-emerald-500
           prose-blockquote:bg-slate-900
           prose-blockquote:rounded-r-xl
           prose-blockquote:px-6
@@ -228,7 +228,7 @@ export default function BlogPostPage({ params }) {
           prose-hr:border-slate-800
           prose-hr:my-10
 
-          prose-code:text-cyan-300
+          prose-code:text-emerald-300
           prose-code:bg-slate-900
           prose-code:border
           prose-code:border-slate-800
@@ -280,7 +280,7 @@ export default function BlogPostPage({ params }) {
         className="
           mt-14
           bg-slate-900
-          border border-cyan-500/30
+          border border-emerald-500/30
           rounded-2xl
           p-8
           space-y-4
@@ -304,15 +304,15 @@ export default function BlogPostPage({ params }) {
             className="
               inline-flex items-center justify-center
               px-5 py-2.5
-              bg-cyan-400
+              bg-emerald-400
               text-slate-950
               font-bold
               text-xs
               rounded-xl
-              hover:bg-cyan-300
+              hover:bg-emerald-300
               focus:outline-none
               focus-visible:ring-2
-              focus-visible:ring-cyan-400
+              focus-visible:ring-emerald-400
               focus-visible:ring-offset-2
               focus-visible:ring-offset-slate-900
               transition-colors

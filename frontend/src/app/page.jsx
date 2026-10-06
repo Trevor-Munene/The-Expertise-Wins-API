@@ -39,7 +39,7 @@ const features = [
     description:
       "Published selections can be tracked through their outcomes, creating a record that can be reviewed through the performance dashboard.",
     icon: TrendingUp,
-    iconStyles: "bg-teal-500/10 text-teal-400",
+    iconStyles: "bg-emerald-500/10 text-emerald-300",
   },
   {
     title: "Simple Premium Access",
@@ -50,8 +50,9 @@ const features = [
   },
 ];
 
-// Build the archive date using the Nairobi calendar rather than UTC.
-function getNairobiDate() {
+// Build the business date using the Nairobi calendar rather than UTC, so the
+// day requested always matches the day the backend buckets tips into.
+function getNairobiDate(offsetDays = 0) {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Africa/Nairobi",
     year: "numeric",
@@ -60,7 +61,46 @@ function getNairobiDate() {
   }).formatToParts(new Date());
 
   const getPart = (type) => parts.find((part) => part.type === type)?.value;
-  return `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+
+  const year = Number(getPart("year"));
+  const month = Number(getPart("month"));
+  const day = Number(getPart("day"));
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + offsetDays);
+
+  return date.toISOString().slice(0, 10);
+}
+
+// Normalize a sport value for comparison against the free football view.
+function normalizeSport(value) {
+  return String(value || "").trim().toUpperCase();
+}
+
+// The home page only ever shows free football tips, so anything that is not
+// football is filtered out before it reaches the page.
+function isFootballTip(tip) {
+  const sport = normalizeSport(tip?.sport);
+  return sport === "FOOTBALL" || sport === "SOCCER";
+}
+
+function isTipForToday(tip) {
+  const timestamp = tip?.scrapedAt ?? tip?.publishedAt ?? tip?.createdAt;
+  if (!timestamp) return false;
+
+  const parsed = new Date(timestamp);
+  if (!Number.isFinite(parsed.getTime())) return false;
+
+  const tipDay = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Nairobi",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(parsed);
+  const getPart = (type) => tipDay.find((part) => part.type === type)?.value;
+  const normalizedTipDay = `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+
+  return normalizedTipDay === getNairobiDate();
 }
 
 // Accept numeric API values without converting missing values into zero.
@@ -102,10 +142,10 @@ export default function HomePage() {
 
       try {
         const [tipsRes, statsRes, oddsRes] = await Promise.allSettled([
-          tipsApi.getArchive({
-            tier: "free",
+          // The home page only shows free football picks published today.
+          tipsApi.getFreeTips({
             day: getNairobiDate(),
-            limit: 6,
+            limit: 100,
           }),
           statsApi.getOverview(),
           statsApi.getOddsStats(),
@@ -124,7 +164,8 @@ export default function HomePage() {
             setFreeTips(
               tipsData
                 .filter((tip) => tip && typeof tip === "object")
-                .slice(0, 6)
+                .filter(isTipForToday)
+                .filter(isFootballTip)
             );
           } else {
             setFreeTips([]);
@@ -196,11 +237,11 @@ export default function HomePage() {
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-72 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 blur-3xl"
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-72 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr from-emerald-500/20 to-amber-400/5 blur-3xl"
         />
 
         <div className="mx-auto max-w-4xl space-y-6 text-center">
-          <div className="inline-flex max-w-full items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 sm:text-xs">
+          <div className="brand-kicker max-w-full justify-center">
             <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>Sports Intelligence &amp; Daily Curation</span>
           </div>
@@ -210,7 +251,7 @@ export default function HomePage() {
             className="text-4xl font-black leading-tight tracking-tight text-slate-100 sm:text-5xl lg:text-6xl"
           >
             Data-Driven Selections.
-            <span className="mt-2 block bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+            <span className="brand-gradient-text mt-2 block">
               Tracked Daily Performance.
             </span>
           </h1>
@@ -310,7 +351,8 @@ export default function HomePage() {
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-400">
               Start with the public selections and follow the results over time.
-              All daily dates use Kenyan time.
+              We settle tips once a day after reviewing results; selections stay
+              pending until then. All daily dates use Kenyan time.
             </p>
           </div>
 
@@ -424,7 +466,7 @@ export default function HomePage() {
       {/* Final call to action */}
       <section aria-labelledby="get-started-heading" className="mx-auto max-w-4xl px-4 pb-8 sm:px-6 lg:px-8">
         <div className="relative isolate overflow-hidden rounded-2xl border border-emerald-500/20 bg-slate-900 p-6 text-center sm:p-10">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-emerald-500/10 via-transparent to-cyan-500/5" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-emerald-500/10 via-transparent to-amber-400/[0.04]" />
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-400">
               <Sparkles className="h-4 w-4" aria-hidden="true" />

@@ -41,33 +41,6 @@ const REPORT_OPTIONS = [
   { id: "yearly", label: "Yearly" },
 ];
 
-const PERIOD_METHODS = {
-  today: "getTodayStats",
-  week: "getWeeklyStats",
-  "14-days": "getFourteenDayStats",
-  month: "getMonthlyStats",
-  year: "getYearlyStats",
-  "all-time": "getAllTimeStats",
-};
-
-const PRODUCT_METHODS = {
-  free: {
-    overall: "getFreeStats",
-    week: "getFreeWeeklyStats",
-    month: "getFreeMonthlyStats",
-  },
-  vip: {
-    overall: "getVipStats",
-    week: "getVipWeeklyStats",
-    month: "getVipMonthlyStats",
-  },
-  maxbet: {
-    overall: "getMaxbetStats",
-    week: "getMaxbetWeeklyStats",
-    month: "getMaxbetMonthlyStats",
-  },
-};
-
 const REPORT_METHODS = {
   overall: "getPerformanceReport",
   weekly: "getWeeklyReport",
@@ -76,7 +49,7 @@ const REPORT_METHODS = {
 };
 
 const focusStyles =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
 
 const panelStyles =
   "min-w-0 rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6";
@@ -169,59 +142,56 @@ export default function StatsPage() {
       setFailedRequests([]);
       setReportFetchedAt(null);
 
-      const productMethods = PRODUCT_METHODS[productFilter];
-      const productMethod = productMethods
-        ? productMethods[period] ?? productMethods.overall
-        : null;
-
-      // Keep the existing endpoints and allow partial results.
+      /*
+       * The metric cards, the breakdowns, the volume totals and the performance
+       * report each come from one endpoint that already applies the correct
+       * filters server side. Nothing here guesses which endpoint matches which
+       * period or product, so the figures cannot drift apart.
+       */
       const requests = [
-        { key: "overview", label: "Overview", method: "getOverview" },
         {
-          key: "period",
-          label: "Period statistics",
-          method: PERIOD_METHODS[period],
-        },
-        {
-          key: "product",
-          label: "Product statistics",
-          method: productMethod,
+          key: "summary",
+          label: "Win rate, ROI and average odds",
+          run: () => statsApi.getSummaryStats({ period, product: productFilter }),
         },
         {
           key: "sports",
           label: "Sport performance",
-          method: "getSportStats",
+          run: () => statsApi.getSportStats(),
           arrayKey: "sport",
         },
         {
           key: "markets",
           label: "Market performance",
-          method: "getMarketStats",
+          run: () => statsApi.getMarketStats(),
           arrayKey: "market",
         },
         {
           key: "competitions",
           label: "Competition performance",
-          method: "getCompetitionStats",
+          run: () => statsApi.getCompetitionStats(),
           arrayKey: "competition",
         },
-        { key: "volume", label: "Tip volume", method: "getVolumeStats" },
-        { key: "scraped", label: "Scraped tips", method: "getScrapedStats" },
+        {
+          key: "volume",
+          label: "Tip volume",
+          run: () => statsApi.getVolumeStats(),
+        },
+        {
+          key: "scraped",
+          label: "Scraped tips",
+          run: () => statsApi.getScrapedStats(),
+        },
         {
           key: "report",
           label: "Performance report",
-          method: REPORT_METHODS[reportType],
+          run: () => statsApi[REPORT_METHODS[reportType]](),
         },
-        { key: "winRate", label: "Overall win rate", method: "getWinRate" },
-        { key: "roi", label: "Overall ROI", method: "getRoi" },
-        { key: "odds", label: "Overall odds", method: "getOddsStats" },
       ];
 
       const results = await Promise.allSettled(
-        requests.map(({ method }) =>
-          method
-            ? Promise.resolve().then(() => statsApi[method]())
-            : Promise.resolve(null)
+        requests.map(({ run }) =>
+          Promise.resolve().then(() => run())
         )
       );
 
@@ -239,7 +209,11 @@ export default function StatsPage() {
             : getResponseData(result.value);
         } else {
           nextData[request.key] = request.arrayKey ? [] : null;
-          failures.push({ key: request.key, label: request.label });
+          failures.push({
+            key: request.key,
+            label: request.label,
+            message: result.reason?.response?.data?.message ?? null,
+          });
         }
       });
 
@@ -304,54 +278,33 @@ export default function StatsPage() {
     (option) => option.id === productFilter
   )?.label;
 
-  const usesProductStats = productFilter !== "ALL";
-  const unsupportedProductPeriod =
-    usesProductStats && !["week", "month", "all-time"].includes(period);
+  const scopeLabel = `${productLabel} · ${periodLabel}`;
 
-  const effectivePeriodLabel = unsupportedProductPeriod
-    ? "All Time"
-    : periodLabel;
+  /*
+   * Win rate, ROI and average odds are read from one summary payload the server
+   * computed for this exact period and product. There is no cross endpoint
+   * fallback, so a card can never show a figure that belongs to a different
+   * filter than the scope label above it.
+   */
+  const summary = hasFailed("summary") ? null : data.summary;
 
-  const scopeLabel = `${productLabel} · ${effectivePeriodLabel}`;
-  const scopedStats = usesProductStats ? data.product : data.period;
+  const winRate = summary?.winRate ?? null;
+  const roi = summary?.roi ?? null;
+  const averageOdds = summary?.avgOdds ?? null;
 
-  // Do not substitute global values for a selected product or period.
-  const allowGlobalFallback =
-    productFilter === "ALL" && period === "all-time";
+  // Volume and breakdown endpoints are deliberately overall, so they ignore the
+  // period and product controls.
+  const totalVolume = getFiniteNumber(data.volume?.total);
+  const publishedCount = getFiniteNumber(data.volume?.published);
+  const scrapedCount = getFiniteNumber(data.scraped?.scrapedTips);
 
-  const winRate =
-    scopedStats?.winRate ??
-    (allowGlobalFallback
-      ? data.winRate?.winRate ?? data.overview?.winRate
-      : null);
-
-  const roi =
-    scopedStats?.roi ??
-    (allowGlobalFallback
-      ? data.roi?.roi ?? data.overview?.roi
-      : null);
-
-  const averageOdds =
-    scopedStats?.avgOdds ??
-    scopedStats?.averageOdds ??
-    (allowGlobalFallback
-      ? data.odds?.average ??
-        data.odds?.avgOdds ??
-        data.overview?.avgOdds
-      : null);
-
-  // Volume and breakdown endpoints are not filtered by these controls.
-  const totalVolume =
-    data.volume?.totalVolume ??
-    data.volume?.count ??
-    data.volume?.total ??
-    data.overview?.totalCount;
-
-  const scrapedCount = data.scraped?.scrapedTips;
-  const publishedCount =
-    data.volume?.publishedCount ?? data.volume?.published;
-
-  const reportOverview = data.report?.overview ?? data.report;
+  /*
+   * The overall report returns { overview, products, sports, markets } while the
+   * period reports return { periodStart, periodEnd, performance }. Read whichever
+   * object actually carries the totals so every report option renders.
+   */
+  const reportOverview =
+    data.report?.overview ?? data.report?.performance ?? data.report;
   const metricScope = loading ? "Loading statistics…" : scopeLabel;
 
   return (
@@ -362,7 +315,7 @@ export default function StatsPage() {
       {/* Page header */}
       <header className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
         <div className="min-w-0 space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cyan-300">
+          <div className="brand-kicker">
             <BarChart3 className="h-4 w-4" aria-hidden="true" />
             Performance Analytics
           </div>
@@ -376,7 +329,8 @@ export default function StatsPage() {
 
           <p className="max-w-2xl text-sm leading-6 text-slate-400">
             Track tip performance across periods, sports, markets,
-            competitions, and products.
+            competitions, and products. Results are reviewed and settled once a
+            day, so the latest figures update after settlement.
           </p>
         </div>
 
@@ -421,13 +375,6 @@ export default function StatsPage() {
             Reports use their own period controls.
           </p>
 
-          {unsupportedProductPeriod && (
-            <p className="text-amber-300">
-              The supplied API does not provide this period for{" "}
-              {productLabel}. Product metrics show all-time results instead.
-            </p>
-          )}
-
           <p role="status" aria-live="polite" aria-atomic="true">
             {loading
               ? "Loading statistics…"
@@ -452,6 +399,7 @@ export default function StatsPage() {
             {failedRequests.map((request) => request.label).join(", ")}.
             Use Refresh Metrics to try again.
           </p>
+
         </div>
       )}
 
@@ -550,7 +498,7 @@ export default function StatsPage() {
               className="flex items-center gap-2 text-lg font-bold text-slate-100"
             >
               <FileText
-                className="h-5 w-5 shrink-0 text-cyan-400"
+                className="h-5 w-5 shrink-0 text-emerald-400"
                 aria-hidden="true"
               />
               Performance Reports
@@ -573,7 +521,7 @@ export default function StatsPage() {
 
         <div className="space-y-5 rounded-xl border border-slate-800 bg-slate-950 p-4 sm:p-5">
           <div className="flex flex-col justify-between gap-2 border-b border-slate-800 pb-4 sm:flex-row sm:items-center">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-300">
               {reportType} Performance Report
             </h3>
 
@@ -603,6 +551,24 @@ export default function StatsPage() {
                 )}
               />
               <ReportMetric
+                label="Settled"
+                value={formatCount(reportOverview?.settled)}
+              />
+              <ReportMetric
+                label="Average Odds"
+                value={formatMetricOdds(
+                  reportOverview?.avgOdds ??
+                    reportOverview?.averageOdds ??
+                    data.report?.avgOdds
+                )}
+                valueClassName="text-amber-400"
+              />
+              <ReportMetric
+                label="Win Rate"
+                value={formatMetricPercent(reportOverview?.winRate)}
+                valueClassName="text-emerald-400"
+              />
+              <ReportMetric
                 label="Wins Recorded"
                 value={formatCount(reportOverview?.wins)}
                 valueClassName="text-emerald-400"
@@ -613,9 +579,13 @@ export default function StatsPage() {
                 valueClassName="text-rose-400"
               />
               <ReportMetric
-                label="Win Rate"
-                value={formatMetricPercent(reportOverview?.winRate)}
-                valueClassName="text-cyan-400"
+                label="Pending"
+                value={formatCount(reportOverview?.pending)}
+              />
+              <ReportMetric
+                label="ROI"
+                value={formatMetricPercent(reportOverview?.roi)}
+                valueClassName="text-purple-400"
               />
             </dl>
           )}
@@ -630,7 +600,7 @@ function OptionGroup({
   options,
   value,
   onChange,
-  activeClass = "bg-cyan-400 text-slate-950",
+  activeClass = "bg-emerald-400 text-slate-950",
   compact = false,
 }) {
   return (
@@ -668,8 +638,8 @@ function OptionGroup({
 
 const breakdownStyles = {
   cyan: {
-    text: "text-cyan-400",
-    bar: "bg-gradient-to-r from-cyan-400 to-teal-400",
+    text: "text-emerald-300",
+    bar: "bg-gradient-to-r from-emerald-400 to-emerald-200",
   },
   indigo: {
     text: "text-indigo-400",
@@ -755,7 +725,8 @@ function BreakdownPanel({
 
                 <p className="text-xs leading-5 text-slate-400">
                   Tips analyzed:{" "}
-                  {formatCount(item.totalTips ?? item.count)}
+                  {formatCount(item.totalTips ?? item.count)} · Average
+                  odds: {formatMetricOdds(item.avgOdds)}
                 </p>
               </li>
             );

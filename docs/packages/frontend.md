@@ -19,7 +19,7 @@ The `frontend` directory contains the Next.js 14 Web Application (App Router, Ja
   - Admin Overview (`/admin`)
   - User Accounts & Roles (`/admin/users`)
   - Tips & Curation Engine (`/admin/tips`) with bulk publish/settle options
-  - VIP Access Tokens (`/admin/tokens`) with single and bulk code generation, each issued to a registered user, each issued to a registered user
+  - VIP Access Tokens (`/admin/tokens`) with single and bulk code generation, each issued to a registered user
   - Products & Tiers (`/admin/products`)
 - **Public & User Account Pages**:
   - Home (`/`) — Hero, analytics counters, today's free tips ticker, product highlights
@@ -39,15 +39,15 @@ The `frontend` directory contains the Next.js 14 Web Application (App Router, Ja
 - **HTTP Client**: Axios
 - **Notifications**: React Hot Toast
 
-## 🚀 Running the Frontend
+## 🚀 Running the Frontend (Docker)
 
 ```powershell
-npm install --prefix frontend
 if (-not (Test-Path frontend/.env)) { Copy-Item frontend/.env.example frontend/.env }
-npm run --prefix frontend dev
+if (-not (Test-Path backend/.env)) { Copy-Item backend/.env.example backend/.env }
+docker compose up -d app
 ```
 
-The local Next.js server is at `http://localhost:3001`. With Docker Compose, use `docker compose up -d app`; Compose maps the frontend to `http://localhost:3181` and the API to `http://localhost:3180`.
+The Next.js frontend runs in the Docker app service at `http://localhost:3001`; the API is at `http://localhost:3000`.
 
 ### Environment Variables
 
@@ -59,47 +59,37 @@ The local Next.js server is at `http://localhost:3001`. With Docker Compose, use
 | `NEXT_PUBLIC_APP_URL` | Public frontend URL, used for share/canonical metadata |
 | `NEXT_PUBLIC_APP_NAME` | Display name used in metadata |
 
-> **This is the most common cause of "the pages load but show no data."** The value must match the port the backend is actually listening on. The backend defaults to `3000` on the host and is mapped to `3180` under Compose. Because the variable is read at build time, **restart the dev server after changing it.**
+> **This is the most common cause of "the pages load but show no data."** The value must be `http://localhost:3000/api`. Because the variable is read at build time, recreate the app service after changing it with `docker compose up -d app`.
 
 Because `process.env.NEXT_PUBLIC_*` is inlined at build time, these values are only correct for a local/dev frontend. For production, build the image with the correct public API URL.
 
-Available checks and production commands:
+To view logs or rebuild the Docker image:
 
 ```powershell
-npm run --prefix frontend lint
-npm run --prefix frontend build
-npm run --prefix frontend start
+docker compose logs -f app
+docker compose up -d --build app
 ```
 
-`start` requires a successful production build first. The root `npm run dev` starts the backend and frontend together; configure and migrate PostgreSQL before using API-backed pages.
+The frontend and backend share the Docker app service; configure both env files and initialize PostgreSQL before using API-backed pages.
 
-## Current Readiness
+## Current Readiness (6 October 2026)
 
-Verified locally on **2026-10-04** with the API and database running:
-
-- `next lint` passes with a single `<img>` optimization warning in `src/app/profile/page.jsx`.
-- **Login works end-to-end**: submitting valid credentials stores the JWT and redirects to `/admin`.
-- **Pages render live database data**, confirmed in a headless browser with zero console errors:
-  - `/stats` — 288 tip volume, average odds 2.80, per-sport breakdowns (Football 92, Golf 5, Esports 46, and others) with no placeholder dashes.
-  - `/admin` — totals for 288 tips, 1 user, 1 access token.
-  - `/admin/tips` — 20 table rows with teams, selections, odds, and status.
-  - `/archive`, `/products`, `/profile` — render without errors.
-- These checks were run manually rather than through automated tests; there is no UI-to-API integration test suite.
+The Docker frontend home route returns HTTP 200, and the API stats summary used by the frontend returns HTTP 200. This is a startup check, not a current browser acceptance of login, account, or admin journeys. The previous manual browser review was run on 4 October with a smaller data set. There is no automated UI-to-API integration suite; real-user and admin workflow acceptance remains open.
 
 ### Known Data Behavior
 
 - `/tips` and `/archive` return today when today's scrape has run. Before that they fall back to the most recent day that has records, so the pages are never blank; the tips page labels when it is showing an earlier day.
-- Settlement results reach the database: after `npm run settlement` and `npm run sync`, win rate and ROI update from recorded results.
+- Settlement results reach PostgreSQL after local `npm run settlement` and `docker compose run --rm app npm run sync`; current dump and database outcomes still need reconciliation.
 - Admins see every tier on `/tips` (Free, VIP, MaxBet). The public tips list exposes only public (Free) products, which is intentional.
-- Only non-featured football tips settle as losses by default; paid tips stay unsettled so a gap in the results text is never recorded as a false loss.
+- Settlement defaults: an unmarked **free-channel** pick settles as a win and an unmarked **paid-group** pick settles as a loss; explicit markers always override the default.
 
 ### Access tokens
 
-The admin token form always requires selecting a registered user, for both single and bulk creation. A token can only be redeemed by that account while signed in, and it cannot be reassigned afterwards.
+The admin token form always requires selecting a registered user, for both single and bulk creation. A token can only be redeemed by that account while signed in, and it cannot be reassigned afterwards. Admins can revoke a token (kept for audit) or permanently delete it through the admin API.
 
 ### Security Notes
 
-The admin UI's role checks are client-side only and are not a security control — the API enforces authorization independently. Admin API routes enforce the `ADMIN` role server-side, but **tip mutation endpoints still need role/ownership authorization**; see the backend readiness notes.
+The admin UI's role checks are client-side presentation only; the API independently enforces an active `ADMIN` account for protected routes and admin tip mutations. Admin curation controls use `/api/admin/*`; the routine source-of-truth workflow remains CLI scrape/settlement followed by `docker compose run --rm app npm run sync`. Backend service-logic tests use mocked persistence; end-to-end and database-backed acceptance remains operator testing.
 
 ### SEO Notes
 

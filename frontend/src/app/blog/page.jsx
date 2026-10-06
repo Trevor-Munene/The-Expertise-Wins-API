@@ -26,7 +26,7 @@ export const metadata = {
 };
 
 const cardClassName =
-  "bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-2xl p-6 shadow-xl transition-all duration-200 flex flex-col justify-between group";
+  "bg-slate-900/80 border border-slate-800 hover:border-emerald-400/30 rounded-2xl p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-emerald-950/20 flex flex-col justify-between group";
 
 export default function BlogPage() {
   const posts = getAllPosts();
@@ -49,7 +49,7 @@ export default function BlogPage() {
 
       {/* Header */}
       <header className="space-y-4 max-w-3xl">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold uppercase tracking-wider">
+        <div className="brand-kicker">
           <BookOpen className="w-4 h-4" aria-hidden="true" />
           <span>Technical Insights & Strategy</span>
         </div>
@@ -72,7 +72,7 @@ export default function BlogPage() {
         >
           <div className="flex items-center gap-2">
             <Sparkles
-              className="w-4 h-4 text-cyan-400"
+              className="w-4 h-4 text-emerald-300"
               aria-hidden="true"
             />
             <h2
@@ -89,7 +89,7 @@ export default function BlogPage() {
                 <div className="space-y-4">
                   {/* Category + Read Time */}
                   <div className="flex items-center justify-between gap-3">
-                    <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
                       {post.category}
                     </span>
 
@@ -103,10 +103,10 @@ export default function BlogPage() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-xl font-bold text-slate-100 group-hover:text-cyan-400 transition-colors line-clamp-2 leading-snug">
+                  <h3 className="text-xl font-bold text-slate-100 group-hover:text-emerald-300 transition-colors line-clamp-2 leading-snug">
                     <Link
                       href={`/blog/${post.slug}`}
-                      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 rounded-sm"
+                      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded-sm"
                     >
                       {post.title}
                     </Link>
@@ -146,7 +146,7 @@ export default function BlogPage() {
 
                   <Link
                     href={`/blog/${post.slug}`}
-                    className="inline-flex items-center gap-1 font-bold text-cyan-400 hover:text-cyan-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 rounded-sm transition-colors"
+                    className="inline-flex items-center gap-1 font-bold text-emerald-400 hover:text-emerald-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-sm transition-colors"
                   >
                     <span>Read Post</span>
                     <ArrowRight

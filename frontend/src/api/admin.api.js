@@ -155,9 +155,15 @@ export const adminApi = {
     return data;
   },
 
-  // Revoke an access token
+  // Revoke an access token while preserving its audit record
   async revokeAccessToken(id) {
     const { data } = await apiClient.post(`/admin/subscription-tokens/${id}/revoke`);
+    return data;
+  },
+
+  // Permanently delete an access token
+  async deleteAccessToken(id) {
+    const { data } = await apiClient.delete(`/admin/subscription-tokens/${id}`);
     return data;
   },
 

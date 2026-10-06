@@ -38,11 +38,10 @@ Settle results against a specific dated dump after pasting markers into `cli/set
 npm run --prefix cli settlement -- --date=2026-10-01
 ```
 
-Settlement defaults to today's UTC date and requires a dump for that exact date; it does not fall back to the newest available dump. The recognized result markers are doubled: `✅✅` for a win and `❎❎` for a loss.
+Settlement defaults to **yesterday's** dated dump and requires a dump for that exact date; it does not fall back to the newest available dump. Pass `--date=YYYY-MM-DD` to settle another day. The recognized result markers are doubled: `✅✅` for a win and `❎❎` for a loss.
 
-### Which tips default to a loss
-
-Only **non-featured football tips** default to a loss when their fixture is missing from the pasted text, because an unmarked free pick counts as a loss on your end. **Paid tips never do.** A featured (Bet of the Day) tip or any non-football sport — basketball, tennis, ice hockey, volleyball, rugby, esports — stays **unsettled** when its marker is missing, so a gap in your results text is never silently recorded as a false loss. The summary reports how many tips remain unsettled.
+### Missing marker defaults
+An unmarked **free-channel** selection defaults to a win; an unmarked **paid-group** selection defaults to a loss. Explicit markers override the channel default. This is the operator's manual daily workflow: paste verified outcomes in the settlement file, review the generated report, then sync.
 
 A marker is matched by selection text, falling back to the printed odds and stake on the result line, so a selection that was reworded between the dump and the channel (for example `Over (9/10)` versus `Over Total Goals`) still settles correctly. Fixture lookup also considers every occurrence of the team name, so a fixture that shares a name with an earlier card is matched against the right block.
 
@@ -53,7 +52,7 @@ npm run --prefix cli test
 npm run --prefix cli test:settlement
 ```
 
-> CLI tests were not rerun during the 2026-10-04 API/frontend audit, so treat them as unverified in this workspace.
+> Run the commands above whenever settlement or card classification changes; settlement tests use throwaway files and do not alter production dumps.
 
 ## Data Locations
 
@@ -61,21 +60,21 @@ npm run --prefix cli test:settlement
 - `settlement/previous-day-results/` contains dated JSON dumps that settlement reads and updates.
 - `settlement/settlement-template.txt` is the manual result-input template.
 
-The CLI operates independently of the backend database. The `npm run sync` script bridges the two: it reads the local dumps and writes them into PostgreSQL.
+The CLI scrape and settlement commands operate independently of the backend database. Sync local dumps into Docker PostgreSQL with `docker compose run --rm app npm run sync`.
 
 ## Syncing with the Database
 
 The CLI ships one sync script that works the same for local development and production. It reuses the backend seed pipeline, which upserts tips by a deterministic id, so it is safe to run repeatedly.
 
 ```bash
-# Push the local dumps to the development database (backend/.env)
-npm run sync
+# Push local dumps to Docker PostgreSQL
+docker compose run --rm app npm run sync
 
 # Push to production (.env.production)
-npm run sync:prod
+docker compose run --rm app npm run sync:prod
 
 # Validate the dumps without writing anything
-npm run sync:dry
+docker compose run --rm app npm run sync:dry
 ```
 
 Configure production once by copying the template:
@@ -93,22 +92,20 @@ The script prints the target host with the password masked, and refuses to run w
 # Morning: scrape and print today's cards
 npm run expertise
 
-# Publish the scrape to the database
-npm run sync
+# Publish the scrape to Docker PostgreSQL
+docker compose run --rm app npm run sync
 
 # Later: paste yesterday's results into the settlement template, then settle
 npm run settlement
 
 # Publish the results
-npm run sync
+docker compose run --rm app npm run sync
 ```
 
-`npm run expertise:sync` and `npm run settlement:sync` chain the two steps when you want them in a single command.
+`npm run expertise:sync` and `npm run settlement:sync` are optional host-only convenience scripts. They require the local database at `localhost:5432` and both CLI and backend dependencies installed; the Docker sync workflow above is the standard path.
 
 ## Current Data State
 
-As of 2026-10-04, `settlement/previous-day-results/` contains **10 dated dumps spanning 25th September to 4th October 2026**, holding **288 tip records**, which map to 288 rows in the database. The dumps are disjoint: each tip belongs to exactly one day.
+As of **2026-10-06 after local sync**, `settlement/previous-day-results/` contains **12 dated dumps from 25 September through 6 October 2026**, with **356 tip records**. The dump files contain 301 wins and 55 pending tips; the live database reports 304 wins, 5 losses, and 47 pending. Eight outcomes differ. Reconcile this before using the database and dumps together as a final performance record.
 
-The newest dump is `freetips-4th Oct 2026.json`. Because `/api/tips` and `/api/archive` default to the current UTC day, the web pages show no records until a dump exists for today — this is expected behavior, not a fault.
-
-Settling 3rd October against the pasted template settled 13 tips and left 6 unsettled, which is correct: those fixtures have no marker in the results text and are paid tips, so they are left for you to supply rather than being marked as losses.
+The newest dump is `freetips-6th Oct 2026.json`. `/api/tips` and `/api/archive` prefer today's published data and otherwise fall back to the most recent day with records. Review settlement output before syncing it into Docker PostgreSQL.

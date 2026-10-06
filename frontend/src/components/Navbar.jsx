@@ -167,7 +167,7 @@ export default function Navbar() {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-40 border-b border-dark-border bg-dark-bg/95 backdrop-blur-xl"
+      className="sticky top-0 z-40 border-b border-emerald-400/10 bg-dark-bg/90 shadow-lg shadow-black/10 backdrop-blur-2xl after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-emerald-300/20 after:to-transparent"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-3">
@@ -195,11 +195,11 @@ export default function Navbar() {
               />
             </div>
 
-            <div className="hidden flex-col sm:flex xl:hidden">
-              <span className="text-base font-black leading-none tracking-tight text-slate-100">
+            <div className="flex min-w-0 flex-col">
+              <span className="whitespace-nowrap text-[13px] font-black leading-none tracking-tight text-slate-100 sm:text-base">
                 The Expertise Wins
               </span>
-              <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">
+              <span className="mt-1 text-[8px] font-extrabold uppercase tracking-[0.2em] text-emerald-300 sm:text-[9px]">
                 Sports Intelligence
               </span>
             </div>

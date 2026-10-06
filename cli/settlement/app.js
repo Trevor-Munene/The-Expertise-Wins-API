@@ -34,7 +34,10 @@ function parseArgs(argv) {
 
 async function run(argv = process.argv.slice(2)) {
     const { dateArg, txtArg } = parseArgs(argv);
-    const tips = processSettlement(dateArg || new Date().toISOString().slice(0, 10), txtArg);
+    // Without --date, settle yesterday's dump; an explicit date still targets
+    // exactly the requested previous-day-results file.
+    const settlementDate = dateArg || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const tips = processSettlement(settlementDate, txtArg);
 
     const result = await new TipsConsumptionClient().loadFromData(tips);
     const freeTips = result.freeTips || [];

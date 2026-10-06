@@ -10,6 +10,21 @@ const getOverview = async (req, res, next) => {
   }
 };
 
+// Get win rate, ROI, and average odds for the requested period and product
+const getSummaryStats = async (req, res, next) => {
+  try {
+    const stats = await statsService.getSummaryStats({
+      periodId: req.query.period,
+      productId: req.query.product,
+      userId: req.user?.id,
+      isAdmin: req.user?.role === "ADMIN",
+    });
+    res.status(200).json({ stats });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Get application usage for the last 30 days
 const getUsageStats = async (req, res, next) => {
   try {
@@ -90,20 +105,20 @@ const getFreeStats = async (req, res, next) => {
   }
 };
 
-// Get performance for the VIP product if the user has access
+// Get public performance for the VIP product
 const getVipStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getVipStats(req.user.id, req.user.role === "ADMIN");
+    const stats = await statsService.getVipStats(req.user?.id, req.user?.role === "ADMIN");
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
   }
 };
 
-// Get performance for the MaxBet product if the user has access
+// Get public performance for the MaxBet product
 const getMaxbetStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getMaxbetStats(req.user.id, req.user.role === "ADMIN");
+    const stats = await statsService.getMaxbetStats(req.user?.id, req.user?.role === "ADMIN");
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
@@ -133,7 +148,7 @@ const getFreeMonthlyStats = async (req, res, next) => {
 // Get VIP product performance for the last 7 days
 const getVipWeeklyStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getVipWeeklyStats(req.user.id, req.user.role === "ADMIN");
+    const stats = await statsService.getVipWeeklyStats(req.user?.id, req.user?.role === "ADMIN");
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
@@ -143,7 +158,7 @@ const getVipWeeklyStats = async (req, res, next) => {
 // Get VIP product performance for the last 30 days
 const getVipMonthlyStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getVipMonthlyStats(req.user.id, req.user.role === "ADMIN");
+    const stats = await statsService.getVipMonthlyStats(req.user?.id, req.user?.role === "ADMIN");
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
@@ -153,7 +168,7 @@ const getVipMonthlyStats = async (req, res, next) => {
 // Get MaxBet product performance for the last 7 days
 const getMaxbetWeeklyStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getMaxbetWeeklyStats(req.user.id, req.user.role === "ADMIN");
+    const stats = await statsService.getMaxbetWeeklyStats(req.user?.id, req.user?.role === "ADMIN");
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
@@ -163,7 +178,7 @@ const getMaxbetWeeklyStats = async (req, res, next) => {
 // Get MaxBet product performance for the last 30 days
 const getMaxbetMonthlyStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getMaxbetMonthlyStats(req.user.id, req.user.role === "ADMIN");
+    const stats = await statsService.getMaxbetMonthlyStats(req.user?.id, req.user?.role === "ADMIN");
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
@@ -372,6 +387,7 @@ const getMyAccessStats = async (req, res, next) => {
 
 module.exports = {
   getOverview,
+  getSummaryStats,
   getUsageStats,
   getTodayStats,
   getWeeklyStats,

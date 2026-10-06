@@ -1,20 +1,37 @@
-# 🚀 The Expertise Wins API — Development Roadmap
+# The Expertise Wins — V1 Status and Roadmap
 
-This roadmap reflects the **current state and architectural milestones** of **The Expertise Wins**.
+This document distinguishes the implemented V1 baseline from the remaining acceptance work. Snapshot date: **6 October 2026**. Phase checkboxes record milestones; they do not imply that production deployment or every real-user workflow has been accepted.
 
-> **Make the workflow work → build the API & database → scaffold the Next.js frontend → brand & optimize for SEO → scale.**
+> V1 now has a Dockerized application stack. The current focus is data reconciliation, operational hardening, and real-user acceptance.
 
 ---
 
-## 📌 Overall Project Status (October 2026)
+## Current status (6 October 2026)
 
-The repository contains three distinct applications: a local-file CLI workflow, an Express/Prisma API, and a Next.js frontend. The local Docker database is migrated and seeded; the API and frontend have both been started and checked in this workspace. This is a development baseline, not production approval.
+The repository contains the CLI workflow, Express/Prisma REST API, Next.js frontend, and Docker Compose setup. The API and frontend run in the Docker `app` service; PostgreSQL is a separate healthy container. The published local ports are API `3000`, frontend `3001`, and database `5432`. The frontend and backend settings are held in separate ignored env files.
 
-**Verified locally on 2026-10-04:** PostgreSQL is healthy; Prisma reports the schema in sync; the database holds 288 tips imported from the CLI dated dumps; admin login issues a working JWT; all API routes across auth, tips, stats, products, subscriptions, and admin return HTTP 200 with live data; settlement results sync into the database and update win rate and ROI; and the frontend renders that live data on login, stats, tips, archive, profile, products, and all four admin pages with zero console errors. Frontend lint has one `<img>` optimization warning. The CLI remains a separate manual publish/settle workflow.
+On 6 October, Compose configuration validation passed; the database was healthy; and the API health endpoint, `/api/stats/summary`, and frontend home page each returned HTTP 200. These checks establish that the current Docker services start and answer requests. The full login, customer, admin, backup, and recovery workflows have not been re-accepted as part of this snapshot. The 4 October browser check remains historical evidence, not a current full regression pass.
 
-**Release blockers:** Tip mutations do not enforce server-side role/ownership checks, and frontend client-side role checks are not security controls. The backend has no automated test script, and end-to-end UI-to-API workflows are verified manually rather than by automated tests. Source identifiers and URLs are withheld from public tip responses; source analytics and admin operations require the admin role.
+### V1 capabilities in the repository
 
-**Data state:** 13 tips are settled (8 won, 5 lost), giving a 61.54% win rate. Remaining tips are `PENDING` until their fixtures are settled through the CLI workflow and published with `npm run sync`.
+- **CLI:** scrape and normalize FreeTips records, write dated JSON, format channel-ready cards, settle a chosen day's dump from manually pasted markers, and sync dumps to PostgreSQL. Scrape and settlement can run locally; the API, frontend, database, and standard sync workflow are Dockerized.
+- **Backend:** Express REST API with JWT accounts, public Free and access-gated VIP/MaxBet reads, archive and tip details, aggregate stats, products, token redemption, user/admin routes, and active-admin tip curation. Admin curation is protected under `/api/admin/tips`; the public tips router is read-only. There is no developer API key product or live channel-publishing integration.
+- **Frontend:** public site and blog, tips and archive pages, stats, products, login/registration, user profile, and admin pages for users, tips, access tokens, and products. Client-side role checks are for presentation; the API enforces protected operations.
+- **Access and data handling:** tokens are assigned to registered users, can be revoked or deleted, and source identifiers are removed from public tip responses. Settlement is manual; live result verification is not implemented.
+
+### Data snapshot
+
+After the verified local Docker sync on 6 October, the stats API reports **356 tips: 304 wins, 5 losses, and 47 pending** (309 settled; 98.38% win rate, 119.67% ROI, average odds 2.64). The 12 dated JSON dumps also total 356 tips, listing **301 wins and 55 pending**, with no losses. Eight outcomes therefore differ between the dump and database; reconcile the settlement source of truth before relying on the combined record. The newest dump is `freetips-6th Oct 2026.json`. These are a dated development snapshot and will change as tips are settled and synced.
+
+### V1 acceptance still open
+
+- Reconcile the eight database outcome differences with the dated CLI dumps and document which state is authoritative after corrections.
+- Exercise the actual registration/login, access-token, entitlement, admin, scrape, settlement, and sync workflows with real users and a fresh database.
+- Add repeatable UI-to-API acceptance coverage and verify migration, backup, and restore procedures.
+- Align sitemap, robots, and metadata domains before deployment.
+- Complete production configuration and security review. Local Docker health is not production readiness.
+
+V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They are open proposals, not approved scope or current V1 commitments.
 
 ---
 
@@ -100,7 +117,7 @@ The repository contains three distinct applications: a local-file CLI workflow, 
 
 * [x] Build the settlement evaluator (`cli/settlement/settlement.js`)
 * [x] Match fixture selections against pasted text using `✅✅` and `❎❎` markers
-* [x] Leave featured tips without explicit markers unsettled; unmarked regular tips default to losses
+* [x] Apply channel-aware defaults: unmarked free-channel picks settle as wins, unmarked paid-group picks settle as losses
 * [x] Write annotated outcomes back to the exact dated dump
 * [x] Print formatted reports through the local CLI consumer
 * [ ] Integrate live scores or automatic result verification
@@ -128,7 +145,7 @@ The repository contains three distinct applications: a local-file CLI workflow, 
 * [x] Model single and bulk access token redemption codes
 * [x] Add avatar upload handling
 * [x] Configure and migrate the local Compose PostgreSQL database in the development workspace
-* [x] Import the historical CLI dumps with the backend seed script (10 dumps / 288 tips at this update)
+* [x] Import historical CLI dumps with the backend seed script (initial 10-dump / 288-tip checkpoint, verified 2026-10-04; current state is in the snapshot above)
 * [x] Accept the settlement layer's `win`/`lose`/`settled` values so settled results reach the database
 
 ---
@@ -140,7 +157,7 @@ The repository contains three distinct applications: a local-file CLI workflow, 
 * [x] Build Express API source (`backend/app.js`)
 * [x] Repair duplicate declarations in authentication middleware so the server can load
 * [x] Enforce `ADMIN` role authorization on admin routes
-* [ ] Enforce role/ownership authorization on tip-management mutations
+* [x] Require an active admin for tip-management mutations; keep operator changes CLI-driven
 * [x] Restrict public tip list to active public product publications
 * [x] Restrict public tip detail to published product access
 * [x] Add a current-day-by-default tier-aware archive with a selected-day picker and sport/outcome/search filters
@@ -165,11 +182,11 @@ The repository contains three distinct applications: a local-file CLI workflow, 
   * Dynamic XML sitemap (`/sitemap.xml`) for a configured subset of public routes and blog posts.
   * [ ] Align sitemap/robots URLs with the metadata canonical domain and include remaining public pages.
 * [x] **Admin Dashboard UI (`/admin`)**:
-  * Admin UI checks roles client-side; admin endpoints enforce roles server-side, while tip mutation ownership checks remain open.
+  * Client-side role checks support navigation; the API independently enforces active-admin access. Admin tip curation exists, while routine daily production and settlement remain CLI-driven.
 * [x] Historical tip archive (`/archive`) with detail previews and recorded outcomes.
 * [x] **Responsive Across Devices**: Mobile drawer menu, tablet layouts, and desktop support.
-* [x] **Dual Start Commands**: `npm run dev` launches backend (port 3000) and frontend (port 3001) concurrently.
-* [x] Verified end-to-end in a headless browser: login issues a JWT and reaches `/admin`; stats, tips, archive, profile, products, and admin pages all render live API data without console errors.
+* [x] **Docker Compose development stack**: API, frontend, and PostgreSQL run in containers on standardized ports 3000, 3001, and 5432.
+* [x] Manual headless-browser review on 2026-10-04: login reached `/admin`; stats, tips, archive, profile, products, and admin pages rendered live API data. This is historical verification, not the 2026-10-06 acceptance status.
 
 ---
 
@@ -186,17 +203,20 @@ The repository contains three distinct applications: a local-file CLI workflow, 
 
 ---
 
-# Phase 11 — Next Steps & Future Capabilities
+# Phase 11 — V1 Hardening & Acceptance
 
-**Goal:** Automate scheduled execution and expand distribution channels.
+**Goal:** Verify the implemented application with real workflows and make its current data and operations dependable.
 
-* [ ] Enforce role/ownership authorization on tip-management mutations (release blocker)
-* [ ] Add an automated backend test script and API integration tests
+* [x] Keep the public tips router read-only and protect admin curation and token management with active-admin authorization
+* [x] Add backend service-logic tests with mocked persistence
+* [ ] Reconcile the eight differing outcomes across the 356 database and dated dump records
+* [ ] Complete operator real-user and fresh-database acceptance of V1
+* [ ] Add UI-to-API acceptance coverage
+* [ ] Verify backup and restore procedures
 * [ ] Align sitemap/robots domains with the metadata canonical domain
-* [ ] Schedule automated daily scraping cron jobs
-* [ ] Build direct Telegram Bot publisher client for automated channel posting
-* [ ] Add automated result confirmation via live sports score APIs
-* [ ] Expand external API key management for third-party B2B consumers
+* [ ] Complete a production configuration and security review
+
+V2 automation, developer API services, commercial installation packaging, deeper sport analytics, richer tipping and personal workflows, and a historical-tips calculator are ideation topics in [`v2-ideation.md`](./v2-ideation.md), not Phase 11 commitments.
 
 ---
 
@@ -211,8 +231,9 @@ The repository contains three distinct applications: a local-file CLI workflow, 
 | **Phase 4** | Card Consumption & Formatting | ✅ Completed |
 | **Phase 5** | Pricing & Multi-Currency Tiers | ✅ Completed |
 | **Phase 5.5** | Settlement Engine | ✅ Completed |
-| **Phase 6** | Performance Analytics & ROI Engine | ✅ Implemented and verified against live data; metrics move as settlement results are synced |
-| **Phase 7** | Prisma ORM, Local PostgreSQL & Historical Seed | ✅ Complete in this development workspace; fresh setups must follow the database guide |
-| **Phase 8** | Express REST API, Archive & JWT Auth | ⚠️ All routes verified returning live data, including auth; tip mutation authorization and automated backend tests remain |
-| **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | ⚠️ Lint passes with one warning and pages were verified rendering live data in a browser; sitemap/domain alignment and automated end-to-end tests remain |
-| **Phase 10** | CLI ↔ Database Sync | ✅ `npm run sync` / `sync:prod` push scrapes and settlements to the database; automation still manual |
+| **Phase 6** | Performance Analytics & ROI Engine | ✅ Aggregate metrics and sport/market breakdowns are implemented; current settlement totals need reconciliation |
+| **Phase 7** | Prisma ORM, Docker PostgreSQL & Historical Seed | ✅ Compose database is healthy and seeded; eight outcome differences remain between the 356 database and dump records |
+| **Phase 8** | Express REST API, Archive & JWT Auth | ✅ Public tips API is read-only; admin curation is active-admin-only, token revoke/delete and mocked-persistence service tests are in place; V1 acceptance is operator real-user/database testing |
+| **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | 🟡 Docker home route is live; full current browser acceptance, automated end-to-end coverage, and sitemap/domain alignment remain |
+| **Phase 10** | CLI ↔ Database Sync | ✅ Docker sync command is available and idempotent; daily scrape, review, settlement, and sync remain operator-driven |
+| **Phase 11** | V1 Hardening & Acceptance | 🟡 Data reconciliation, real-user acceptance, UI/API coverage, recovery procedures, and deployment review remain |

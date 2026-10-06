@@ -1,13 +1,20 @@
 const { Router } = require("express");
 
 const statsController = require("../controllers/stats.controller");
-const { authenticateJWT } = require("../middleware/authentication");
+const { authenticateJWT, optionalAuthenticateJWT } = require("../middleware/authentication");
 const authorizeAdmin = require("../middleware/authorize");
 
 const statsRouter = Router();
 
 // Get the overall performance overview
 statsRouter.get("/", statsController.getOverview);
+
+// Get public win rate, ROI and average odds for ?period= and ?product= in one payload.
+statsRouter.get(
+  "/summary",
+  optionalAuthenticateJWT,
+  statsController.getSummaryStats
+);
 
 // Get application usage for admins
 statsRouter.get("/usage", authenticateJWT, authorizeAdmin, statsController.getUsageStats);
@@ -20,18 +27,18 @@ statsRouter.get("/month", statsController.getMonthlyStats);
 statsRouter.get("/year", statsController.getYearlyStats);
 statsRouter.get("/all-time", statsController.getAllTimeStats);
 
-// Get performance per product, requiring login for paid products
+// Public product performance lets visitors review every published tier.
 statsRouter.get("/free", statsController.getFreeStats);
-statsRouter.get("/vip", authenticateJWT, statsController.getVipStats);
-statsRouter.get("/maxbet", authenticateJWT, statsController.getMaxbetStats);
+statsRouter.get("/vip", optionalAuthenticateJWT, statsController.getVipStats);
+statsRouter.get("/maxbet", optionalAuthenticateJWT, statsController.getMaxbetStats);
 
 // Get product performance for weekly and monthly periods
 statsRouter.get("/free/week", statsController.getFreeWeeklyStats);
 statsRouter.get("/free/month", statsController.getFreeMonthlyStats);
-statsRouter.get("/vip/week", authenticateJWT, statsController.getVipWeeklyStats);
-statsRouter.get("/vip/month", authenticateJWT, statsController.getVipMonthlyStats);
-statsRouter.get("/maxbet/week", authenticateJWT, statsController.getMaxbetWeeklyStats);
-statsRouter.get("/maxbet/month", authenticateJWT, statsController.getMaxbetMonthlyStats);
+statsRouter.get("/vip/week", optionalAuthenticateJWT, statsController.getVipWeeklyStats);
+statsRouter.get("/vip/month", optionalAuthenticateJWT, statsController.getVipMonthlyStats);
+statsRouter.get("/maxbet/week", optionalAuthenticateJWT, statsController.getMaxbetWeeklyStats);
+statsRouter.get("/maxbet/month", optionalAuthenticateJWT, statsController.getMaxbetMonthlyStats);
 
 // Get results filtered by outcome
 statsRouter.get("/results", statsController.getResults);

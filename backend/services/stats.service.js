@@ -58,6 +58,10 @@ const getTipStats = async (where = {}) => {
   let totalStake = 0;
   let profit = 0;
 
+  // Collect every usable odds value so the average can be reported
+  let oddsTotal = 0;
+  let oddsCount = 0;
+
   for (const tip of tips) {
     const odds = tip.odds ? Number(tip.odds) : 0;
     const stake = tip.stakeUnits ? Number(tip.stakeUnits) : 1;
@@ -103,6 +107,12 @@ const getTipStats = async (where = {}) => {
 
     // Count stake only for settled tips so open tips do not dilute ROI
     if (settledOutcomes.includes(tip.outcome)) totalStake += stake;
+
+    // Average odds across every tip that actually carries odds
+    if (Number.isFinite(odds) && odds > 0) {
+      oddsTotal += odds;
+      oddsCount += 1;
+    }
   }
 
   const settled = wins + losses + pushes + voids + halfWins + halfLosses;
@@ -126,6 +136,7 @@ const getTipStats = async (where = {}) => {
     totalStake: Number(totalStake.toFixed(2)),
     profit: Number(profit.toFixed(2)),
     roi: Number(roi.toFixed(2)),
+    avgOdds: oddsCount > 0 ? Number((oddsTotal / oddsCount).toFixed(2)) : 0,
   };
 };
 
@@ -223,6 +234,7 @@ const getOverview = async () => {
     roi: performance.roi,
     profit: performance.profit,
     totalStake: performance.totalStake,
+    avgOdds: performance.avgOdds,
   };
 };
 
@@ -256,20 +268,93 @@ const getAllTimeStats = async () => {
   return getTipStats();
 };
 
+// Resolve a period id to the date its window starts, or null for all time.
+// The frontend period picker sends these ids, so the API owns the mapping and
+// the two sides cannot drift apart.
+const resolvePeriodStart = (periodId) => {
+  switch (String(periodId || "all-time")) {
+    case "today":
+      return getStartOfToday();
+    case "week":
+      return getPeriodStart(7);
+    case "14-days":
+      return getPeriodStart(14);
+    case "month":
+      return getPeriodStart(30);
+    case "year":
+      return getStartOfYear();
+    case "all-time":
+      return null;
+    default:
+      throw createError("Unsupported reporting period.", 400);
+  }
+};
+
+// Return every id a product filter may be sent as, mapped to a real slug
+const resolveProductSlug = (productId) => {
+  switch (String(productId || "ALL").toUpperCase()) {
+    case "ALL":
+      return null;
+    case "FREE":
+      return "free";
+    case "VIP":
+      return "vip";
+    case "MAXBET":
+    case "MAX_BET":
+      return "maxbet";
+    default:
+      throw createError("Unsupported product filter.", 400);
+  }
+};
+
+// Build one summary for a period and an optional product. This is the single
+// payload the metric cards read from, so win rate, ROI and average odds always
+// describe the same set of tips.
+const getSummaryStats = async ({ periodId = "all-time", productId = "ALL" } = {}) => {
+  const periodStart = resolvePeriodStart(periodId);
+  const productSlug = resolveProductSlug(productId);
+
+  const timeWhere = periodStart ? { createdAt: { gte: periodStart } } : {};
+
+  const performance = productSlug
+    ? await getProductStats(productSlug, timeWhere)
+    : await getTipStats(timeWhere);
+
+  const odds = await getOddsStatsFor(
+    productSlug
+      ? {
+          ...timeWhere,
+          publications: {
+            some: { productId: (await getProduct(productSlug)).id, status: "PUBLISHED" },
+          },
+        }
+      : timeWhere
+  );
+
+  return {
+    period: String(periodId || "all-time"),
+    product: productSlug ?? "ALL",
+    ...performance,
+    // getTipStats averages odds over every tip carrying odds; expose it under
+    // both names so the cards and the report read the same number
+    avgOdds: performance.avgOdds,
+    average: performance.avgOdds,
+    odds,
+  };
+};
+
 // Get stats for the free product
 const getFreeStats = async () => {
   return getProductStats("free");
 };
 
-// Get stats for the VIP product after checking access
-const getVipStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "vip", isAdmin);
+// Published VIP performance is public so visitors can assess the record.
+const getVipStats = async () => {
   return getProductStats("vip");
 };
 
-// Get stats for the MaxBet product after checking access
-const getMaxbetStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "maxbet", isAdmin);
+// Published MaxBet performance is public so visitors can assess the record.
+const getMaxbetStats = async () => {
   return getProductStats("maxbet");
 };
 
@@ -283,27 +368,23 @@ const getFreeMonthlyStats = async () => {
   return getProductStats("free", { createdAt: { gte: getPeriodStart(30) } });
 };
 
-// Get VIP product stats for the last 7 days after checking access
-const getVipWeeklyStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "vip", isAdmin);
+// Get public VIP product stats for the last 7 days
+const getVipWeeklyStats = async () => {
   return getProductStats("vip", { createdAt: { gte: getPeriodStart(7) } });
 };
 
-// Get VIP product stats for the last 30 days after checking access
-const getVipMonthlyStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "vip", isAdmin);
+// Get public VIP product stats for the last 30 days
+const getVipMonthlyStats = async () => {
   return getProductStats("vip", { createdAt: { gte: getPeriodStart(30) } });
 };
 
-// Get MaxBet product stats for the last 7 days after checking access
-const getMaxbetWeeklyStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "maxbet", isAdmin);
+// Get public MaxBet product stats for the last 7 days
+const getMaxbetWeeklyStats = async () => {
   return getProductStats("maxbet", { createdAt: { gte: getPeriodStart(7) } });
 };
 
-// Get MaxBet product stats for the last 30 days after checking access
-const getMaxbetMonthlyStats = async (userId, isAdmin = false) => {
-  await verifyProductAccess(userId, "maxbet", isAdmin);
+// Get public MaxBet product stats for the last 30 days
+const getMaxbetMonthlyStats = async () => {
   return getProductStats("maxbet", { createdAt: { gte: getPeriodStart(30) } });
 };
 
@@ -350,27 +431,37 @@ const getRoi = async () => {
   };
 };
 
-// Calculate count, average, minimum and maximum odds
-const getOddsStats = async () => {
+// Calculate count, total, average, minimum and maximum odds for matching tips.
+// This is the single source for every average odds figure, so the metric cards,
+// the performance report and the breakdown panels can never disagree.
+const getOddsStatsFor = async (where = {}) => {
   const tips = await prisma.tip.findMany({
-    where: { odds: { not: null } },
+    where,
     select: { odds: true },
   });
 
-  const odds = tips.map((tip) => Number(tip.odds));
+  const odds = tips
+    .map((tip) => Number(tip.odds))
+    .filter((value) => Number.isFinite(value) && value > 0);
 
   if (odds.length === 0) {
-    return { count: 0, average: 0, minimum: 0, maximum: 0 };
+    return { count: 0, total: 0, average: 0, minimum: 0, maximum: 0 };
   }
 
   const total = odds.reduce((sum, value) => sum + value, 0);
 
   return {
     count: odds.length,
+    total: Number(total.toFixed(2)),
     average: Number((total / odds.length).toFixed(2)),
     minimum: Math.min(...odds),
     maximum: Math.max(...odds),
   };
+};
+
+// Calculate count, average, minimum and maximum odds
+const getOddsStats = async () => {
+  return getOddsStatsFor();
 };
 
 // Calculate count, total, average, minimum and maximum stakes
@@ -425,12 +516,25 @@ const getGroupedStats = async (field) => {
     const losses = group.filter((tip) => tip.outcome === "LOST").length;
     const settled = group.filter((tip) => settledOutcomes.includes(tip.outcome)).length;
 
+    const groupOdds = group
+      .map((tip) => Number(tip.odds))
+      .filter((value) => Number.isFinite(value) && value > 0);
+
     results[key] = {
       totalTips: group.length,
       wins,
       losses,
       settled,
       winRate: settled > 0 ? Number(((wins / settled) * 100).toFixed(2)) : 0,
+      avgOdds:
+        groupOdds.length > 0
+          ? Number(
+              (
+                groupOdds.reduce((sum, value) => sum + value, 0) /
+                groupOdds.length
+              ).toFixed(2)
+            )
+          : 0,
     };
   }
 
@@ -542,11 +646,13 @@ const getYearlyReport = async () => {
 // Build a report for tips created since a date
 const getReportForPeriod = async (startDate) => {
   const performance = await getTimeStats(startDate);
+  const oddsStats = await getOddsStatsFor({ createdAt: { gte: startDate } });
 
   return {
     periodStart: startDate,
     periodEnd: new Date(),
     performance,
+    avgOdds: oddsStats.average,
   };
 };
 
@@ -564,27 +670,6 @@ const getProductReports = async () => {
       performance: await getProductStats(product.slug),
     }))
   );
-};
-
-// Check that a user can view a product, allowing free products and admins
-const verifyProductAccess = async (userId, productSlug, isAdmin = false) => {
-  const product = await getProduct(productSlug);
-
-  if (product.slug === "free" || isAdmin) return product;
-
-  const accessToken = await prisma.accessToken.findFirst({
-    where: {
-      productId: product.id,
-      assignedUserId: userId,
-      status: "ACTIVE",
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-    },
-    select: { id: true },
-  });
-
-  if (!accessToken) throw createError("You do not have access to this product.", 403);
-
-  return product;
 };
 
 // Build performance stats for products the user can access
@@ -646,6 +731,8 @@ module.exports = {
   getWinRate,
   getRoi,
   getOddsStats,
+  getOddsStatsFor,
+  getSummaryStats,
   getStakeStats,
   getSportStats,
   getMarketStats,

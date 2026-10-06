@@ -18,8 +18,15 @@ function formatBadgeLabel(value) {
   return value.replace(/_/g, " ");
 }
 
-export default function TipCard({ tip }) {
+export default function TipCard({ tip, tier }) {
   if (!tip) return null;
+
+  const tierValue = String(tier || tip._tier || tip.tier || tip.publications?.[0]?.product?.slug || "free").toUpperCase();
+  const tierStyles = tierValue === "MAXBET"
+    ? { border: "border-amber-400/40", glow: "shadow-amber-950/30", accent: "text-amber-300", badge: "border-amber-400/30 bg-amber-400/10 text-amber-300", label: "MAXBET" }
+    : tierValue === "VIP"
+      ? { border: "border-indigo-400/40", glow: "shadow-indigo-950/30", accent: "text-indigo-300", badge: "border-indigo-400/30 bg-indigo-400/10 text-indigo-300", label: "VIP" }
+      : { border: "border-emerald-400/40", glow: "shadow-emerald-950/30", accent: "text-emerald-300", badge: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300", label: "FREE" };
 
   const matchTitle =
     tip.teams ||
@@ -32,6 +39,7 @@ export default function TipCard({ tip }) {
     tip.competition || tip.league || "Competition unavailable";
   const market = tip.market || "—";
   const selection = tip.selection || tip.prediction || "—";
+  const selections = Array.isArray(tip.tips) ? tip.tips.filter((item) => item && (item.selection || item.market)) : [];
 
   const outcome = normalizeEnum(tip.result?.outcome || tip.outcome);
   const status = normalizeEnum(tip.status) || "PUBLISHED";
@@ -64,7 +72,8 @@ export default function TipCard({ tip }) {
       : undefined;
 
   return (
-    <article className="group flex h-full min-w-0 flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg shadow-black/10 transition-colors hover:border-slate-700">
+    <article className={`group relative flex h-full min-w-0 flex-col justify-between overflow-hidden rounded-2xl border ${tierStyles.border} bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-5 shadow-xl ${tierStyles.glow} transition duration-300 hover:-translate-y-1 hover:shadow-2xl`}>
+      <div className={`pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-current to-transparent opacity-60 ${tierStyles.accent}`} />
       <div>
         {/* Tip header */}
         <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
@@ -85,45 +94,63 @@ export default function TipCard({ tip }) {
           </span>
         </div>
 
+        <div className="mb-3 flex items-center gap-2">
+          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${tierStyles.badge}`}>{tierStyles.label} PICK</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Daily selection</span>
+        </div>
+
         {/* Match title */}
         <h3 className="mb-3 break-words text-base font-bold leading-6 text-slate-100">
           {matchTitle}
         </h3>
 
-        {/* Prediction details */}
+        {/* Show every scraped leg, as printed by the Free channel in the CLI. */}
         <dl className="my-3 space-y-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-          <div className="flex items-start justify-between gap-4 text-xs">
-            <dt className="flex shrink-0 items-center gap-1.5 font-medium leading-5 text-slate-400">
-              <Target
-                className="h-3.5 w-3.5 text-emerald-400"
-                aria-hidden="true"
-              />
-              Market
-            </dt>
-            <dd className="min-w-0 break-words text-right font-semibold leading-5 text-slate-200">
-              {market}
-            </dd>
-          </div>
-
-          <div className="flex items-start justify-between gap-4 text-xs">
-            <dt className="flex shrink-0 items-center gap-1.5 font-medium leading-5 text-slate-400">
-              <Award
-                className="h-3.5 w-3.5 text-teal-400"
-                aria-hidden="true"
-              />
-              Selection
-            </dt>
-            <dd className="min-w-0 break-words text-right font-extrabold leading-5 text-emerald-400">
-              {selection}
-            </dd>
-          </div>
-
-          <div className="flex items-center justify-between gap-4 text-xs">
-            <dt className="font-medium text-slate-400">Odds</dt>
-            <dd className="rounded-md border border-amber-400/20 bg-amber-400/10 px-2 py-1 font-bold text-amber-400 tabular-nums">
-              {displayOdds}
-            </dd>
-          </div>
+          {selections.length > 0 ? selections.map((item, index) => {
+            const itemOdds = item.odds !== null && item.odds !== undefined && Number.isFinite(Number(item.odds)) && Number(item.odds) > 0
+              ? `@${formatOdds(item.odds)}`
+              : "—";
+            const units = Number(item.units ?? item.stakeUnits);
+            return (
+              <div key={`${item.selection || item.market}-${index}`} className="flex items-start justify-between gap-3 text-xs">
+                <div className="min-w-0">
+                  <dt className={`break-words font-extrabold leading-5 ${tierStyles.accent}`}>
+                    {item.selection || item.market}
+                  </dt>
+                  {item.market && item.market !== item.selection && (
+                    <dd className="mt-0.5 break-words text-[11px] leading-4 text-slate-500">{item.market}</dd>
+                  )}
+                </div>
+                <dd className="shrink-0 text-right">
+                  <span className="rounded-md border border-amber-400/20 bg-amber-400/10 px-2 py-1 font-bold text-amber-400 tabular-nums">{itemOdds}</span>
+                  {Number.isFinite(units) && units > 0 && (
+                    <span className="mt-1 block text-[11px] font-medium text-slate-400">{units} Unit{units === 1 ? "" : "s"}</span>
+                  )}
+                </dd>
+              </div>
+            );
+          }) : (
+            <>
+              <div className="flex items-start justify-between gap-4 text-xs">
+                <dt className="flex shrink-0 items-center gap-1.5 font-medium leading-5 text-slate-400">
+                  <Target className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+                  Market
+                </dt>
+                <dd className="min-w-0 break-words text-right font-semibold leading-5 text-slate-200">{market}</dd>
+              </div>
+              <div className="flex items-start justify-between gap-4 text-xs">
+                <dt className="flex shrink-0 items-center gap-1.5 font-medium leading-5 text-slate-400">
+                  <Award className="h-3.5 w-3.5 text-emerald-300" aria-hidden="true" />
+                  Selection
+                </dt>
+                <dd className={`min-w-0 break-words text-right font-extrabold leading-5 ${tierStyles.accent}`}>{selection}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 text-xs">
+                <dt className="font-medium text-slate-400">Odds</dt>
+                <dd className="rounded-md border border-amber-400/20 bg-amber-400/10 px-2 py-1 font-bold text-amber-400 tabular-nums">{displayOdds}</dd>
+              </div>
+            </>
+          )}
         </dl>
       </div>
 

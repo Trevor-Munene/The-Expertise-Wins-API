@@ -2,27 +2,27 @@
 
 const colorStyles = {
   emerald: {
-    card: "from-emerald-500/10 to-teal-500/5 border-emerald-500/20",
+    card: "border-slate-800/90",
     icon: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
     glow: "bg-emerald-400",
   },
   purple: {
-    card: "from-indigo-500/10 to-purple-500/5 border-indigo-500/20",
+    card: "border-slate-800/90",
     icon: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400",
     glow: "bg-indigo-400",
   },
   amber: {
-    card: "from-amber-500/10 to-yellow-500/5 border-amber-500/20",
+    card: "border-slate-800/90",
     icon: "bg-amber-500/10 border-amber-500/20 text-amber-400",
     glow: "bg-amber-400",
   },
   blue: {
-    card: "from-sky-500/10 to-blue-500/5 border-sky-500/20",
+    card: "border-slate-800/90",
     icon: "bg-sky-500/10 border-sky-500/20 text-sky-400",
     glow: "bg-sky-400",
   },
   rose: {
-    card: "from-rose-500/10 to-pink-500/5 border-rose-500/20",
+    card: "border-slate-800/90",
     icon: "bg-rose-500/10 border-rose-500/20 text-rose-400",
     glow: "bg-rose-400",
   },
@@ -58,12 +58,12 @@ export default function StatCard({
 
   return (
     <article
-      className={`relative flex h-full min-h-[150px] flex-col justify-between overflow-hidden rounded-2xl border bg-slate-900 bg-gradient-to-br p-5 shadow-lg shadow-black/10 transition-shadow duration-200 hover:shadow-xl hover:shadow-black/20 ${style.card}`}
+      className={`relative flex h-full min-h-[150px] flex-col justify-between overflow-hidden rounded-2xl border bg-slate-900 p-5 shadow-lg shadow-black/10 transition duration-300 hover:-translate-y-0.5 hover:border-emerald-400/20 hover:shadow-xl hover:shadow-black/20 ${style.card}`}
     >
       {/* Decorative glow */}
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute -right-12 -top-12 h-24 w-24 rounded-full opacity-20 blur-3xl ${style.glow}`}
+        className={`pointer-events-none absolute -right-12 -top-12 h-24 w-24 rounded-full opacity-10 blur-3xl ${style.glow}`}
       />
 
       {/* Card header */}

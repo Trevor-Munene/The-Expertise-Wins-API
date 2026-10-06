@@ -262,7 +262,7 @@ const main = async () => {
     const existingTip = existingTipsById.get(id);
     const update = { ...data };
 
-    if (existingTip && settledOutcomes.has(existingTip.outcome)) {
+    if (existingTip && settledOutcomes.has(existingTip.outcome) && existingTip.settledAt) {
       update.status = existingTip.status;
       update.outcome = existingTip.outcome;
       update.result = existingTip.result;
@@ -278,13 +278,25 @@ const main = async () => {
       update.outcome = "WON";
       update.result = update.result || "Historical result recorded as WON for baseline progress tracking.";
       update.settledAt = existingTip?.settledAt || new Date();
-    } else if (existingTip && existingTip.status !== "PENDING" && data.status === "PENDING") {
-      // Keep a tip that is already live from being reverted to PENDING by a
-      // re-sync of an unscraped dump record.
-      update.status = existingTip.status;
+    } else if (data.status === "PENDING" && data.outcome === "PENDING") {
+      // A pending source record must not inherit a stale settlement. Valid
+      // settlements are preserved above only when they carry settledAt.
+      update.status = "PENDING";
+      update.outcome = "PENDING";
+      update.result = data.result ?? null;
+      update.settledAt = null;
     }
 
-    const result = { ...data, status: settledOutcomes.has(data.outcome) ? "SETTLED" : "PUBLISHED" };
+    // Publish/re-publish this record on the sync day. Keep scrapedAt as the
+    // historical scrape date; publishedAt is the day the frontend serves it.
+    const publishedAt = new Date();
+    update.publishedAt = publishedAt;
+
+    const result = {
+      ...data,
+      status: settledOutcomes.has(data.outcome) ? "SETTLED" : "PUBLISHED",
+      publishedAt,
+    };
 
     return prisma.tip.upsert({
       where: { id },
@@ -292,15 +304,20 @@ const main = async () => {
       update,
     });
   }));
+  const publicationIds = records.map(({ id }) => id);
   const publications = records.map(({ id, data }) => ({
     tipId: id,
     productId: productsBySlug.get(getProductSlug(data)).id,
     status: "PUBLISHED",
-    publishedAt: data.scrapedAt ?? new Date(),
+    publishedAt: new Date(),
   }));
   const publicationResult = await prisma.tipPublication.createMany({
     data: publications,
     skipDuplicates: true,
+  });
+  await prisma.tipPublication.updateMany({
+    where: { tipId: { in: publicationIds }, status: "PUBLISHED" },
+    data: { publishedAt: new Date() },
   });
   console.log(`Created ${publicationResult.count} missing product publications.`);
 

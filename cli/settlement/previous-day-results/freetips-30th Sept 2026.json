@@ -24,16 +24,16 @@
         "odds": 1.83,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/betting/bet-of-the-day/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
   },
@@ -62,7 +62,7 @@
         "odds": 1.88,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -71,23 +71,23 @@
         "odds": 2.02,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/janice-tjen-vs-anhelina-kalinina-betting-tips-20260929-0025/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Tjen -1.5",
         "market": "Handicap Games",
         "odds": 2.02,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T02:43:25.415Z"
@@ -117,7 +117,7 @@
         "odds": 1.59,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -126,23 +126,23 @@
         "odds": 2.3,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/mayar-sherif-vs-polina-kudermetova-betting-tips-20260929-0027/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Kudermetova 2-0",
         "market": "Correct Score",
         "odds": 2.3,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T02:43:25.415Z"
@@ -172,16 +172,16 @@
         "odds": 1.32,
         "units": 5,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/south-korea-u23-vs-china-u23-preview-20260929-0005/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T02:43:25.415Z"
   },
@@ -210,7 +210,7 @@
         "odds": 1.91,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Bc.Game Sport",
@@ -219,7 +219,7 @@
         "odds": 1.91,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/f56557260105173714/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Planbet",
@@ -228,7 +228,7 @@
         "odds": 1.87,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/6a320699240918101555/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -237,37 +237,37 @@
         "odds": 2.6,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/basketball/new-zealand-breakers-vs-cairns-taipans-tips-20260929-0026/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Cairns Under 89.5",
         "market": "Team Total",
         "odds": 1.91,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Sam Mennenga",
         "market": "7+ Rebounds",
         "odds": 1.87,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "P. Jackson Cartwright",
         "market": "25+ Points",
         "odds": 2.6,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T02:43:25.415Z"
@@ -297,16 +297,16 @@
         "odds": 1.8,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/matteo-arnaldi-vs-rei-sakamoto-tips-live-stream-20260929-0045/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T02:43:25.416Z"
   },
@@ -335,7 +335,7 @@
         "odds": 1.83,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "10bet",
@@ -344,7 +344,7 @@
         "odds": 2.5,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/a82c3234190213122144/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Bc.Game Sport",
@@ -353,7 +353,7 @@
         "odds": 1.83,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/f56557260105173714/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "betway",
@@ -362,37 +362,37 @@
         "odds": 1.83,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/65974d59190114175723/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/cricket/india-vs-west-indies-2nd-odi-betting-tips-20260930-0001/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Alzarri Joseph",
         "market": "Take 2+ Wickets",
         "odds": 2.5,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Match Runs",
         "market": "Total Match Runs Over 592.5",
         "odds": 1.83,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Justin Greaves",
         "market": "Score Over 21.5 Runs",
         "odds": 1.83,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T02:43:25.416Z"
@@ -422,16 +422,16 @@
         "odds": 2.3,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/timor-leste-vs-cambodia-tips-20260928-0028/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T02:43:25.416Z"
   },
@@ -460,7 +460,7 @@
         "odds": 3.2,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Bc.Game Sport",
@@ -469,7 +469,7 @@
         "odds": 1.87,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/f56557260105173714/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Planbet",
@@ -478,7 +478,7 @@
         "odds": 1.87,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/6a320699240918101555/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "1xBet",
@@ -487,37 +487,37 @@
         "odds": 11,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/basketball/sydney-kings-vs-brisbane-bullets-tips-20260929-0028/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Brisbane +6.5",
         "market": "Line",
         "odds": 1.87,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Over 194.5",
         "market": "Game Total",
         "odds": 1.87,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "M McKinnon 10+",
         "market": "Rebounds",
         "odds": 11,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T09:14:37.971Z"
@@ -547,16 +547,16 @@
         "odds": 1.85,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/team-vitality-vs-loud-betting-tips-20260929-0031/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T09:14:37.971Z"
   },
@@ -585,16 +585,16 @@
         "odds": 1.89,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/uzbekistan-u23-vs-japan-u23-preview-20260929-0004/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T09:14:37.971Z"
   },
@@ -623,7 +623,7 @@
         "odds": 1.73,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -632,23 +632,23 @@
         "odds": 3,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/nuno-borges-vs-novak-djokovic-betting-tips-live-stream-20260929-0044/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Nuno Borges Win",
         "market": "Set Betting",
         "odds": 3,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T09:14:37.971Z"
@@ -678,16 +678,16 @@
         "odds": 1.85,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/betboom-team-vs-og-betting-tips-20260929-0039/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T09:14:37.971Z"
   },
@@ -716,16 +716,16 @@
         "odds": 3.3,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/team-yandex-vs-mouz-betting-tips-20260929-0041/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T09:14:37.971Z"
   },
@@ -754,16 +754,16 @@
         "odds": 1.7,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/hong-kong-vs-brunei-tips-20260928-0027/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T09:14:37.971Z"
   },
@@ -792,7 +792,7 @@
         "odds": 1.83,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "1xBet",
@@ -801,7 +801,7 @@
         "odds": 1.96,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "10bet",
@@ -810,7 +810,7 @@
         "odds": 2,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/a82c3234190213122144/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "betway",
@@ -819,37 +819,37 @@
         "odds": 2,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/65974d59190114175723/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/cricket/south-africa-vs-australia-3rd-odi-betting-tips-20260930-0002/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "South Africa Win",
         "market": "Result",
         "odds": 1.96,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "David Miller",
         "market": "Score 30+ Runs",
         "odds": 2,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Keshav Maharaj",
         "market": "Take Over 1.5 Wickets",
         "odds": 2,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T14:49:18.045Z"
@@ -879,16 +879,16 @@
         "odds": 1.65,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/100-thieves-vs-fut-esports-betting-tips-20260929-0036/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T14:49:18.045Z"
   },
@@ -917,16 +917,16 @@
         "odds": 1.59,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/eritrea-vs-south-africa-preview-20260929-0006/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T14:49:18.045Z"
   },
@@ -955,16 +955,16 @@
         "odds": 1.9,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/basketball/paok-vs-manresa-live-stream-20260929-0042/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T14:49:18.045Z"
   },
@@ -993,7 +993,7 @@
         "odds": 1.52,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1002,7 +1002,7 @@
         "odds": 1.49,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1011,30 +1011,30 @@
         "odds": 1.86,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/ice-hockey/lokomotiv-yaroslavl-vs-sibir-novosibirsk-khl-predictions-betting-tips-20260929-0021/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Lokomotiv",
         "market": "To Score First",
         "odds": 1.49,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Under 5.0",
         "market": "Game Total",
         "odds": 1.86,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T14:49:18.045Z"
@@ -1064,16 +1064,16 @@
         "odds": 1.58,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/level-up-vs-xtreme-gaming-betting-tips-20260930-0010/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
   },
@@ -1102,7 +1102,7 @@
         "odds": 1.85,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1111,23 +1111,23 @@
         "odds": 3.8,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/team-nemesis-vs-natus-vincere-betting-tips-20260930-0012/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Team Nemesis To Win",
         "market": "Moneyline",
         "odds": 3.8,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
@@ -1157,7 +1157,7 @@
         "odds": 1.9,
         "units": 4,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1166,23 +1166,23 @@
         "odds": 1.83,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/baseball/philadelphia-phillies-at-atlanta-braves-mlb-betting-tips-20260930-0007/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Over 7.0",
         "market": "Total Runs",
         "odds": 1.83,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
@@ -1212,16 +1212,16 @@
         "odds": 1.9,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/basketball/panathinaikos-vs-asvel-live-stream-20260929-0040/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
   },
@@ -1250,16 +1250,16 @@
         "odds": 1.72,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/bahrain-vs-yemen-predictions-20260928-0042/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
   },
@@ -1288,7 +1288,7 @@
         "odds": 1.9,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1297,7 +1297,7 @@
         "odds": 6.5,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1306,30 +1306,30 @@
         "odds": 3.2,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/uae-vs-qatar-predictions-20260929-0001/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "1-1",
         "market": "Correct Score",
         "odds": 6.5,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Draw",
         "market": "Full Time Result",
         "odds": 3.2,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
@@ -1359,7 +1359,7 @@
         "odds": 2.45,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1368,23 +1368,23 @@
         "odds": 1.9,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/baseball/chicago-white-sox-at-houston-astros-mlb-betting-tips-20260930-0008/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Over 7.5",
         "market": "Total Runs",
         "odds": 1.9,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
@@ -1414,7 +1414,7 @@
         "odds": 1.7,
         "units": 4,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1423,23 +1423,23 @@
         "odds": 1.8,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/baseball/boston-red-sox-at-new-york-yankees-mlb-betting-tips-20260930-0009/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Over 6.5",
         "market": "Total Runs",
         "odds": 1.8,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
@@ -1469,7 +1469,7 @@
         "odds": 1.66,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1478,23 +1478,23 @@
         "odds": 6.5,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/argentina-vs-bolivia-tips-20260928-0043/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Argentina Win 3-0",
         "market": "Correct Score",
         "odds": 6.5,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
@@ -1524,7 +1524,7 @@
         "odds": 1.7,
         "units": 4,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1533,23 +1533,23 @@
         "odds": 1.95,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/baseball/chicago-cubs-at-san-diego-padres-mlb-betting-tips-20260930-0014/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Over 7.5",
         "market": "Total Runs",
         "odds": 1.95,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
@@ -1579,7 +1579,7 @@
         "odds": 2.4,
         "units": 4,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1588,23 +1588,23 @@
         "odds": 1.8,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/ice-hockey/los-angeles-kings-at-colorado-avalanche-nhl-betting-tips-20260925-0021/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Over 5.5",
         "market": "Total Goals",
         "odds": 1.8,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
@@ -1634,7 +1634,7 @@
         "odds": 1.63,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1643,23 +1643,23 @@
         "odds": 1.48,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/yuliia-starodubtseva-vs-alina-charaeva-betting-tips-20260930-0024/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Over 19.5",
         "market": "Total Games",
         "odds": 1.48,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.111Z"
@@ -1689,7 +1689,7 @@
         "odds": 1.44,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1698,7 +1698,7 @@
         "odds": 1.68,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1707,30 +1707,30 @@
         "odds": 1.58,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/paula-badosa-vs-daria-kasatkina-betting-tips-20260930-0025/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Over 19.5",
         "market": "Total Games",
         "odds": 1.68,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Badosa -2.5",
         "market": "Handicap Games",
         "odds": 1.58,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T14:49:18.046Z"
@@ -1760,7 +1760,7 @@
         "odds": 10,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1769,7 +1769,7 @@
         "odds": 19,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Fairpari",
@@ -1778,7 +1778,7 @@
         "odds": 26,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/75573b4d240807125144/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Shuffle",
@@ -1787,37 +1787,37 @@
         "odds": 29,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/10c4684d240703114815/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/golf/alfred-dunhill-links-championship-tips-20260929-0032/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Alex Noren",
         "market": "Each-Way",
         "odds": 19,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Lucas Herbert",
         "market": "Each-Way",
         "odds": 26,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Jacob Olesen",
         "market": "Each-Way",
         "odds": 29,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T14:49:18.046Z"
@@ -1847,7 +1847,7 @@
         "odds": 1.68,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1856,7 +1856,7 @@
         "odds": 1.44,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1865,30 +1865,30 @@
         "odds": 1.58,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/paula-badosa-vs-daria-kasatkina-betting-tips-20260930-0025/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Paula Badosa",
         "market": "Match Winner",
         "odds": 1.44,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Badosa -2.5",
         "market": "Handicap Games",
         "odds": 1.58,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.126Z"
@@ -1918,7 +1918,7 @@
         "odds": 29,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/10c4684d240703114815/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Fairpari",
@@ -1927,7 +1927,7 @@
         "odds": 26,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/75573b4d240807125144/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -1936,7 +1936,7 @@
         "odds": 19,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "1xBet",
@@ -1945,37 +1945,37 @@
         "odds": 10,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/golf/alfred-dunhill-links-championship-tips-20260929-0032/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Lucas Herbert",
         "market": "Each-Way",
         "odds": 26,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Alex Noren",
         "market": "Each-Way",
         "odds": 19,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Tommy Fleetwood",
         "market": "Each-Way",
         "odds": 10,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.126Z"
@@ -2005,16 +2005,16 @@
         "odds": 1.91,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/rugby-union/otago-vs-auckland-betting-tips-20260930-0003/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T16:56:40.126Z"
   },
@@ -2043,7 +2043,7 @@
         "odds": 1.5,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/f56557260105173714/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -2052,7 +2052,7 @@
         "odds": 1.91,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "1xBet",
@@ -2061,30 +2061,30 @@
         "odds": 1.7,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/basketball/tasmania-jackjumpers-vs-melbourne-united-tips-20260930-0005/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Melbourne -4.5",
         "market": "Handicap/Line",
         "odds": 1.91,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Daviid Johnson",
         "market": "3+ Threes",
         "odds": 1.7,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.126Z"
@@ -2114,16 +2114,16 @@
         "odds": 1.8,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/tyloo-vs-team-liquid-betting-tips-20260930-0032/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [],
     "scrapedAt": "2026-09-30T16:56:40.126Z"
   },
@@ -2152,7 +2152,7 @@
         "odds": 61,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/c7c0255e200817173706/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "1xBet",
@@ -2161,7 +2161,7 @@
         "odds": 23,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Stake.com",
@@ -2170,7 +2170,7 @@
         "odds": 19,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win"
       },
       {
         "bookmaker": "Shuffle Sport (MAXBONUS) FT",
@@ -2179,37 +2179,37 @@
         "odds": 13,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/10c4684d240703114815/",
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/golf/bank-of-utah-championship-tips-20260929-0035/",
-    "status": "pending",
-    "result": null,
-    "outcome": null,
+    "status": "settled",
+    "result": "WIN",
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Matt Wallace",
         "market": "Each-Way",
         "odds": 23,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Ben James",
         "market": "Each-Way",
         "odds": 19,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       },
       {
         "selection": "Jackson Koivun",
         "market": "Each-Way",
         "odds": 13,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win"
       }
     ],
     "scrapedAt": "2026-09-30T16:56:40.126Z"

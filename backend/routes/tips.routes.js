@@ -13,20 +13,12 @@ tipsRouter.get("/free", tipsController.getFreeTips);
 tipsRouter.get("/vip", authenticateJWT, tipsController.getVipTips);
 tipsRouter.get("/maxbet", authenticateJWT, tipsController.getMaxbetTips);
 
-// List archived tips for guests and logged in members
+// Public historical record across all active tiers; current VIP lists remain gated.
 tipsRouter.get("/archive", optionalAuthenticateJWT, tipsController.getArchive);
 
 // Get a single tip, registered after named routes so they match first
 tipsRouter.get("/:id", optionalAuthenticateJWT, tipsController.getTipById);
 
-// Create and update tips
-tipsRouter.post("/", authenticateJWT, tipsController.createTip);
-tipsRouter.patch("/:id", authenticateJWT, tipsController.updateTip);
-
-// Update a tip's result
-tipsRouter.patch("/:id/result", authenticateJWT, tipsController.updateTipResult);
-
-// Cancel a tip
-tipsRouter.delete("/:id", authenticateJWT, tipsController.deleteTip);
-
+// Mutations are intentionally not exposed on the public tips router. Use the
+// admin CLI/operator endpoints under /api/admin/tips.
 module.exports = tipsRouter;

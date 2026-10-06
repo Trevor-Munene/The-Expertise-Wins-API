@@ -545,7 +545,7 @@ export default function ProfilePage() {
         className={`${panelStyles} flex flex-col justify-between gap-6 shadow-xl lg:flex-row lg:items-center`}
       >
         <div className="flex min-w-0 items-center gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-400 to-teal-400 text-2xl font-bold text-slate-950">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-400 text-2xl font-bold text-slate-950">
             {user.avatarUrl && !avatarFailed ? (
               <img
                 src={user.avatarUrl}
@@ -565,7 +565,7 @@ export default function ProfilePage() {
               <h1 className="break-words text-xl font-black text-slate-100 sm:text-2xl">
                 {displayName}
               </h1>
-              <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-bold text-cyan-400">
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-400">
                 {user.role || "USER"}
               </span>
             </div>
@@ -599,7 +599,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={uploadingAvatar || !avatarFile}
-              className={`${buttonStyles} bg-cyan-400 text-slate-950 hover:bg-cyan-300`}
+              className={`${buttonStyles} bg-emerald-400 text-slate-950 hover:bg-emerald-300`}
             >
               <Upload className="h-4 w-4" aria-hidden="true" />
               {uploadingAvatar ? "Uploading…" : "Upload"}
@@ -638,7 +638,7 @@ export default function ProfilePage() {
         <section className={`${panelStyles} space-y-4`}>
           <h2 className="flex items-center gap-2 text-base font-bold text-slate-100">
             <ShieldCheck
-              className="h-5 w-5 shrink-0 text-cyan-400"
+              className="h-5 w-5 shrink-0 text-emerald-400"
               aria-hidden="true"
             />
             Active Subscriptions &amp; Access
@@ -649,7 +649,7 @@ export default function ProfilePage() {
               Subscription information is currently unavailable.
             </p>
           ) : activeSub ? (
-            <div className="space-y-4 rounded-xl border border-cyan-500/20 bg-dark-bg p-4">
+            <div className="space-y-4 rounded-xl border border-emerald-500/20 bg-dark-bg p-4">
               <dl className="space-y-3 text-sm">
                 <DetailRow
                   label="Plan tier"
@@ -694,7 +694,7 @@ export default function ProfilePage() {
                   onClick={() =>
                     handleSubscriptionAction(activeSubId, "renew")
                   }
-                  className={`${buttonStyles} border border-cyan-500/20 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20`}
+                  className={`${buttonStyles} border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20`}
                 >
                   {subscriptionAction?.id === activeSubId &&
                   subscriptionAction?.action === "renew"
@@ -900,7 +900,7 @@ export default function ProfilePage() {
                             onClick={() =>
                               handleSubscriptionAction(subId, "renew")
                             }
-                            className={`${buttonStyles} border border-cyan-500/20 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20`}
+                            className={`${buttonStyles} border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20`}
                           >
                             {subscriptionAction?.id === subId &&
                             subscriptionAction?.action === "renew"

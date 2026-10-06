@@ -61,7 +61,7 @@ const sections = [
     id: "subscriptions",
     title: "Premium access and subscriptions",
     icon: Lock,
-    iconClass: "bg-cyan-500/10 text-cyan-300",
+    iconClass: "bg-emerald-500/10 text-emerald-300",
     paragraphs: [
       "Premium products and subscription access may provide additional sports, markets, selections, content, or community access.",
       "Access is subject to the product and subscription terms presented at the time of purchase. Where access is issued manually, payment may need to be verified before an access token or subscription is provided.",
