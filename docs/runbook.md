@@ -265,7 +265,7 @@ Dusan Vlahovic Anytime Goalscorer @2.10 - 2 Units ❎❎
 npm run settlement
 ```
 
-By default this uses today's UTC date and requires the exact matching dated dump. It does not fall back to the latest available dump. Paste the results into the template first.
+By default this settles **yesterday's** dated dump and requires that exact file. It does not fall back to the latest available dump. Paste the results into the template first, or pass an explicit `--date=YYYY-MM-DD`.
 
 To be explicit:
 
@@ -301,8 +301,10 @@ In the printed report:
 |---|---|
 | A tip's line shows `✅✅` | **win** |
 | A tip's line shows `❎❎` | **lose** |
-| A **free** football tip is **not present** in your pasted text | **loss** (never marked as won is accounted as a loss on your end) |
-| A **paid** tip (featured or non-football) has no marker | left **unsettled** (needs an explicit marker) |
+| An unmarked **free-channel** selection | **win** (the default when no marker is present) |
+| An unmarked **paid-group** selection (featured or non-football) | **loss** (the default when no marker is present) |
+
+> Settlement defaults to **yesterday's** dated dump. Pass an explicit `--date=YYYY-MM-DD` to settle another day.
 
 > ⚠️ **Match the text carefully.** A marker is matched by selection text, falling back to the printed odds and stake on the same line, so a selection reworded between the dump and the channel still settles. The matcher checks every occurrence of the team name, so a fixture sharing a name with an earlier card is matched against the right block.
 
@@ -337,6 +339,7 @@ This is deliberate: **a tip is only a win if you mark it as won in the public ch
 ```bash
 npm run --prefix cli test                 # freetips + contract + settlement
 npm run --prefix cli test:settlement      # settlement layer only
+npm run --prefix backend test             # backend service logic (mocked persistence; no DB required)
 ```
 
 The settlement tests run against a self-contained throwaway dump and clean up after themselves.
@@ -384,6 +387,6 @@ These are **not** automated in the current workflow:
 * direct Telegram bot publishing
 * automatic result verification from live scores
 
-Also not yet built: server-side role/ownership enforcement on tip mutations, an automated backend test suite, and UI-to-API integration tests.
+The public `/api/tips` router is read-only. Admin curation routes require an active admin JWT and the admin UI uses those protected routes; AdminService independently checks the actor before mutation. Daily tip source-of-truth changes should be made through CLI dumps, reviewed, then synced. Backend service-logic tests run with `npm run --prefix backend test`; operator real-user and database-backed workflows remain manual acceptance.
 
 The backend and frontend exist in this repository; see [`packages/backend.md`](./packages/backend.md) and [`packages/frontend.md`](./packages/frontend.md) for setup and current limitations. See [`roadmap.md`](./roadmap.md) for planned work.

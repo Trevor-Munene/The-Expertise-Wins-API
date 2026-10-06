@@ -91,6 +91,21 @@ const createError = (message, statusCode = 400) => {
   return error;
 };
 
+// Keep the service mutation boundary safe even when methods are called outside
+// Express route middleware (CLI tools/tests/internal jobs).
+const requireActiveAdmin = async (userId) => {
+  if (!userId || typeof userId !== "string") {
+    throw createError("Authentication required.", 401);
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true, status: true },
+  });
+  if (!user || user.status !== "ACTIVE") throw createError("Active account required.", 403);
+  if (user.role !== "ADMIN") throw createError("Admin access required.", 403);
+  return user;
+};
+
 // Parse page and limit from the query string
 const parsePagination = (query = {}) => {
   const page = Math.max(Number.parseInt(query.page, 10) || 1, 1);
@@ -139,7 +154,8 @@ const getUserById = async (userId) => {
 };
 
 // Update allowed user fields and check unique values first
-const updateUser = async (userId, userData = {}) => {
+const updateUser = async (userId, userData = {}, actorId) => {
+  await requireActiveAdmin(actorId);
   const allowedFields = ["email", "username", "firstName", "lastName", "telegramUsername", "telegramUserId", "role", "status"];
   const data = {};
   for (const field of allowedFields) {
@@ -167,7 +183,8 @@ const updateUser = async (userId, userData = {}) => {
 };
 
 // Update a user's status after validating it
-const updateUserStatus = async (userId, status) => {
+const updateUserStatus = async (userId, status, actorId) => {
+  await requireActiveAdmin(actorId);
   const validStatuses = ["ACTIVE", "SUSPENDED", "BANNED", "PENDING"];
   if (!validStatuses.includes(status)) throw createError("Invalid user status.");
   const user = await prisma.user.update({ where: { id: userId }, data: { status }, select: USER_SELECT });
@@ -175,7 +192,8 @@ const updateUserStatus = async (userId, status) => {
 };
 
 // Create a tip from allowed fields and check required fields
-const createTip = async (tipData = {}, userId) => {
+const createTip = async (tipData = {}, userId, actorId = userId) => {
+  await requireActiveAdmin(actorId);
   const allowedFields = [
     "source",
     "externalId",
@@ -245,7 +263,8 @@ const getTipById = async (tipId) => {
 };
 
 // Update allowed tip fields
-const updateTip = async (tipId, tipData = {}) => {
+const updateTip = async (tipId, tipData = {}, actorId) => {
+  await requireActiveAdmin(actorId);
   const allowedFields = [
     "source",
     "externalId",
@@ -283,7 +302,8 @@ const updateTip = async (tipId, tipData = {}) => {
 };
 
 // Soft delete a tip by marking it cancelled
-const deleteTip = async (tipId) => {
+const deleteTip = async (tipId, actorId) => {
+  await requireActiveAdmin(actorId);
   return prisma.tip.update({
     where: { id: tipId },
     data: { status: "CANCELLED", outcome: "CANCELLED", settledAt: new Date() },
@@ -298,7 +318,8 @@ const validateTipIds = (ids) => {
 };
 
 // Update allowed fields on many tips
-const updateTipsBulk = async (ids, data) => {
+const updateTipsBulk = async (ids, data, actorId) => {
+  await requireActiveAdmin(actorId);
   const tipIds = validateTipIds(ids);
   const allowedFields = ["status", "result", "outcome", "stakeUnits", "odds", "verdict", "preview", "previewTitle", "confidenceIndex", "predictedScore"];
   const updateData = {};
@@ -311,7 +332,8 @@ const updateTipsBulk = async (ids, data) => {
 };
 
 // Publish a single tip and record who published it
-const publishTip = async (tipId, userId) => {
+const publishTip = async (tipId, userId, actorId = userId) => {
+  await requireActiveAdmin(actorId);
   return prisma.tip.update({
     where: { id: tipId },
     data: { status: "PUBLISHED", publishedAt: new Date(), publishedById: userId },
@@ -320,7 +342,8 @@ const publishTip = async (tipId, userId) => {
 };
 
 // Publish many tips and record who published them
-const publishTipsBulk = async (ids, userId) => {
+const publishTipsBulk = async (ids, userId, actorId = userId) => {
+  await requireActiveAdmin(actorId);
   const tipIds = validateTipIds(ids);
   const publishedAt = new Date();
   const result = await prisma.tip.updateMany({
@@ -331,19 +354,22 @@ const publishTipsBulk = async (ids, userId) => {
 };
 
 // Unpublish a single tip by locking it
-const unpublishTip = async (tipId) => {
+const unpublishTip = async (tipId, actorId) => {
+  await requireActiveAdmin(actorId);
   return prisma.tip.update({ where: { id: tipId }, data: { status: "LOCKED" }, select: TIP_SELECT });
 };
 
 // Unpublish many tips by locking them
-const unpublishTipsBulk = async (ids) => {
+const unpublishTipsBulk = async (ids, actorId) => {
+  await requireActiveAdmin(actorId);
   const tipIds = validateTipIds(ids);
   const result = await prisma.tip.updateMany({ where: { id: { in: tipIds } }, data: { status: "LOCKED" } });
   return { message: "Tips unpublished successfully.", updated: result.count };
 };
 
 // Settle a single tip with a validated outcome
-const settleTip = async (tipId, outcome, result) => {
+const settleTip = async (tipId, outcome, result, actorId) => {
+  await requireActiveAdmin(actorId);
   const validOutcomes = ["WON", "LOST", "VOID", "PUSH", "HALF_WON", "HALF_LOST", "CANCELLED"];
   if (!validOutcomes.includes(outcome)) throw createError("Invalid tip outcome.");
   return prisma.tip.update({
@@ -354,7 +380,8 @@ const settleTip = async (tipId, outcome, result) => {
 };
 
 // Settle many tips with a validated outcome
-const settleTipsBulk = async (ids, outcome, result) => {
+const settleTipsBulk = async (ids, outcome, result, actorId) => {
+  await requireActiveAdmin(actorId);
   const tipIds = validateTipIds(ids);
   const validOutcomes = ["WON", "LOST", "VOID", "PUSH", "HALF_WON", "HALF_LOST", "CANCELLED"];
   if (!validOutcomes.includes(outcome)) throw createError("Invalid tip outcome.");
@@ -365,7 +392,8 @@ const settleTipsBulk = async (ids, outcome, result) => {
 };
 
 // Cancel a single tip
-const cancelTip = async (tipId) => {
+const cancelTip = async (tipId, actorId) => {
+  await requireActiveAdmin(actorId);
   return prisma.tip.update({
     where: { id: tipId },
     data: { status: "CANCELLED", outcome: "CANCELLED", settledAt: new Date() },
@@ -374,14 +402,16 @@ const cancelTip = async (tipId) => {
 };
 
 // Cancel many tips
-const cancelTipsBulk = async (ids) => {
+const cancelTipsBulk = async (ids, actorId) => {
+  await requireActiveAdmin(actorId);
   const tipIds = validateTipIds(ids);
   const result = await prisma.tip.updateMany({ where: { id: { in: tipIds } }, data: { status: "CANCELLED", outcome: "CANCELLED", settledAt: new Date() } });
   return { message: "Tips cancelled successfully.", updated: result.count };
 };
 
 // Publish a tip to an active product, creating or reviving the publication
-const publishTipToProduct = async (tipId, productId) => {
+const publishTipToProduct = async (tipId, productId, actorId) => {
+  await requireActiveAdmin(actorId);
   const [tip, product] = await Promise.all([
     prisma.tip.findUnique({ where: { id: tipId }, select: { id: true } }),
     prisma.product.findUnique({ where: { id: productId }, select: { id: true, status: true } }),
@@ -398,7 +428,8 @@ const publishTipToProduct = async (tipId, productId) => {
 };
 
 // Mark a tip publication as unpublished
-const removeTipPublication = async (tipId, productId) => {
+const removeTipPublication = async (tipId, productId, actorId) => {
+  await requireActiveAdmin(actorId);
   const publication = await prisma.tipPublication.findUnique({ where: { tipId_productId: { tipId, productId } } });
   if (!publication) throw createError("Tip publication not found.", 404);
   return prisma.tipPublication.update({
@@ -463,7 +494,8 @@ const resolveAssignedUser = async (assignedUserId) => {
 
 // Create a single access token for an active product and a registered user.
 // The raw token is returned exactly once so the admin can pass it on.
-const createAccessToken = async (tokenData = {}) => {
+const createAccessToken = async (tokenData = {}, actorId) => {
+  await requireActiveAdmin(actorId);
   const { productId, expiresAt, notes, assignedUserId } = tokenData;
   if (!productId) throw createError("Product ID is required.");
   const product = await prisma.product.findUnique({ where: { id: productId }, select: { id: true, status: true } });
@@ -483,7 +515,8 @@ const createAccessToken = async (tokenData = {}) => {
 
 // Create many access tokens for an active product, all assigned to the same
 // registered user.
-const createAccessTokensBulk = async (tokenData = {}) => {
+const createAccessTokensBulk = async (tokenData = {}, actorId) => {
+  await requireActiveAdmin(actorId);
   const { productId, count, expiresAt, notes, assignedUserId } = tokenData;
   const tokenCount = Number.parseInt(count, 10);
   if (!productId) throw createError("Product ID is required.");
@@ -530,12 +563,16 @@ const getAccessTokenById = async (accessTokenId) => {
 // Update allowed access token fields. The assigned user is deliberately not
 // reassignable here: a token always belongs to the user it was issued to, so
 // ownership can only be fixed at creation time.
-const updateAccessToken = async (accessTokenId, tokenData = {}) => {
+const updateAccessToken = async (accessTokenId, tokenData = {}, actorId) => {
+  await requireActiveAdmin(actorId);
   if (tokenData.assignedUserId !== undefined) {
     throw createError("An access token cannot be reassigned to a different user.", 400);
   }
 
   const allowedFields = ["notes", "status", "expiresAt"];
+  if (tokenData.status !== undefined && !["ACTIVE", "REVOKED", "EXPIRED"].includes(tokenData.status)) {
+    throw createError("Invalid access token status.", 400);
+  }
   const data = {};
   for (const field of allowedFields) {
     if (tokenData[field] !== undefined) data[field] = field === "expiresAt" ? parseExpiry(tokenData[field]) : tokenData[field];
@@ -546,13 +583,25 @@ const updateAccessToken = async (accessTokenId, tokenData = {}) => {
 };
 
 // Revoke an access token
-const revokeAccessToken = async (accessTokenId) => {
+const revokeAccessToken = async (accessTokenId, actorId) => {
+  await requireActiveAdmin(actorId);
   const accessToken = await prisma.accessToken.update({ where: { id: accessTokenId }, data: { status: "REVOKED" }, select: ACCESS_TOKEN_SELECT });
   return formatAccessToken(accessToken);
 };
 
+// Permanently delete an access token. This is distinct from revocation, which
+// preserves the token record for audit/history purposes.
+const deleteAccessToken = async (accessTokenId, actorId) => {
+  await requireActiveAdmin(actorId);
+  const existing = await prisma.accessToken.findUnique({ where: { id: accessTokenId }, select: { id: true } });
+  if (!existing) throw createError("Access token not found.", 404);
+  await prisma.accessToken.delete({ where: { id: accessTokenId } });
+  return { message: "Access token deleted successfully.", id: accessTokenId };
+};
+
 // Extend an access token from its current expiry or from now
-const extendAccessToken = async (accessTokenId, days) => {
+const extendAccessToken = async (accessTokenId, days, actorId) => {
+  await requireActiveAdmin(actorId);
   const numberOfDays = Number.parseInt(days, 10);
   if (!Number.isInteger(numberOfDays) || numberOfDays <= 0) throw createError("Days must be a positive integer.");
   const accessToken = await prisma.accessToken.findUnique({ where: { id: accessTokenId }, select: { id: true, status: true, expiresAt: true } });
@@ -571,7 +620,8 @@ const extendAccessToken = async (accessTokenId, days) => {
 };
 
 // Create a product after checking required fields
-const createProduct = async (productData = {}) => {
+const createProduct = async (productData = {}, actorId) => {
+  await requireActiveAdmin(actorId);
   const { name, slug, description, type, status, isPublic } = productData;
   if (!name || !slug || !type) throw createError("Name, slug, and type are required.");
   return prisma.product.create({
@@ -599,7 +649,8 @@ const getProductById = async (productId) => {
 };
 
 // Update allowed product fields
-const updateProduct = async (productId, productData = {}) => {
+const updateProduct = async (productId, productData = {}, actorId) => {
+  await requireActiveAdmin(actorId);
   const allowedFields = ["name", "slug", "description", "type", "status", "isPublic"];
   const data = {};
   for (const field of allowedFields) {
@@ -610,7 +661,8 @@ const updateProduct = async (productId, productData = {}) => {
 };
 
 // Update a product's status after validating it
-const updateProductStatus = async (productId, status) => {
+const updateProductStatus = async (productId, status, actorId) => {
+  await requireActiveAdmin(actorId);
   const validStatuses = ["ACTIVE", "INACTIVE", "ARCHIVED"];
   if (!validStatuses.includes(status)) throw createError("Invalid product status.");
   return prisma.product.update({ where: { id: productId }, data: { status }, select: PRODUCT_SELECT });
@@ -643,6 +695,7 @@ module.exports = {
   getAccessTokenById,
   updateAccessToken,
   revokeAccessToken,
+  deleteAccessToken,
   extendAccessToken,
   createProduct,
   getProducts,

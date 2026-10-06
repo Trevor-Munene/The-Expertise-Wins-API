@@ -136,10 +136,10 @@ With Docker Compose, `npm run sync` and `npm run sync:prod` also run inside the 
 | Area | Current purpose |
 |---|---|
 | Authentication | Registration, login, profiles, password changes, and avatar upload |
-| Tips | Public Free tips, entitlement-gated VIP/MaxBet tips, and a tier-aware historical archive. Admins can read every tier. |
+| Tips | Public Free tips, entitlement-gated VIP/MaxBet tips, and a tier-aware historical archive. Public and admin tips listings are read-only; CLI dump → review → sync is the only tip write path. |
 | Statistics | Win rate, ROI, odds, sport/market/competition breakdowns, time-filtered analytics, and admin-only application usage |
 | Products and access | Product tiers plus access tokens, which are **always issued by an admin to a registered user** |
-| Administration | User, tip, publication, access-token, and product management; admin API routes enforce the `ADMIN` role |
+| Administration | User, access-token, and product management; admin routes and mutation services enforce an active `ADMIN` role. Daily tip production/settlement remains CLI dump → review → sync. |
 
 Subscription-style access is represented by access tokens; the Prisma schema has no separate `Subscription` model.
 
@@ -150,6 +150,8 @@ Tokens are issued **only by an admin** and **only for a specific registered, act
 - Creating or bulk-creating a token requires a product and an assigned user; the API rejects a missing, unknown, or suspended user.
 - A token can only be redeemed by the account it was issued to, while signed in. Anonymous redemption is no longer supported.
 - A token's owner cannot be changed after creation, so access cannot be transferred.
+- Revoke disables a token while retaining its record; `DELETE /api/admin/subscription-tokens/:id` permanently deletes it.
+- Run backend service-logic tests with `npm run --prefix backend test`; tests use mocked persistence and do not require PostgreSQL.
 
 ## Current Readiness
 
@@ -158,16 +160,16 @@ Verified locally on **2026-10-04** with a host-based stack (Next.js dev server +
 | Application | Current status | Boundaries |
 |---|---|---|
 | CLI | Scrape/normalize/export, card formatting, settlement, and database sync are implemented and tested. | Writes JSON locally; it does not publish to Telegram. Settlement is manual — results are pasted as markers. |
-| Backend API | Connected to a migrated, seeded PostgreSQL database. All API routes return HTTP 200 with live data; admin login issues a working JWT. | Tip mutations still lack role/ownership enforcement, and there is no backend test script. |
-| Frontend | Next.js lint passes with one `<img>` warning. Login, tips, archive, stats, profile, products, and all four admin pages were verified in a headless browser rendering live database values with no console errors. | Admin role checks are client-side only. UI-to-API integration is verified manually, not by automated tests. |
+| Backend API | Public tips reads, admin authorization, token revoke/delete, and service-logic tests with mocked persistence. | `npm run --prefix backend test` does not require a database; perform real-user/database-backed acceptance manually. |
+| Frontend | Next.js site and admin UI are available; client-side role checks are presentation only. | UI-to-API workflows and real-user behavior remain operator-tested; no frontend integration suite is included. |
 
 Authentication, data retrieval, settlement, token issuance, and admin workflows were confirmed working end-to-end on 2026-10-04. This is a local development baseline, not production approval.
 
 ### Operational Notes
 
-- **Data:** the dumps in `cli/settlement/previous-day-results/` hold **293 tip records** across 10 days, which map to 293 rows in the database.
-- **Settlement flows to the database.** `npm run settlement` records results in the dump and `npm run sync` publishes them, so win rate and ROI update automatically.
-- **Paid tips never default to a loss.** Only non-featured football tips become losses when unmarked; featured and non-football tips stay unsettled so a gap in your results text is never recorded as a false loss.
+- **Data:** the dumps in `cli/settlement/previous-day-results/` hold **325 tip records** across 11 days, which map to 325 rows in the database. Every dumped record is currently settled as a win, so the published win rate and ROI reflect those results.
+- **Settlement flows to the database.** `npm run settlement` records results in the dump (defaulting to yesterday's file, or an explicit `--date`) and `npm run sync` publishes them, so win rate and ROI update automatically.
+- **Settlement defaults are channel-aware.** An unmarked free-channel pick settles as a win; an unmarked paid-group pick settles as a loss. Explicit `✅✅` / `❎❎` markers always override the default.
 - **Empty "today" views fall back.** Tip and archive lists return today when today's scrape has run, and otherwise the most recent day that has records, so the pages are never blank before the daily scrape. The tips page labels when it is showing an earlier day.
 - **Admins see every tier.** The tips page loads Free, VIP, and MaxBet for an admin account; the public tips list intentionally exposes only the public (Free) product.
 - **Syncing is safe and idempotent.** `npm run sync` validates every dump before writing, masks the database password in its output, and refuses to run against a half-configured environment. Running it repeatedly never duplicates tips or discards settled results.

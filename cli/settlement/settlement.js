@@ -99,9 +99,7 @@ function checkTipOutcome(selection, odds, stakeUnits, blocks, defaultOutcome = n
 
 // A tip is "free" only when it is a non-featured football listing. Paid tiers
 // (featured/Bet of the Day, and every non-football sport such as basketball,
-// tennis, ice hockey) must never be auto-marked as a loss: if their marker is
-// missing from the pasted text they stay unsettled so the operator can supply
-// it rather than silently recording a false loss.
+// tennis, ice hockey) use the paid-group default outcome.
 function isFreeFootballTip(tip) {
     const sport = String(tip.sport || "").toLowerCase();
     if (sport !== "football" && sport !== "soccer") return false;
@@ -121,7 +119,8 @@ function applyOutcome(tip, outcome) {
 
 function resolveJsonPath(dateIso) {
     const jsonDir = path.resolve(__dirname, "previous-day-results");
-    const formattedDate = getFormattedDate(dateIso);
+    const settlementDate = dateIso || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const formattedDate = getFormattedDate(settlementDate);
     const dated = path.join(jsonDir, `freetips-${formattedDate}.json`);
 
     // Require a JSON dump for the exact specified date; do not fall back to
@@ -153,22 +152,19 @@ function processSettlement(dateIso, txtFilePath) {
     tips.forEach(tip => {
         const isFreeTip = isFreeFootballTip(tip);
 
-        // Only free football tips default to a loss when unmarked; paid tips
-        // stay unsettled so a missing marker is never recorded as a false loss.
-        const defaultOutcome = isFreeTip ? "lose" : null;
+        // No marker means an unmarked free-channel tip is a win; an unmarked
+        // paid-group tip is a loss. Explicit tick/box markers always take priority.
+        const defaultOutcome = isFreeTip ? "win" : "lose";
 
         const blocks = collectFixtureBlocks(txtContent, txtLower, tip);
 
         if (blocks.length === 0) {
-            // The fixture is absent from the pasted results entirely.
-            if (isFreeTip) {
-                applyOutcome(tip, "lose");
-                if (Array.isArray(tip.tips)) tip.tips.forEach(t => applyOutcome(t, "lose"));
-                if (Array.isArray(tip.extraTips)) tip.extraTips.forEach(t => applyOutcome(t, "lose"));
-                settledCount++;
-            } else {
-                unsettledCount++;
-            }
+            // The fixture is absent from the pasted settlement text, so apply
+            // the channel's manual default consistently to the main and nested bets.
+            applyOutcome(tip, defaultOutcome);
+            if (Array.isArray(tip.tips)) tip.tips.forEach(t => applyOutcome(t, defaultOutcome));
+            if (Array.isArray(tip.extraTips)) tip.extraTips.forEach(t => applyOutcome(t, defaultOutcome));
+            settledCount++;
             return;
         }
 

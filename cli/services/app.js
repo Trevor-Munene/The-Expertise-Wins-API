@@ -5,6 +5,9 @@ const { TipsService } = require("./services");
     const freeTips = payload.freeTips || [];
     const premiumTips = payload.premiumTips || [];
     const result = payload;
+    const renderedCardTotal = result.totalCards ?? (
+        result.maxbetVipCards.length + result.pikkBetterVipCards.length + result.freeCards.length
+    );
 
     console.log("\n========================================");
     console.log("     SERVICE BOX OUTPUT");
@@ -39,6 +42,6 @@ const { TipsService } = require("./services");
     console.log(`VIP tips:         ${result.pikkBetterVipCards.length}`);
     console.log(`Free tips:        ${result.freeCards.length}`);
     console.log("----------------------------------------");
-    console.log(`Total tips:       ${freeTips.length + premiumTips.length}`);
+    console.log(`Total tips:       ${renderedCardTotal}`);
     console.log("========================================\n");
 })();

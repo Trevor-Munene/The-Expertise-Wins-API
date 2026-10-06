@@ -14,11 +14,31 @@ class TipsConsumptionClient {
     }
 
     async loadFromData(allTips) {
-        const freeTips = allTips.filter((tip) => this.isFootballListingTip(tip));
-        const premiumTips = allTips.filter((tip) => tip && (this.isFeaturedTip(tip) || !this.isFootballListingTip(tip)));
+        const source = Array.isArray(allTips) ? allTips.filter(Boolean) : [];
+        const freeTips = source.filter((tip) => this.isFootballListingTip(tip));
+        const maxbetTips = source.filter((tip) => this.isFeaturedTip(tip));
+        const vipTips = source.filter((tip) => !this.isFeaturedTip(tip) && !this.isFootballListingTip(tip));
+        const premiumTips = [...maxbetTips, ...vipTips];
         const grouped = this.consume({ free: freeTips, premium: premiumTips });
+        const tierGroups = { free: freeTips, vip: vipTips, maxbet: maxbetTips };
 
-        return { allTips, freeTips, premiumTips, ...grouped, };
+        // Every source record must land in exactly one tier. Expose the
+        // classification so callers (and tests) can prove the card counts match.
+        const totalCards =
+            grouped.maxbetVipCards.length +
+            grouped.pikkBetterVipCards.length +
+            grouped.freeCards.length;
+
+        return {
+            allTips: source,
+            freeTips,
+            premiumTips,
+            maxbetTips,
+            vipTips,
+            tierGroups,
+            totalCards,
+            ...grouped,
+        };
     }
 
     consume({ free = [], premium = [] }) {

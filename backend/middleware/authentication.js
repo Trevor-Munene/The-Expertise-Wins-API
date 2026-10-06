@@ -51,7 +51,7 @@ passport.use(
             avatarUrl: true,
           },
         });
-        if (!user) return done(null, false);
+        if (!user || user.status !== "ACTIVE") return done(null, false);
         return done(null, user);
       } catch (error) {
         return done(error, false);

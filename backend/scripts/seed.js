@@ -284,7 +284,16 @@ const main = async () => {
       update.status = existingTip.status;
     }
 
-    const result = { ...data, status: settledOutcomes.has(data.outcome) ? "SETTLED" : "PUBLISHED" };
+    // Publish/re-publish this record on the sync day. Keep scrapedAt as the
+    // historical scrape date; publishedAt is the day the frontend serves it.
+    const publishedAt = new Date();
+    update.publishedAt = publishedAt;
+
+    const result = {
+      ...data,
+      status: settledOutcomes.has(data.outcome) ? "SETTLED" : "PUBLISHED",
+      publishedAt,
+    };
 
     return prisma.tip.upsert({
       where: { id },
@@ -292,15 +301,20 @@ const main = async () => {
       update,
     });
   }));
+  const publicationIds = records.map(({ id }) => id);
   const publications = records.map(({ id, data }) => ({
     tipId: id,
     productId: productsBySlug.get(getProductSlug(data)).id,
     status: "PUBLISHED",
-    publishedAt: data.scrapedAt ?? new Date(),
+    publishedAt: new Date(),
   }));
   const publicationResult = await prisma.tipPublication.createMany({
     data: publications,
     skipDuplicates: true,
+  });
+  await prisma.tipPublication.updateMany({
+    where: { tipId: { in: publicationIds }, status: "PUBLISHED" },
+    data: { publishedAt: new Date() },
   });
   console.log(`Created ${publicationResult.count} missing product publications.`);
 

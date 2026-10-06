@@ -25,6 +25,12 @@ const archiveOutcomes = ["PENDING", "WON", "LOST", "VOID", "PUSH", "HALF_WON", "
 // List archive tiers that can be requested
 const archiveTiers = ["free", "vip", "maxbet"];
 
+// The business timezone for day bucketing is Africa/Nairobi, a fixed UTC+3 with
+// no daylight saving. All published "days" are Kenyan calendar days, so a day key
+// such as 2026-10-05 covers the UTC window 2026-10-04T21:00:00Z through
+// 2026-10-05T20:59:59.999Z.
+const BUSINESS_UTC_OFFSET_MS = 3 * 60 * 60 * 1000;
+
 // Create an error with an HTTP status the error handler can read
 const createError = (message, statusCode = 400) => {
   const error = new Error(message);
@@ -33,27 +39,19 @@ const createError = (message, statusCode = 400) => {
   return error;
 };
 
-// Get today's date in YYYY-MM-DD format using UTC
-const getTodayKey = () => new Date().toISOString().slice(0, 10);
+// Get the current business day in YYYY-MM-DD format using the business timezone
+const getTodayKey = () =>
+  new Date(Date.now() + BUSINESS_UTC_OFFSET_MS).toISOString().slice(0, 10);
 
-// Decide which day a tip list defaults to. An explicit day/from/to always wins.
-// Otherwise use today when it has published tips, and otherwise fall back to the
-// most recent day that does, so the pages are never blank just because today's
-// scrape has not run yet.
-const resolveDefaultDay = async (query = {}) => {
-  if (query.day || query.from || query.to) return null;
-
-  const today = getTodayKey();
-  const todayCount = await prisma.tip.count({
-    where: {
-      status: { not: "CANCELLED" },
-      scrapedAt: { gte: new Date(`${today}T00:00:00.000Z`), lte: new Date(`${today}T23:59:59.999Z`) },
-    },
-  });
-
-  if (todayCount > 0) return today;
-  return await getLatestPublishedDay();
+// Shift a YYYY-MM-DD day key by a number of calendar days
+const shiftDayKey = (dayKey, offsetDays) => {
+  const date = new Date(`${dayKey}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + offsetDays);
+  return date.toISOString().slice(0, 10);
 };
+
+// Get yesterday's day key in the business timezone
+const getPreviousDayKey = () => shiftDayKey(getTodayKey(), -1);
 
 // Parse page and limit from the query string
 const getPagination = (query = {}) => {
@@ -97,62 +95,130 @@ const formatTip = (tip) => {
   };
 };
 
-// Parse a YYYY-MM-DD date as the start or end of that day in UTC
-const parseArchiveDate = (value, endOfDay = false) => {
-  if (!value) return null;
-
+// Validate a YYYY-MM-DD day key
+const assertDayKey = (value, label = "Date") => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    throw createError("Archive dates must use YYYY-MM-DD format.", 400);
+    throw createError(`${label}s must use YYYY-MM-DD format.`, 400);
   }
 
-  const date = new Date(`${value}T${endOfDay ? "23:59:59.999" : "00:00:00.000"}Z`);
-  if (Number.isNaN(date.getTime())) throw createError("Invalid archive date.", 400);
+  const date = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+    throw createError("Invalid date.", 400);
+  }
 
-  return date;
+  return value;
 };
 
-// Filter tips to one day by scrape date, falling back to creation date
-const addPublishedDayFilter = (where, query, defaultDay = null) => {
-  const day = query.day || defaultDay;
-  if (!day) return;
+// Build the UTC start and end instants for a business day key
+const getBusinessDayRange = (dayKey) => {
+  const start = Date.parse(`${dayKey}T00:00:00.000Z`);
+  const end = Date.parse(`${dayKey}T23:59:59.999Z`);
 
-  const dateFrom = parseArchiveDate(day);
-  const dateTo = parseArchiveDate(day, true);
-
-  where.AND = [
-    {
-      OR: [
-        { scrapedAt: { gte: dateFrom, lte: dateTo } },
-        { scrapedAt: null, createdAt: { gte: dateFrom, lte: dateTo } },
-      ],
-    },
-  ];
+  return {
+    gte: new Date(start - BUSINESS_UTC_OFFSET_MS),
+    lte: new Date(end - BUSINESS_UTC_OFFSET_MS),
+  };
 };
+
+// Live publication uses publishedAt as the day key. Legacy rows without it
+// fall back to scrape time, then creation time.
+const buildTipDayFilter = (range) => ({
+  OR: [
+    { publishedAt: range },
+    { publishedAt: null, scrapedAt: range },
+    { publishedAt: null, scrapedAt: null, createdAt: range },
+  ],
+});
+
+// Reject any day key that is today or in the future. Used by the archive so
+// today's active tips can never appear in the historical view.
+const assertHistoricalDay = (dayKey) => {
+  assertDayKey(dayKey, "Archive date");
+
+  if (dayKey >= getTodayKey()) {
+    throw createError("Today's and future tips are not available in the archive.", 400);
+  }
+
+  return dayKey;
+};
+
+// Reuse the live-day timestamp fallback when filtering historical publications.
+const buildPublishedDayFilter = buildTipDayFilter;
 
 // Add optional sport and outcome filters from the query
 const addTipFilters = (where, query) => {
   if (query.sport) where.sport = query.sport;
-  if (query.outcome) where.outcome = query.outcome;
+  if (query.outcome) where.outcome = query.outcome.toUpperCase();
+};
+
+// Live tip lists default to today, with yesterday available for a daily
+// settlement-to-publication transition. Any explicit day is still constrained
+// to today or the immediately preceding business day.
+const addLiveDayFilter = (where, query) => {
+  const day = query.day ? assertDayKey(query.day, "Day") : getTodayKey();
+
+  const today = getTodayKey();
+  const previousDay = shiftDayKey(today, -1);
+  if (day !== today && day !== previousDay) {
+    throw createError("Live tips are only available for today or the previous day.", 400);
+  }
+
+  where.outcome = "PENDING";
+  where.AND = [buildTipDayFilter(getBusinessDayRange(day))];
+
+  return day;
+};
+
+const getKickoffSortValue = (value) => {
+  const raw = String(value ?? "").trim();
+  const match = raw.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (match) return Number(match[1]) * 60 + Number(match[2]);
+
+  const duration = raw.match(/^(?:(\d+)\s*h(?:ours?)?\s*)?(?:(\d+)\s*m(?:in(?:utes?))?)?$/i);
+  if (!duration || (!duration[1] && !duration[2])) return Number.MAX_SAFE_INTEGER;
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Nairobi", hour: "2-digit", minute: "2-digit", hour12: false,
+  }).formatToParts(new Date());
+  const nowMinutes = Number(parts.find((part) => part.type === "hour")?.value || 0) * 60 +
+    Number(parts.find((part) => part.type === "minute")?.value || 0);
+  return (nowMinutes + Number(duration[1] || 0) * 60 + Number(duration[2] || 0)) % 1440;
+};
+
+const getPremiumSportRank = (sport) => {
+  const value = String(sport ?? "").trim().toUpperCase();
+  if (value === "TENNIS") return 0;
+  if (value === "BASKETBALL") return 1;
+  return 2;
+};
+
+const sortPremiumTips = (tips, productSlug) => {
+  if (productSlug === "free") return tips;
+  return tips.sort((a, b) =>
+    getPremiumSportRank(a.sport) - getPremiumSportRank(b.sport) ||
+    getKickoffSortValue(a.kickoff) - getKickoffSortValue(b.kickoff) ||
+    String(a.homeTeam ?? "").localeCompare(String(b.homeTeam ?? ""))
+  );
 };
 
 // Fetch a page of tips and the total count for a filter. `day` reports the day
 // actually served so a client can label the result when it defaulted.
-const findTipPage = async (where, query, day = null) => {
+const findTipPage = async (where, query, day = null, productSlug = null) => {
   const { page, limit, skip } = getPagination(query);
+  const orderBy = [{ publishedAt: "desc" }, { kickoff: "asc" }];
 
   const [tips, total] = await Promise.all([
-    prisma.tip.findMany({ where, skip, take: limit, orderBy: { kickoff: "asc" } }),
+    prisma.tip.findMany({ where, skip, take: limit, orderBy }),
     prisma.tip.count({ where }),
   ]);
 
   return {
-    data: tips.map(formatTip),
+    data: sortPremiumTips(tips, productSlug).map(formatTip),
     pagination: buildPagination(page, limit, total),
     day,
   };
 };
 
-// List today's tips published to any active public product
+// List pending tips published to any active public product
 const getTips = async (query = {}) => {
   const where = {
     status: { not: "CANCELLED" },
@@ -165,13 +231,12 @@ const getTips = async (query = {}) => {
   };
 
   addTipFilters(where, query);
-  const day = query.day || (await resolveDefaultDay(query));
-  addPublishedDayFilter(where, query, day);
+  const day = addLiveDayFilter(where, query);
 
   return findTipPage(where, query, day);
 };
 
-// List today's tips published to the free product
+// List pending free product tips
 const getFreeTips = async (query = {}) => {
   const freeProduct = await prisma.product.findUnique({ where: { slug: "free" } });
 
@@ -185,10 +250,9 @@ const getFreeTips = async (query = {}) => {
   };
 
   addTipFilters(where, query);
-  const day = query.day || (await resolveDefaultDay(query));
-  addPublishedDayFilter(where, query, day);
+  const day = addLiveDayFilter(where, query);
 
-  return findTipPage(where, query, day);
+  return findTipPage(where, query, day, "free");
 };
 
 // Check that a user can view a product, allowing public products and admins
@@ -217,22 +281,22 @@ const hasProductAccess = async (userId, productSlug, isAdmin = false) => {
   return product;
 };
 
-// List today's tips for a paid product after checking access
+// List pending tips for a paid product after checking access
 const getProtectedTips = async (userId, productSlug, query = {}, isAdmin = false) => {
   const product = await hasProductAccess(userId, productSlug, isAdmin);
+  const visibleProductIds = [product.id];
 
   const where = {
     status: { not: "CANCELLED" },
     publications: {
-      some: { productId: product.id, status: "PUBLISHED" },
+      some: { productId: { in: visibleProductIds }, status: "PUBLISHED" },
     },
   };
 
   addTipFilters(where, query);
-  const day = query.day || (await resolveDefaultDay(query));
-  addPublishedDayFilter(where, query, day);
+  const day = addLiveDayFilter(where, query);
 
-  return findTipPage(where, query, day);
+  return findTipPage(where, query, day, productSlug);
 };
 
 // List VIP tips after checking access
@@ -245,9 +309,8 @@ const getMaxbetTips = async (userId, query, isAdmin = false) => {
   return getProtectedTips(userId, "maxbet", query, isAdmin);
 };
 
-// Get the most recent day that has published tips. Tip and archive lists fall
-// back to this when the current day has not been scraped yet, so the pages
-// always show the latest available data instead of an empty result.
+// Get the most recent day that has published tips for administrative reporting.
+// Public live lists must never use this as a fallback: they are pinned to today.
 const getLatestPublishedDay = async () => {
   const latest = await prisma.tip.findFirst({
     where: { status: { not: "CANCELLED" } },
@@ -320,6 +383,8 @@ const getArchive = async (query, userId, isAdmin = false) => {
       tierSports: {},
       tiers: visibleTiers,
       day: query.day || null,
+      latestDay: getPreviousDayKey(),
+      today: getTodayKey(),
     };
   }
 
@@ -350,25 +415,45 @@ const getArchive = async (query, userId, isAdmin = false) => {
     }));
   }
 
-  // Use a single day when given or defaulted, otherwise the from and to range.
-  // Like the live tip lists, fall back to the most recent day that has data so
-  // the archive is not empty before the current day's scrape runs.
-  const defaultDay = !query.day && !query.from && !query.to ? await resolveDefaultDay(query) : null;
-  const day = query.day || defaultDay;
-  const dateFrom = day ? parseArchiveDate(day) : parseArchiveDate(query.from);
-  const dateTo = day ? parseArchiveDate(day, true) : parseArchiveDate(query.to, true);
+  // The archive is strictly historical. Every path is capped at the end of the
+  // previous day so today and future records can never be returned, and a
+  // single day is used when given or defaulted, otherwise the from/to range.
+  const today = getTodayKey();
+  const previousDay = getPreviousDayKey();
+  const lastHistoricalRange = getBusinessDayRange(previousDay);
 
-  if (dateFrom || dateTo) {
-    const range = {};
-    if (dateFrom) range.gte = dateFrom;
-    if (dateTo) range.lte = dateTo;
+  const day = query.day ? assertHistoricalDay(query.day) : null;
+  const hasRange = !day && (query.from || query.to);
 
-    where.AND = [
-      {
-        OR: [{ scrapedAt: range }, { scrapedAt: null, createdAt: range }],
-      },
-    ];
+  let range = null;
+  if (day) {
+    range = getBusinessDayRange(day);
+  } else if (hasRange) {
+    const fromDay = query.from ? assertHistoricalDay(query.from) : null;
+    const toDay = query.to ? assertHistoricalDay(query.to) : null;
+
+    range = {
+      gte: fromDay ? getBusinessDayRange(fromDay).gte : new Date(0),
+      // An open ended range still stops at the last historical day.
+      lte: toDay ? getBusinessDayRange(toDay).lte : lastHistoricalRange.lte,
+    };
+  } else if (!query.day && !query.from && !query.to) {
+    range = lastHistoricalRange;
   }
+
+  const resolvedDay = day || (!hasRange ? previousDay : null);
+
+  if (range) {
+    where.AND = [buildPublishedDayFilter(range)];
+  }
+
+  const sportsScope = {
+    status: { not: "CANCELLED" },
+    publications: {
+      some: { productId: { in: visibleProductIds }, status: "PUBLISHED" },
+    },
+    ...(range ? { AND: [buildPublishedDayFilter(range)] } : {}),
+  };
 
   const [tips, total, sports] = await Promise.all([
     prisma.tip.findMany({
@@ -386,12 +471,7 @@ const getArchive = async (query, userId, isAdmin = false) => {
     prisma.tip.count({ where }),
     prisma.tip.groupBy({
       by: ["sport"],
-      where: {
-        status: { not: "CANCELLED" },
-        publications: {
-          some: { productId: { in: visibleProductIds }, status: "PUBLISHED" },
-        },
-      },
+      where: sportsScope,
       orderBy: { sport: "asc" },
     }),
   ]);
@@ -420,9 +500,14 @@ const getArchive = async (query, userId, isAdmin = false) => {
     sports: sports.map((item) => item.sport),
     tierSports,
     tiers: visibleTiers,
-    // Report the day actually served so a client can show and reuse it when it
-    // had defaulted to today but today had no records.
-    day: day || null,
+    // Report the day actually served so a client can show and reuse it. The
+    // archive always resolves to a historical day, defaulting to the previous
+    // day, so today is never served.
+    day: resolvedDay,
+    // Report the newest day the archive will ever serve, so a client can bound
+    // its date picker without recomputing the business timezone.
+    latestDay: previousDay,
+    today,
   };
 };
 
@@ -458,6 +543,7 @@ const getTipById = async (tipId, userId, isAdmin = false) => {
 
 // Create a tip owned by the user
 const createTip = async (userId, tipData = {}) => {
+  if (!userId) throw createError("An authenticated admin is required to create tips.", 401);
   const {
     source,
     externalId,
@@ -484,6 +570,13 @@ const createTip = async (userId, tipData = {}) => {
     status,
     outcome,
   } = tipData;
+
+  if (status !== undefined && !["PENDING", "PUBLISHED", "LOCKED", "SETTLED", "CANCELLED", "VOID"].includes(status)) {
+    throw createError("Invalid tip status.", 400);
+  }
+  if (outcome !== undefined && !["PENDING", "WON", "LOST", "VOID", "PUSH", "HALF_WON", "HALF_LOST", "CANCELLED"].includes(outcome)) {
+    throw createError("Invalid tip outcome.", 400);
+  }
 
   const tip = await prisma.tip.create({
     data: {
@@ -520,6 +613,7 @@ const createTip = async (userId, tipData = {}) => {
 
 // Update a tip and keep publish and settle timestamps in step
 const updateTip = async (tipId, userId, tipData = {}) => {
+  if (!userId) throw createError("An authenticated admin is required to update tips.", 401);
   const existingTip = await prisma.tip.findUnique({ where: { id: tipId } });
 
   if (!existingTip) throw createError("Tip not found.", 404);
@@ -550,6 +644,13 @@ const updateTip = async (tipId, userId, tipData = {}) => {
     status,
     outcome,
   } = tipData;
+
+  if (status !== undefined && !["PENDING", "PUBLISHED", "LOCKED", "SETTLED", "CANCELLED", "VOID"].includes(status)) {
+    throw createError("Invalid tip status.", 400);
+  }
+  if (outcome !== undefined && !["PENDING", "WON", "LOST", "VOID", "PUSH", "HALF_WON", "HALF_LOST", "CANCELLED"].includes(outcome)) {
+    throw createError("Invalid tip outcome.", 400);
+  }
 
   const tip = await prisma.tip.update({
     where: { id: tipId },
@@ -589,7 +690,9 @@ const updateTip = async (tipId, userId, tipData = {}) => {
 
 // Update a tip's result and settle it when the outcome is final
 const updateTipResult = async (tipId, userId, resultData = {}) => {
+  if (!userId) throw createError("An authenticated admin is required to settle tips.", 401);
   const { result, outcome } = resultData;
+  if (!settledOutcomes.includes(outcome)) throw createError("Invalid tip outcome.", 400);
 
   const existingTip = await prisma.tip.findUnique({ where: { id: tipId } });
 
@@ -615,6 +718,7 @@ const updateTipResult = async (tipId, userId, resultData = {}) => {
 
 // Soft delete a tip by marking it cancelled
 const deleteTip = async (tipId, userId) => {
+  if (!userId) throw createError("An authenticated admin is required to delete tips.", 401);
   const existingTip = await prisma.tip.findUnique({ where: { id: tipId } });
 
   if (!existingTip) throw createError("Tip not found.", 404);
@@ -625,6 +729,20 @@ const deleteTip = async (tipId, userId) => {
   });
 
   return { message: "Tip cancelled successfully." };
+};
+
+const validateTipIds = (ids) => {
+  if (!Array.isArray(ids) || ids.length === 0 || ids.some((id) => typeof id !== "string" || !id.trim())) {
+    throw createError("At least one valid tip ID is required.", 400);
+  }
+  return [...new Set(ids)];
+};
+
+const resolvePublishedProductSlug = (tip) => {
+  const labels = `${tip?.competition || ""} ${tip?.previewTitle || ""}`.toLowerCase();
+  if (tip?.isFeatured || /bet of the day/.test(labels)) return "maxbet";
+  if (["football", "soccer"].includes(String(tip?.sport || "").trim().toLowerCase())) return "free";
+  return "vip";
 };
 
 module.exports = {
@@ -638,5 +756,7 @@ module.exports = {
   updateTip,
   updateTipResult,
   deleteTip,
+  validateTipIds,
+  resolvePublishedProductSlug,
   getLatestPublishedDay,
 };

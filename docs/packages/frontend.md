@@ -91,15 +91,15 @@ Verified locally on **2026-10-04** with the API and database running:
 - `/tips` and `/archive` return today when today's scrape has run. Before that they fall back to the most recent day that has records, so the pages are never blank; the tips page labels when it is showing an earlier day.
 - Settlement results reach the database: after `npm run settlement` and `npm run sync`, win rate and ROI update from recorded results.
 - Admins see every tier on `/tips` (Free, VIP, MaxBet). The public tips list exposes only public (Free) products, which is intentional.
-- Only non-featured football tips settle as losses by default; paid tips stay unsettled so a gap in the results text is never recorded as a false loss.
+- Settlement defaults: an unmarked **free-channel** pick settles as a win and an unmarked **paid-group** pick settles as a loss; explicit markers always override the default.
 
 ### Access tokens
 
-The admin token form always requires selecting a registered user, for both single and bulk creation. A token can only be redeemed by that account while signed in, and it cannot be reassigned afterwards.
+The admin token form always requires selecting a registered user, for both single and bulk creation. A token can only be redeemed by that account while signed in, and it cannot be reassigned afterwards. Admins can revoke a token (kept for audit) or permanently delete it through the admin API.
 
 ### Security Notes
 
-The admin UI's role checks are client-side only and are not a security control — the API enforces authorization independently. Admin API routes enforce the `ADMIN` role server-side, but **tip mutation endpoints still need role/ownership authorization**; see the backend readiness notes.
+The admin UI's role checks are client-side presentation only; the API independently enforces an active `ADMIN` account for protected routes and admin tip mutations. Admin curation controls use `/api/admin/*`; the routine source-of-truth workflow remains CLI scrape/settlement followed by `npm run sync`. Backend service-logic tests use mocked persistence; end-to-end and database-backed acceptance remains operator testing.
 
 ### SEO Notes
 

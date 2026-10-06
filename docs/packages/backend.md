@@ -1,11 +1,11 @@
 # The Expertise Wins — Express Backend API
 
-The `backend` directory contains the Express API, Prisma schema, and historical-tip importer for **The Expertise Wins**. The API is functional against a local PostgreSQL database; it is not ready for public deployment until the authorization gaps below are fixed.
+The `backend` directory contains the Express API, Prisma schema, and historical-tip importer for **The Expertise Wins**. Tip mutations and admin operations require an active admin account. Service-logic tests run with persistence mocked; final MVP acceptance still requires operator testing against a configured database.
 
 ## 📌 Features & Responsibilities
 
 - **Authentication**: Passport Local and JWT authentication are implemented in source. Admin endpoints enforce the `ADMIN` role.
-- **Tips & Curation Engine**: Includes free and token-gated VIP/MaxBet endpoints, an entitlement-aware historical archive, tip details, and management. Tip mutations still need server-side role/ownership checks.
+- **Tips & Curation Engine**: Includes free and token-gated VIP/MaxBet endpoints, an entitlement-aware historical archive, tip details, and admin-only mutations.
 - **Performance & Analytics Engine**: Calculates real-time win rates, estimated ROI, average odds, sport breakdowns, market performance, time-based reports, and admin-only application usage summaries for the last 30 days.
 - **Products & Access**: Manages products and access-token issuance/redemption. Access is represented by tokens; there is no separate `Subscription` database model.
 - **Access token issuance**: Tokens are created only through admin routes and are always assigned to one registered, active user. A missing, unknown, or suspended user is rejected, redemption requires signing in as that user, and a token's owner cannot be changed after creation.
@@ -24,11 +24,11 @@ The `backend` directory contains the Express API, Prisma schema, and historical-
 ## 📡 API Route Architecture
 
 - `/api/auth`: User registration, login, logout, me, password updates, avatar upload.
-- `/api/tips`: Public free tips (`/free`), VIP tips (`/vip`), MaxBet tips (`/maxbet`), tier-aware historical archive (`/archive`), tip details, and management.
+- `/api/tips`: Public Free reads (`/`, `/free`), entitlement-gated VIP/MaxBet reads, archive and details. This router is read-only; routine tip curation and settlement start from CLI dumps.
 - `/api/stats`: Comprehensive analytics, win rates, ROI, sport/market breakdowns, and time period statistics.
 - `/api/products`: Public and authenticated product tier information.
 - `/api/subscriptions`: Active subscriptions, token redemption (`/redeem`, requires the assigned user to sign in), token verification, and subscription history.
-- `/api/admin`: Isolated admin endpoints for user role management, bulk tip publication/settlement, single/bulk access token generation, and product management.
+- `/api/admin`: Active-admin-only user, tip curation/publication, access-token, and product management. Tokens can be revoked (retain audit record) or permanently deleted. Routine daily tip settlement remains CLI dump → review → sync.
 
 ## Verification Status
 
@@ -44,7 +44,7 @@ This confirms a local development path, not production readiness.
 
 ### Known Data State
 
-- The database contains **293 tips**, **3 products** (Free, VIP, MaxBet), and **1 admin user**.
+- The database contains **325 tips** (all currently settled as wins), **3 products** (Free, VIP, MaxBet), and **1 admin user**.
 - Settlement results flow into the database. After `npm run settlement` followed by `npm run sync`, recorded wins and losses appear in `/api/stats`.
 - Tip lists return today when today's scrape has run, otherwise the most recent day that has records.
 
@@ -56,6 +56,7 @@ Access tokens are minted only by an admin and always belong to one registered ac
 - `POST /api/subscriptions/redeem` requires authentication. Only the account a token was issued to can redeem it; a token assigned to someone else returns 403, and an unassigned token is rejected.
 - `PATCH /api/admin/subscription-tokens/:id` refuses to change `assignedUserId`, so access cannot be transferred after a token is created.
 - The raw token code is returned only in the create response; only a hash is stored.
+- `POST /api/admin/subscription-tokens/:id/revoke` disables a token but keeps the row for audit. `DELETE /api/admin/subscription-tokens/:id` permanently removes it (404 when the id does not exist).
 
 Because redemption is account-bound, the anonymous redemption path described in earlier revisions no longer exists.
 
@@ -65,9 +66,16 @@ Because redemption is account-bound, the anonymous redemption path described in 
 
 Admins can read every tier through `/api/tips/vip` and `/api/tips/maxbet`. The public `/api/tips` list intentionally exposes only public (Free) products.
 
-## Readiness Notes
+## Mutation and authorization rules
+- The public `/api/tips` router is read-only. Tip mutations are available only under `/api/admin/tips` and require an active admin JWT; AdminService independently verifies the actor before each mutation. The routine source-of-truth workflow is CLI dump → review → sync.
+- Every `/api/admin` route is protected by JWT authentication and the active-admin guard. AdminService mutation methods also require an actor id and independently verify the actor is an active `ADMIN`, so direct service calls cannot bypass the route guard.
+- The JWT strategy reloads the current user and rejects missing or non-active accounts. The admin guard separately requires `role === ADMIN` and an active status.
+- Public and protected read visibility continues to be enforced by publication and product entitlements. Paid tips require a current user entitlement (admins may inspect them).
+- Tip/source-of-truth operating workflow: edit/scrape/settle CLI dump files, review output, then `npm run sync`. Frontend admin tips are read-only; access-token and product controls remain active-admin-only.
+- Token revoke preserves history. `DELETE /api/admin/subscription-tokens/:id` permanently removes a token and is deliberately distinct from revoke.
 
-Do not expose the API publicly yet. `/api/admin` and `/api/stats/usage` enforce the `ADMIN` role, public tip list and detail paths enforce publication visibility, and VIP/MaxBet routes apply paid product access. The archive is public and grouped into Free, VIP, and MaxBet records with current-day and sport filters. **Tip create/update/result/delete operations still require only a valid JWT and do not enforce role or ownership.** The backend package currently has no automated test script.
+## Backend logic tests
+Run `npm run --prefix backend test`. These tests exercise service validation and decisions with mocked Prisma persistence; they do not require PostgreSQL and do not test Prisma itself. They cover active-admin authorization, tip mutation and settlement invariants, token ownership/hash behavior, revocation versus permanent deletion, and invalid/missing inputs. They are an MVP logic baseline, not full HTTP/database integration coverage.
 
 ## Local PostgreSQL Setup
 

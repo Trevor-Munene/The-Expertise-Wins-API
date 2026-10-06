@@ -12,7 +12,7 @@ The repository contains three distinct applications: a local-file CLI workflow, 
 
 **Verified locally on 2026-10-04:** PostgreSQL is healthy; Prisma reports the schema in sync; the database holds 288 tips imported from the CLI dated dumps; admin login issues a working JWT; all API routes across auth, tips, stats, products, subscriptions, and admin return HTTP 200 with live data; settlement results sync into the database and update win rate and ROI; and the frontend renders that live data on login, stats, tips, archive, profile, products, and all four admin pages with zero console errors. Frontend lint has one `<img>` optimization warning. The CLI remains a separate manual publish/settle workflow.
 
-**Release blockers:** Tip mutations do not enforce server-side role/ownership checks, and frontend client-side role checks are not security controls. The backend has no automated test script, and end-to-end UI-to-API workflows are verified manually rather than by automated tests. Source identifiers and URLs are withheld from public tip responses; source analytics and admin operations require the admin role.
+**V1 backend controls implemented:** the public tips router is read-only; admin curation routes require an active admin JWT and AdminService independently verifies the actor; access tokens can be revoked or permanently deleted; backend service-logic tests run with mocked persistence. The documented daily source-of-truth workflow remains CLI dump updates followed by sync. **Remaining V1 acceptance:** operator-driven real-user and database-backed testing, including frontend/admin workflows. Source identifiers and URLs are withheld from public tip responses; source analytics and admin operations require the admin role. V2 scope is intentionally left for product specifications.
 
 **Data state:** 13 tips are settled (8 won, 5 lost), giving a 61.54% win rate. Remaining tips are `PENDING` until their fixtures are settled through the CLI workflow and published with `npm run sync`.
 
@@ -100,7 +100,7 @@ The repository contains three distinct applications: a local-file CLI workflow, 
 
 * [x] Build the settlement evaluator (`cli/settlement/settlement.js`)
 * [x] Match fixture selections against pasted text using `✅✅` and `❎❎` markers
-* [x] Leave featured tips without explicit markers unsettled; unmarked regular tips default to losses
+* [x] Apply channel-aware defaults: unmarked free-channel picks settle as wins, unmarked paid-group picks settle as losses
 * [x] Write annotated outcomes back to the exact dated dump
 * [x] Print formatted reports through the local CLI consumer
 * [ ] Integrate live scores or automatic result verification
@@ -140,7 +140,7 @@ The repository contains three distinct applications: a local-file CLI workflow, 
 * [x] Build Express API source (`backend/app.js`)
 * [x] Repair duplicate declarations in authentication middleware so the server can load
 * [x] Enforce `ADMIN` role authorization on admin routes
-* [ ] Enforce role/ownership authorization on tip-management mutations
+* [x] Require an active admin for tip-management mutations; keep operator changes CLI-driven
 * [x] Restrict public tip list to active public product publications
 * [x] Restrict public tip detail to published product access
 * [x] Add a current-day-by-default tier-aware archive with a selected-day picker and sport/outcome/search filters
@@ -165,7 +165,7 @@ The repository contains three distinct applications: a local-file CLI workflow, 
   * Dynamic XML sitemap (`/sitemap.xml`) for a configured subset of public routes and blog posts.
   * [ ] Align sitemap/robots URLs with the metadata canonical domain and include remaining public pages.
 * [x] **Admin Dashboard UI (`/admin`)**:
-  * Admin UI checks roles client-side; admin endpoints enforce roles server-side, while tip mutation ownership checks remain open.
+  * Admin UI checks roles client-side and the API independently enforces active-admin access; operator tip mutations remain CLI-driven.
 * [x] Historical tip archive (`/archive`) with detail previews and recorded outcomes.
 * [x] **Responsive Across Devices**: Mobile drawer menu, tablet layouts, and desktop support.
 * [x] **Dual Start Commands**: `npm run dev` launches backend (port 3000) and frontend (port 3001) concurrently.
@@ -190,8 +190,9 @@ The repository contains three distinct applications: a local-file CLI workflow, 
 
 **Goal:** Automate scheduled execution and expand distribution channels.
 
-* [ ] Enforce role/ownership authorization on tip-management mutations (release blocker)
-* [ ] Add an automated backend test script and API integration tests
+* [x] Keep public tips routes read-only; enforce active-admin authorization for admin curation and token management
+* [x] Add backend service-logic tests with mocked persistence
+* [ ] Operator real-user and database-backed acceptance testing for V1
 * [ ] Align sitemap/robots domains with the metadata canonical domain
 * [ ] Schedule automated daily scraping cron jobs
 * [ ] Build direct Telegram Bot publisher client for automated channel posting
@@ -213,6 +214,6 @@ The repository contains three distinct applications: a local-file CLI workflow, 
 | **Phase 5.5** | Settlement Engine | ✅ Completed |
 | **Phase 6** | Performance Analytics & ROI Engine | ✅ Implemented and verified against live data; metrics move as settlement results are synced |
 | **Phase 7** | Prisma ORM, Local PostgreSQL & Historical Seed | ✅ Complete in this development workspace; fresh setups must follow the database guide |
-| **Phase 8** | Express REST API, Archive & JWT Auth | ⚠️ All routes verified returning live data, including auth; tip mutation authorization and automated backend tests remain |
+| **Phase 8** | Express REST API, Archive & JWT Auth | ✅ Public tips API is read-only; admin curation is active-admin-only, token revoke/delete and mocked-persistence service tests are in place; V1 acceptance is operator real-user/database testing |
 | **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | ⚠️ Lint passes with one warning and pages were verified rendering live data in a browser; sitemap/domain alignment and automated end-to-end tests remain |
 | **Phase 10** | CLI ↔ Database Sync | ✅ `npm run sync` / `sync:prod` push scrapes and settlements to the database; automation still manual |

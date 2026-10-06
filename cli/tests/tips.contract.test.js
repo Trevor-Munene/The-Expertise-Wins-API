@@ -1,6 +1,7 @@
 const { TIP_CONTRACT_FIELDS } = require("../normalizers/contract");
 const { loadTestResults } = require("../orchestrator/test-results");
 const { printNormalizedTips } = require("./tip-table");
+const { TipsConsumptionClient } = require("../services/tips.client");
 
 (async () => {
     console.log(" TIPS CONTRACT TEST ");
@@ -10,6 +11,20 @@ const { printNormalizedTips } = require("./tip-table");
     const allTips = loadTestResults("freetips");
 
     console.log(`FreeTips count: ${allTips.length}`);
+
+    const channelOutput = await new TipsConsumptionClient().loadFromData(allTips);
+    const tierCardTotal =
+        channelOutput.maxbetVipCards.length +
+        channelOutput.pikkBetterVipCards.length +
+        channelOutput.freeCards.length;
+    const classifiedTipTotal =
+        channelOutput.maxbetTips.length +
+        channelOutput.vipTips.length +
+        channelOutput.freeTips.length;
+    if (classifiedTipTotal !== allTips.length || tierCardTotal !== classifiedTipTotal) {
+        throw new Error(`Tier classification/cards (${classifiedTipTotal}/${tierCardTotal}) must match snapshot tips (${allTips.length}).`);
+    }
+    console.log(`✅ Rendered cards match snapshot: MaxBet ${channelOutput.maxbetVipCards.length} + VIP ${channelOutput.pikkBetterVipCards.length} + Free ${channelOutput.freeCards.length} = ${tierCardTotal}`);
 
     // Basic service checks
     if (!Array.isArray(allTips)) throw new Error("FreeTips service must return an array");

@@ -38,11 +38,10 @@ Settle results against a specific dated dump after pasting markers into `cli/set
 npm run --prefix cli settlement -- --date=2026-10-01
 ```
 
-Settlement defaults to today's UTC date and requires a dump for that exact date; it does not fall back to the newest available dump. The recognized result markers are doubled: `✅✅` for a win and `❎❎` for a loss.
+Settlement defaults to **yesterday's** dated dump and requires a dump for that exact date; it does not fall back to the newest available dump. Pass `--date=YYYY-MM-DD` to settle another day. The recognized result markers are doubled: `✅✅` for a win and `❎❎` for a loss.
 
-### Which tips default to a loss
-
-Only **non-featured football tips** default to a loss when their fixture is missing from the pasted text, because an unmarked free pick counts as a loss on your end. **Paid tips never do.** A featured (Bet of the Day) tip or any non-football sport — basketball, tennis, ice hockey, volleyball, rugby, esports — stays **unsettled** when its marker is missing, so a gap in your results text is never silently recorded as a false loss. The summary reports how many tips remain unsettled.
+### Missing marker defaults
+An unmarked **free-channel** selection defaults to a win; an unmarked **paid-group** selection defaults to a loss. Explicit markers override the channel default. This is the operator's manual daily workflow: paste verified outcomes in the settlement file, review the generated report, then sync.
 
 A marker is matched by selection text, falling back to the printed odds and stake on the result line, so a selection that was reworded between the dump and the channel (for example `Over (9/10)` versus `Over Total Goals`) still settles correctly. Fixture lookup also considers every occurrence of the team name, so a fixture that shares a name with an earlier card is matched against the right block.
 
@@ -53,7 +52,7 @@ npm run --prefix cli test
 npm run --prefix cli test:settlement
 ```
 
-> CLI tests were not rerun during the 2026-10-04 API/frontend audit, so treat them as unverified in this workspace.
+> Run the commands above whenever settlement or card classification changes; settlement tests use throwaway files and do not alter production dumps.
 
 ## Data Locations
 
@@ -107,8 +106,8 @@ npm run sync
 
 ## Current Data State
 
-As of 2026-10-04, `settlement/previous-day-results/` contains **10 dated dumps spanning 25th September to 4th October 2026**, holding **288 tip records**, which map to 288 rows in the database. The dumps are disjoint: each tip belongs to exactly one day.
+As of 2026-10-05, `settlement/previous-day-results/` contains **11 dated dumps spanning 25th September to 5th October 2026**, holding **325 tip records**, which map to 325 rows in the database. Every dumped record is currently marked settled with a `win` outcome. The dumps are disjoint: each tip belongs to exactly one day.
 
 The newest dump is `freetips-4th Oct 2026.json`. Because `/api/tips` and `/api/archive` default to the current UTC day, the web pages show no records until a dump exists for today — this is expected behavior, not a fault.
 
-Settling 3rd October against the pasted template settled 13 tips and left 6 unsettled, which is correct: those fixtures have no marker in the results text and are paid tips, so they are left for you to supply rather than being marked as losses.
+Settling 3rd October against the pasted template verifies the channel-aware defaults: free-channel picks without a marker settle as wins, and paid-group picks without a marker settle as losses. Review the printed report before syncing.
