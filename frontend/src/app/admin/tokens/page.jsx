@@ -95,6 +95,7 @@ export default function AdminTokensPage() {
   const [creatingSingle, setCreatingSingle] = useState(false);
   const [creatingBulk, setCreatingBulk] = useState(false);
   const [revokingId, setRevokingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [generatedTokens, setGeneratedTokens] = useState([]);
   const [generatedModalOpen, setGeneratedModalOpen] = useState(false);
 
@@ -294,6 +295,23 @@ export default function AdminTokensPage() {
     }
   };
 
+  const handleDelete = async (token) => {
+    const code = token.tokenPrefix || token.id;
+    if (!window.confirm(`Permanently delete access token ${code}? This cannot be undone.`)) return;
+
+    setDeletingId(token.id);
+    try {
+      await adminApi.deleteAccessToken(token.id);
+      toast.success("Access token permanently deleted");
+      await loadData();
+    } catch (error) {
+      console.error("Failed deleting access token", error);
+      toast.error(error?.response?.data?.message || "Failed to delete access token");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const copyCode = async (code) => {
     if (!code) {
       toast.error("Token code is unavailable");
@@ -401,6 +419,7 @@ export default function AdminTokensPage() {
                     token.status === "ACTIVE" &&
                     (!token.expiresAt || Date.parse(token.expiresAt) > Date.now());
                   const isRevoking = revokingId === token.id;
+                  const isDeleting = deletingId === token.id;
 
                   return (
                     <tr
@@ -440,16 +459,21 @@ export default function AdminTokensPage() {
                       </td>
 
                       <td className="px-4 py-3 text-right">
+                        <div className="inline-flex gap-2">
                         {canRevoke && (
                           <button
                             type="button"
                             onClick={() => handleRevoke(token)}
-                            disabled={isRevoking}
+                            disabled={isRevoking || isDeleting}
                             className="rounded border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-400 transition-colors hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             {isRevoking ? "Revoking..." : "Revoke"}
                           </button>
                         )}
+                        <button type="button" onClick={() => handleDelete(token)} disabled={isDeleting || isRevoking} className="ml-2 rounded border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-slate-300 hover:text-rose-300 disabled:opacity-50">
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </button>
+                        </div>
                       </td>
                     </tr>
                   );

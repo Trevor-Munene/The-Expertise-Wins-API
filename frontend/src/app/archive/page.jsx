@@ -111,7 +111,9 @@ function createEmptyArchive() {
     },
     sports: [],
     tierSports: {},
+    tiers: [],
     day: null,
+    latestDay: getLatestArchiveDate(),
   };
 }
 
@@ -231,10 +233,27 @@ function normalizeArchive(response, requestedDay) {
         ? source.tierSports
         : {},
 
+    // The API reports which tiers the current visitor may actually see.
+    tiers: Array.isArray(source.tiers)
+      ? source.tiers
+          .map((tier) =>
+            typeof tier === "string"
+              ? { slug: tier }
+              : tier
+          )
+          .filter((tier) => tier?.slug)
+      : [],
+
     day:
       responseDay ||
       normalizedRequestedDay ||
       null,
+
+    // The API reports the newest day it will ever serve, so the client uses
+    // the same bound the backend applies instead of guessing.
+    latestDay:
+      normalizeDay(source.latestDay) ||
+      latestAllowedDate,
   };
 }
 
@@ -404,6 +423,19 @@ export default function ArchivePage() {
     setRetryCount((count) => count + 1);
   };
 
+  /*
+   * Only show the tiers the API confirmed this visitor can see. Falling back to
+   * all three keeps the UI usable before the first response lands.
+   */
+  const visibleTierIds =
+    archive.tiers.length > 0
+      ? archive.tiers.map((tier) => tier.slug)
+      : TIERS.map((tier) => tier.id);
+
+  const selectableTiers = TIERS.filter(
+    (tier) => visibleTierIds.includes(tier.id)
+  );
+
   const selectedTier = TIERS.find(
     (tier) => tier.id === filters.tier
   );
@@ -436,7 +468,7 @@ export default function ArchivePage() {
     availableSports.unshift(filters.sport);
   }
 
-  const groupedTips = TIERS.filter(
+  const groupedTips = selectableTiers.filter(
     (tier) =>
       !filters.tier ||
       tier.id === filters.tier
@@ -454,6 +486,13 @@ export default function ArchivePage() {
   const servedDayLabel = formatDay(
     archive.day
   );
+
+  /*
+   * Bound every date control by the newest day the API will serve, so today
+   * can never be selected or requested.
+   */
+  const latestArchiveDay =
+    archive.latestDay || getLatestArchiveDate();
 
   return (
     <main
@@ -550,7 +589,7 @@ export default function ArchivePage() {
           aria-label="Archive tier"
           className="grid grid-cols-1 gap-2 sm:grid-cols-3"
         >
-          {TIERS.map((tier) => (
+          {selectableTiers.map((tier) => (
             <button
               key={tier.id}
               type="button"
@@ -702,7 +741,7 @@ export default function ArchivePage() {
             id="archive-day"
             type="date"
             value={filters.day}
-            max={getLatestArchiveDate()}
+            max={latestArchiveDay}
             onChange={(event) =>
               changeFilter(
                 "day",

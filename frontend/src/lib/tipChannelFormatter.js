@@ -143,24 +143,30 @@ export function formatTipChannelCard(tip) {
 export function formatFreeTipChannelCard(tip) {
   if (!tip) return "";
 
-  const lines = [
-    tip.homeTeam && tip.awayTeam
-      ? `${tip.homeTeam} vs ${tip.awayTeam}`
-      : tip.selection || "Match",
-  ];
+  // Mirror the CLI's formatExpertiseWinsFreeCard heading exactly.
+  const lines = ["The Expertise Wins Free Tips:", ""];
+  const fixture = tip.homeTeam && tip.awayTeam
+    ? `${tip.homeTeam} vs ${tip.awayTeam}`
+    : tip.selection || "Match";
+  lines.push(fixture);
+
   const selections = Array.isArray(tip.tips) ? tip.tips : [];
 
   if (selections.length) {
     for (const selection of selections) {
-      const name = normalizeLabel(selection.selection || selection.market || "Tip");
+      const name = formatSelection(
+        selection.selection || selection.market || "Tip",
+        selection.market
+      );
       const odds = formatOdds(selection.odds);
       const units = Number(selection.units ?? selection.stakeUnits ?? 1);
       lines.push(`${name}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(selection.outcome)}`);
     }
   } else if (tip.selection) {
+    const name = formatSelection(tip.selection, tip.market);
     const odds = formatOdds(tip.odds);
     const units = Number(tip.stakeUnits ?? tip.units ?? 1);
-    lines.push(`${normalizeLabel(tip.selection)}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(tip.outcome)}`);
+    lines.push(`${name}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(tip.outcome)}`);
   }
 
   return lines.join("\n").trim();

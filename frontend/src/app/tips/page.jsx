@@ -16,8 +16,10 @@ import {
 } from "lucide-react";
 
 import { tipsApi } from "../../api/tips.api";
-import TipCard from "../../components/TipCard";
-import { formatTipChannelCard } from "../../lib/tipChannelFormatter";
+import {
+  formatFreeTipChannelCard,
+  formatTipChannelCard,
+} from "../../lib/tipChannelFormatter";
 
 const tabs = [
   {
@@ -58,8 +60,10 @@ const focusStyles =
 
 const buttonStyles = `inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 py-3 text-xs font-bold transition-colors ${focusStyles}`;
 
-// Get the current calendar date in Nairobi.
-function getTodayIso() {
+// Get the current day key used by the API, which buckets tips by the Nairobi
+// business day. Using the same calendar as the backend keeps the requested day
+// and the served day identical.
+function getCurrentDayKey() {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Africa/Nairobi",
     year: "numeric",
@@ -67,8 +71,7 @@ function getTodayIso() {
     day: "2-digit",
   }).formatToParts(new Date());
 
-  const getPart = (type) =>
-    parts.find((part) => part.type === type)?.value;
+  const getPart = (type) => parts.find((part) => part.type === type)?.value;
 
   return `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
 }
@@ -92,6 +95,12 @@ function normalizeServedDay(value) {
 
   return day;
 }
+
+/*
+ * The page asks for today's tips first, then falls back to yesterday's dump
+ * while today's scrape/publish has not happened yet. The API only allows those
+ * two adjacent business days, and settled tips stay out of the live view.
+ */
 
 // Read the supported list response shapes.
 function extractTips(response) {
@@ -119,7 +128,27 @@ function normalizeSport(value) {
 
 // Strict football check for the free public view.
 function isFootballTip(tip) {
-  return normalizeSport(tip.sport) === "FOOTBALL";
+  const sport = normalizeSport(tip.sport);
+  return sport === "FOOTBALL" || sport === "SOCCER";
+}
+
+function isTipForDay(tip, day) {
+  const timestamp = tip?.publishedAt ?? tip?.scrapedAt ?? tip?.createdAt;
+  if (!timestamp) return false;
+
+  const parsed = new Date(timestamp);
+  if (!Number.isFinite(parsed.getTime())) return false;
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Nairobi",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(parsed);
+  const getPart = (type) => parts.find((part) => part.type === type)?.value;
+  const tipDay = `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+
+  return tipDay === day;
 }
 
 // Read the tier from the API response without changing the API contract.
@@ -127,6 +156,7 @@ function isFootballTip(tip) {
 // compatible with the current response shape.
 function getTipTier(tip) {
   const value =
+    tip?._tier ??
     tip?.tier ??
     tip?.product ??
     tip?.productType ??
@@ -161,18 +191,52 @@ function getTipTier(tip) {
     return "FREE";
   }
 
-  return "";
+  const productSlug = String(tip?.publications?.[0]?.product?.slug ?? "").toUpperCase();
+  if (productSlug === "MAXBET") return "MAXBET";
+  if (productSlug === "VIP") return "VIP";
+  if (productSlug === "FREE") return "FREE";
+
+  const label = `${tip?.competition ?? ""} ${tip?.previewTitle ?? ""}`.toLowerCase();
+  if (tip?.isFeatured || /bet of the day/.test(label)) return "MAXBET";
+  if (isFootballTip(tip)) return "FREE";
+  if (tip?._tier === "MAXBET" || tip?._tier === "VIP" || tip?._tier === "FREE") return tip._tier;
+  return "VIP";
 }
 
-// Free → VIP → MaxBet.
+// The "All" tab prints MaxBet, then VIP, then Free.
 function getTierRank(tip) {
   const tier = getTipTier(tip);
 
-  if (tier === "FREE") return 1;
+  if (tier === "MAXBET") return 1;
   if (tier === "VIP") return 2;
-  if (tier === "MAXBET") return 3;
+  if (tier === "FREE") return 3;
 
   return 99;
+}
+
+function getSportRank(tip) {
+  const sport = normalizeSport(tip?.sport);
+  if (sport === "TENNIS") return 0;
+  if (sport === "BASKETBALL") return 1;
+  return 2;
+}
+
+function getKickoffMinutes(tip) {
+  const value = String(tip?.kickoff ?? "").trim();
+  const time = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (time) return Number(time[1]) * 60 + Number(time[2]);
+
+  const duration = value.match(/^(?:(\d+)\s*h(?:ours?)?\s*)?(?:(\d+)\s*m(?:in(?:utes?))?)?$/i);
+  if (duration && (duration[1] || duration[2])) {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Africa/Nairobi", hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(new Date());
+    const nowMinutes = Number(parts.find((part) => part.type === "hour")?.value || 0) * 60 +
+      Number(parts.find((part) => part.type === "minute")?.value || 0);
+    return (nowMinutes + Number(duration[1] || 0) * 60 + Number(duration[2] || 0)) % 1440;
+  }
+
+  return Number.MAX_SAFE_INTEGER;
 }
 
 function getTierLabel(tip) {
@@ -227,24 +291,150 @@ export default function TipsPage() {
       setTips([]);
 
       try {
+        const day = getCurrentDayKey();
+        const previousDate = new Date(`${day}T00:00:00Z`);
+        previousDate.setUTCDate(previousDate.getUTCDate() - 1);
+        const previousDay = previousDate.toISOString().slice(0, 10);
         let response;
 
-        // Let the API choose the latest available published day.
+        if (activeTab === "all") {
+          /*
+           * "All" must show every tier, so query each endpoint separately.
+           * A failing premium endpoint must not hide the free tips, so the
+           * results are collected independently and merged afterwards.
+           */
+          const sources = [
+            {
+              tier: "MAXBET",
+              request: () => tipsApi.getMaxbetTips({ day, limit: 100 }),
+            },
+            { tier: "VIP", request: () => tipsApi.getVipTips({ day, limit: 100 }) },
+            {
+              tier: "FREE",
+              request: () => tipsApi.getFreeTips({ day, limit: 100 }),
+              requestPrevious: () => tipsApi.getFreeTips({ day: previousDay, limit: 100 }),
+            },
+          ];
+
+          const settledSources = await Promise.allSettled(
+            sources.flatMap((source) =>
+              source.tier === "FREE"
+                ? [source.request(), source.requestPrevious()]
+                : [source.request()]
+            )
+          );
+
+          if (cancelled) return;
+
+          let accessDenied = false;
+          let requestFailed = false;
+          const merged = [];
+
+          let freeTipsAvailableToday = false;
+          const sourceIndexes = [
+            { tier: "MAXBET", day },
+            { tier: "VIP", day },
+            { tier: "FREE", day },
+            { tier: "FREE", day: previousDay },
+          ];
+          settledSources.forEach((result, index) => {
+            const { tier, day: tipDay } = sourceIndexes[index];
+            if (result.status === "rejected") {
+              const status = result.reason?.response?.status;
+              if (status === 401 || status === 403) accessDenied = true;
+              else requestFailed = true;
+              return;
+            }
+
+            const sourceTips = extractTips(result.value);
+            if (tier === "FREE" && tipDay === day && sourceTips.length > 0) {
+              freeTipsAvailableToday = true;
+            }
+            for (const tip of sourceTips) {
+              // Stamp tier and source day so ordering and fallback stay consistent.
+              merged.push({ ...tip, _tier: tier, _sourceDay: tipDay });
+            }
+          });
+
+          const todayTips = merged.filter((tip) => tip._sourceDay === day);
+          const previousFreeTips = merged.filter(
+            (tip) => tip._tier === "FREE" && tip._sourceDay === previousDay
+          );
+          const displayedAllTips = [
+            ...todayTips.filter((tip) => getTipTier(tip) === "MAXBET"),
+            ...todayTips.filter((tip) => getTipTier(tip) === "VIP"),
+            ...(freeTipsAvailableToday
+              ? todayTips.filter((tip) => getTipTier(tip) === "FREE")
+              : previousFreeTips),
+          ];
+          const orderedAllTips = displayedAllTips.map((tip, index) => ({ tip, index }));
+          orderedAllTips.sort((a, b) => {
+            const tierDifference = getTierRank(a.tip) - getTierRank(b.tip);
+            if (tierDifference !== 0) return tierDifference;
+            if (getTierRank(a.tip) !== 3) {
+              const sportDifference = getSportRank(a.tip) - getSportRank(b.tip);
+              if (sportDifference !== 0) return sportDifference;
+            }
+            return getKickoffMinutes(a.tip) - getKickoffMinutes(b.tip) || a.index - b.index;
+          });
+
+          setTips(orderedAllTips.map(({ tip }) => tip));
+          setServedDay(
+            freeTipsAvailableToday || todayTips.length
+              ? day
+              : displayedAllTips.length > 0
+                ? previousDay
+                : day
+          );
+
+          // Only block the whole view when every source failed.
+          if (merged.length === 0) {
+            if (accessDenied && !requestFailed) {
+              setRequiresAuth(true);
+              setAccessStatus(403);
+            } else if (requestFailed) {
+              setError(
+                "We couldn't load the selections. Please try again shortly."
+              );
+            }
+          }
+
+          return;
+        }
+
+        // Pin every tier to today first. The free public channel has a daily
+        // carry-over: show yesterday's published tips until today's are ready.
         if (activeTab === "free") {
-          response = await tipsApi.getFreeTips();
+          response = await tipsApi.getFreeTips({ day, limit: 100 });
+          if (extractTips(response).length === 0) {
+            response = await tipsApi.getFreeTips({ day: previousDay, limit: 100 });
+          }
         } else if (activeTab === "vip") {
-          response = await tipsApi.getVipTips();
-        } else if (activeTab === "maxbet") {
-          response = await tipsApi.getMaxbetTips();
+          response = await tipsApi.getVipTips({ day, limit: 100 });
         } else {
-          response = await tipsApi.getTips();
+          response = await tipsApi.getMaxbetTips({ day, limit: 100 });
         }
 
         // Ignore responses from an earlier tab or an unmounted page.
         if (cancelled) return;
 
-        setTips(extractTips(response));
-        setServedDay(normalizeServedDay(response?.tips?.day));
+        const responseDay = normalizeServedDay(response?.tips?.day);
+        const servedTipDay = activeTab === "free" && responseDay ? responseDay : day;
+        const list = extractTips(response)
+          .filter((tip) => isTipForDay(tip, servedTipDay))
+          .map((tip) => ({
+            ...tip,
+            _tier: activeTab === "free" ? "FREE" : activeTab === "vip" ? "VIP" : "MAXBET",
+          }));
+        const orderedList = activeTab === "free"
+          ? list
+          : [...list].sort((a, b) =>
+              getSportRank(a) - getSportRank(b) ||
+              getKickoffMinutes(a) - getKickoffMinutes(b)
+            );
+
+        setTips(orderedList);
+        setServedDay(responseDay === servedTipDay ? responseDay : servedTipDay);
       } catch (requestError) {
         if (cancelled) return;
 
@@ -276,33 +466,30 @@ export default function TipsPage() {
   }, [activeTab, retryCount]);
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
-  const todayIso = getTodayIso();
 
   /*
-   * Keep the existing filtering behavior.
+   * Every tab shows today's pending tips for its own tier.
    *
-   * The only special rules are:
-   * - Free = today's football tips only.
-   * - All = all tips returned by the API.
-   * - VIP / MaxBet = exactly what their respective endpoints return.
+   * Free additionally restricts to football only. "All" keeps every tip from
+   * every tier and is reordered by tier below.
    */
   const filteredTips = tips.filter((tip) => {
     const selections = Array.isArray(tip.tips) ? tip.tips : [];
 
-    /*
-     * Free tips must be today's football selections.
-     *
-     * We use the API's served day because that is already the date
-     * associated with the published tip set.
-     */
-    if (activeTab === "free") {
-      if (servedDay !== todayIso) {
-        return false;
-      }
+    // Free tips are football only.
+    if (activeTab === "free" && !isFootballTip(tip)) {
+      return false;
+    }
 
-      if (!isFootballTip(tip)) {
-        return false;
-      }
+    // Only unsettled selections belong on the live tips page.
+    const normalizeOutcome = (value) =>
+      String(value ?? "PENDING")
+        .trim()
+        .toUpperCase();
+    const isPending = normalizeOutcome(tip.outcome) === "PENDING";
+
+    if (!isPending) {
+      return false;
     }
 
     // Search all relevant fields, including premium selections.
@@ -335,32 +522,40 @@ export default function TipsPage() {
   });
 
   /*
-   * All Tips keeps every returned tip but presents them in product order:
-   * FREE → VIP → MAXBET.
-   *
-   * The other tabs preserve the API's existing ordering.
+   * "All" mirrors the CLI tier groups. Paid tiers are sorted by sport class
+   * (tennis, basketball, then other sports), followed by beginning time; free
+   * cards retain the scrape/channel order.
    */
   const displayedTips =
     activeTab === "all"
       ? [...filteredTips].sort((a, b) => {
           const tierDifference = getTierRank(a) - getTierRank(b);
+          if (tierDifference !== 0) return tierDifference;
 
-          if (tierDifference !== 0) {
-            return tierDifference;
+          // Match the tier order and the game-type/kickoff ordering used by CLI.
+          if (getTierRank(a) !== 3) {
+            const sportDifference = getSportRank(a) - getSportRank(b);
+            if (sportDifference !== 0) return sportDifference;
           }
 
-          return 0;
+          return getKickoffMinutes(a) - getKickoffMinutes(b);
         })
-      : filteredTips;
+      : activeTab === "vip" || activeTab === "maxbet"
+      ? [...filteredTips].sort((a, b) => {
+          const featuredA = /bet of the day/i.test(`${a.competition || ""} ${a.previewTitle || ""}`);
+          const featuredB = /bet of the day/i.test(`${b.competition || ""} ${b.previewTitle || ""}`);
+          return Number(featuredB) - Number(featuredA) ||
+            getSportRank(a) - getSportRank(b) ||
+            getKickoffMinutes(a) - getKickoffMinutes(b);
+        })
+        : filteredTips;
 
   const activeView = tabs.find((tab) => tab.id === activeTab);
-  const isPremiumTab = activeTab === "vip" || activeTab === "maxbet";
   const hasFilters =
     normalizedSearch !== "" || selectedSport !== "ALL";
-  const hasLoadedContent = !loading && !requiresAuth && !error;
 
-  const isHistoricalDay =
-    hasLoadedContent && servedDay && servedDay < todayIso;
+  // "All" can also hit the premium endpoints, so it uses the same messaging.
+  const isPremiumView = activeTab !== "free";
 
   const dayLabel = servedDay
     ? new Date(`${servedDay}T00:00:00Z`).toLocaleDateString(
@@ -374,7 +569,7 @@ export default function TipsPage() {
       )
     : null;
 
-  const accessHeading = isPremiumTab
+  const accessHeading = isPremiumView
     ? accessStatus === 401
       ? "Sign In to View Premium Tips"
       : "Premium Access Required"
@@ -382,7 +577,7 @@ export default function TipsPage() {
       ? "Sign In Required"
       : "Access Restricted";
 
-  const accessDescription = isPremiumTab
+  const accessDescription = isPremiumView
     ? "This section requires an active VIP or MaxBet membership. Sign in with your account or activate the access token provided by Admin."
     : "This view is currently restricted. Sign in with your account or contact Admin if you believe you should have access.";
 
@@ -622,11 +817,10 @@ export default function TipsPage() {
             </span>
           </p>
 
-          {activeTab === "free" && isHistoricalDay && (
-            <p className="text-xs leading-5 text-amber-300">
-              The latest published selections are from{" "}
-              <span className="font-bold">{dayLabel}</span>. Today's free
-              football tips are not yet available.
+          {dayLabel && (
+            <p className="text-xs leading-5 text-slate-400">
+              Showing tips for{" "}
+              <span className="font-bold text-slate-200">{dayLabel}</span>.
             </p>
           )}
 
@@ -646,6 +840,7 @@ export default function TipsPage() {
         id="tips-results"
         aria-labelledby="tips-results-heading"
         aria-busy={loading}
+        data-tip-card-count={displayedTips.length}
       >
         <h2 id="tips-results-heading" className="sr-only">
           {activeView?.viewLabel}
@@ -716,47 +911,34 @@ export default function TipsPage() {
             </button>
           </div>
         ) : displayedTips.length > 0 ? (
-          isPremiumTab ? (
-            <div className="mx-auto max-w-3xl space-y-4">
-              {displayedTips.map((tip, index) => (
-                <article
-                  key={tip.id ?? tip._id ?? `premium-tip-${index}`}
-                  className="min-w-0 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900"
-                >
-                  <h3 className="border-b border-slate-800 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Card {index + 1}
-                  </h3>
+          <div className="mx-auto max-w-3xl space-y-4">
+            {displayedTips.map((tip, index) => (
+              <article
+                key={tip.id ?? tip._id ?? `tip-${index}`}
+                className="min-w-0 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900"
+              >
+                <h3 className="flex items-center justify-between gap-3 border-b border-slate-800 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                  <span>Card {index + 1}</span>
 
-                  <pre className="whitespace-pre-wrap break-words px-5 py-5 font-mono text-sm leading-7 text-slate-100 [overflow-wrap:anywhere]">
-                    {formatTipChannelCard(tip)}
-                  </pre>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {displayedTips.map((tip, index) => (
-                <article
-                  key={tip.id ?? tip._id ?? `tip-${index}`}
-                  className="relative min-w-0"
-                >
                   {activeTab === "all" && (
-                    <div className="mb-2 flex items-center justify-between px-1">
-                      <span
-                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${getTierStyles(
-                          tip
-                        )}`}
-                      >
-                        {getTierLabel(tip)}
-                      </span>
-                    </div>
+                    <span
+                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${getTierStyles(
+                        tip
+                      )}`}
+                    >
+                      {getTierLabel(tip)}
+                    </span>
                   )}
+                </h3>
 
-                  <TipCard tip={tip} />
-                </article>
-              ))}
-            </div>
-          )
+                <pre className="whitespace-pre-wrap break-words px-5 py-5 font-mono text-sm leading-7 text-slate-100 [overflow-wrap:anywhere]">
+                  {activeTab === "free"
+                    ? formatFreeTipChannelCard(tip)
+                    : formatTipChannelCard(tip)}
+                </pre>
+              </article>
+            ))}
+          </div>
         ) : (
           <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-center sm:p-12">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-800 bg-slate-950">
@@ -775,7 +957,7 @@ export default function TipsPage() {
 
               <p className="text-sm leading-6 text-slate-400">
                 {tips.length > 0
-                  ? activeTab === "free" && servedDay !== todayIso
+                  ? activeTab === "free"
                     ? "Today's free football tips are not available yet."
                     : "No selections match your current search or sport filter."
                   : "There are no selections available in this view right now. Check back shortly for updates."}

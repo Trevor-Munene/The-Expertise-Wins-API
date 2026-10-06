@@ -50,8 +50,9 @@ const features = [
   },
 ];
 
-// Build the archive date using the Nairobi calendar rather than UTC.
-function getNairobiDate() {
+// Build the business date using the Nairobi calendar rather than UTC, so the
+// day requested always matches the day the backend buckets tips into.
+function getNairobiDate(offsetDays = 0) {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Africa/Nairobi",
     year: "numeric",
@@ -60,7 +61,46 @@ function getNairobiDate() {
   }).formatToParts(new Date());
 
   const getPart = (type) => parts.find((part) => part.type === type)?.value;
-  return `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+
+  const year = Number(getPart("year"));
+  const month = Number(getPart("month"));
+  const day = Number(getPart("day"));
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + offsetDays);
+
+  return date.toISOString().slice(0, 10);
+}
+
+// Normalize a sport value for comparison against the free football view.
+function normalizeSport(value) {
+  return String(value || "").trim().toUpperCase();
+}
+
+// The home page only ever shows free football tips, so anything that is not
+// football is filtered out before it reaches the page.
+function isFootballTip(tip) {
+  const sport = normalizeSport(tip?.sport);
+  return sport === "FOOTBALL" || sport === "SOCCER";
+}
+
+function isTipForToday(tip) {
+  const timestamp = tip?.publishedAt ?? tip?.scrapedAt ?? tip?.createdAt;
+  if (!timestamp) return false;
+
+  const parsed = new Date(timestamp);
+  if (!Number.isFinite(parsed.getTime())) return false;
+
+  const tipDay = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Nairobi",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(parsed);
+  const getPart = (type) => tipDay.find((part) => part.type === type)?.value;
+  const normalizedTipDay = `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+
+  return normalizedTipDay === getNairobiDate();
 }
 
 // Accept numeric API values without converting missing values into zero.
@@ -102,8 +142,10 @@ export default function HomePage() {
 
       try {
         const [tipsRes, statsRes, oddsRes] = await Promise.allSettled([
-          tipsApi.getArchive({
-            tier: "free",
+          // Prefer today's free football picks and fall back to yesterday's
+          // still-pending picks until today's scrape is published. Both requests
+          // are scoped to the public Free product.
+          tipsApi.getFreeTips({
             day: getNairobiDate(),
             limit: 6,
           }),
@@ -114,16 +156,29 @@ export default function HomePage() {
         if (!mounted) return;
 
         if (tipsRes.status === "fulfilled") {
-          const tipsData =
+          let tipsData =
             tipsRes.value?.tips?.data ??
             tipsRes.value?.data ??
             tipsRes.value ??
             [];
 
+          if (Array.isArray(tipsData) && tipsData.length === 0) {
+            const previousTipsRes = await tipsApi.getFreeTips({
+              day: getNairobiDate(-1),
+              limit: 6,
+            });
+            tipsData =
+              previousTipsRes?.tips?.data ??
+              previousTipsRes?.data ??
+              previousTipsRes ??
+              [];
+          }
+
           if (Array.isArray(tipsData)) {
             setFreeTips(
               tipsData
                 .filter((tip) => tip && typeof tip === "object")
+                .filter(isFootballTip)
                 .slice(0, 6)
             );
           } else {
