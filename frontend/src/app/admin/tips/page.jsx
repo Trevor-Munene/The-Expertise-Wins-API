@@ -1,7 +1,7 @@
 // frontend/src/app/admin/tips/page.jsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { adminApi } from "../../../api/admin.api";
 import { productsApi } from "../../../api/products.api";
 import { formatOdds, formatDate, outcomeColor, statusColor } from "../../../lib/utils";
@@ -9,12 +9,52 @@ import toast from "react-hot-toast";
 import { Trophy, Plus, Search, Filter, CheckCircle, XCircle, Edit, Trash2, Send, Layers, Package } from "lucide-react";
 import Modal from "../../../components/Modal";
 
+const TIP_TIER_PRIORITY = { MAXBET: 0, VIP: 1, FREE: 2, UNASSIGNED: 3 };
+const SETTLEMENT_OUTCOMES = [
+  ["WON", "WON"],
+  ["HALF_WON", "HALF WON"],
+  ["LOST", "LOST"],
+  ["HALF_LOST", "HALF LOST"],
+  ["VOID", "VOID (Stake Returned)"],
+  ["PUSH", "PUSH (Stake Returned)"],
+  ["CANCELLED", "CANCELLED"],
+];
+
+function normalizeSettlementOutcome(outcome) {
+  const value = String(outcome || "").trim().toUpperCase();
+  if (value === "WIN") return "WON";
+  if (value === "LOSE") return "LOST";
+  return SETTLEMENT_OUTCOMES.some(([key]) => key === value) ? value : "";
+}
+
+function getTipTiers(tip) {
+  const publishedTiers = (tip.publications || [])
+    .map((publication) => String(publication.product?.slug || "").toUpperCase())
+    .filter((slug) => ["MAXBET", "VIP", "FREE"].includes(slug));
+  if (publishedTiers.length) return [...new Set(publishedTiers)];
+
+  const title = `${tip.competition || ""} ${tip.previewTitle || ""}`.toLowerCase();
+  if (tip.isFeatured || /bet of the day/.test(title)) return ["MAXBET"];
+  if (["football", "soccer"].includes(String(tip.sport || "").toLowerCase())) return ["FREE"];
+  if (tip.sport) return ["VIP"];
+  return ["UNASSIGNED"];
+}
+
+function getTipTierRank(tip) {
+  return Math.min(...getTipTiers(tip).map((tier) => TIP_TIER_PRIORITY[tier]));
+}
+
+function toJsonField(value) {
+  return value == null ? "" : JSON.stringify(value, null, 2);
+}
+
 export default function AdminTipsPage() {
   const [tips, setTips] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [selectedDay, setSelectedDay] = useState("today");
   const [selectedTipIds, setSelectedTipIds] = useState([]);
 
   // Create Modal State
@@ -39,23 +79,27 @@ export default function AdminTipsPage() {
   const [settleModalOpen, setSettleModalOpen] = useState(false);
   const [targetTip, setTargetTip] = useState(null);
   const [settleOutcome, setSettleOutcome] = useState("WON");
+  const [settleSelections, setSettleSelections] = useState([]);
 
   // Publication Assignment Modal State
   const [pubModalOpen, setPubModalOpen] = useState(false);
   const [pubTip, setPubTip] = useState(null);
   const [selectedProdId, setSelectedProdId] = useState("");
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [tipsRes, prodRes] = await Promise.allSettled([
-        adminApi.getTips(),
+        adminApi.getTips({ day: selectedDay, limit: 100 }),
         productsApi.getProducts(),
       ]);
 
       if (tipsRes.status === "fulfilled") {
         const list = tipsRes.value?.tips || tipsRes.value?.data || tipsRes.value || [];
-        setTips(Array.isArray(list) ? list : []);
+        setTips(Array.isArray(list) ? [...list].sort((a, b) =>
+          getTipTierRank(a) - getTipTierRank(b) ||
+          new Date(b.scrapedAt || b.createdAt || 0) - new Date(a.scrapedAt || a.createdAt || 0)
+        ) : []);
       }
       if (prodRes.status === "fulfilled") {
         const pList = prodRes.value?.products || prodRes.value?.data || prodRes.value || [];
@@ -66,11 +110,11 @@ export default function AdminTipsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDay]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handleCreateTip = async (e) => {
     e.preventDefault();
@@ -116,12 +160,43 @@ export default function AdminTipsPage() {
         }
       }
 
-      await adminApi.updateTip(editForm.id, {
-        ...editForm,
-        homeTeam: homeTeam || undefined,
-        awayTeam: awayTeam || undefined,
-        odds: editForm.odds ? Number(editForm.odds) : undefined,
-      });
+      const parseJsonField = (value, label) => {
+        try {
+          return value.trim() ? JSON.parse(value) : null;
+        } catch {
+          throw new Error(`${label} must contain valid JSON.`);
+        }
+      };
+
+      const payload = {
+        source: editForm.source || "MANUAL",
+        externalId: editForm.externalId || null,
+        sport: editForm.sport,
+        competition: editForm.competition || null,
+        league: editForm.league || null,
+        country: editForm.country || null,
+        homeTeam: homeTeam || null,
+        awayTeam: awayTeam || null,
+        kickoff: editForm.kickoff || null,
+        market: editForm.market,
+        selection: editForm.selection,
+        odds: editForm.odds === "" || editForm.odds == null ? null : Number(editForm.odds),
+        stakeUnits: editForm.stakeUnits === "" || editForm.stakeUnits == null ? null : Number(editForm.stakeUnits),
+        previewTitle: editForm.previewTitle || null,
+        preview: editForm.preview || null,
+        verdict: editForm.verdict || null,
+        tips: parseJsonField(editForm.tipsJson, "Selections"),
+        analytics: parseJsonField(editForm.analyticsJson, "Analytics"),
+        confidenceIndex: editForm.confidenceIndex === "" || editForm.confidenceIndex == null ? null : Number(editForm.confidenceIndex),
+        predictedScore: editForm.predictedScore || null,
+        detailsUrl: editForm.detailsUrl || null,
+        status: editForm.status,
+        result: editForm.result || null,
+        outcome: editForm.outcome,
+        extraTips: parseJsonField(editForm.extraTipsJson, "Extra selections"),
+      };
+
+      await adminApi.updateTip(editForm.id, payload);
       toast.success("Tip updated successfully");
       setEditModalOpen(false);
       loadData();
@@ -163,14 +238,29 @@ export default function AdminTipsPage() {
   const handleSettleSubmit = async (e) => {
     e.preventDefault();
     if (!targetTip) return;
+    if (settleSelections.some((outcome) => !outcome)) {
+      toast.error("Choose an outcome for every selection before saving.");
+      return;
+    }
     try {
-      await adminApi.settleTip(targetTip.id, { outcome: settleOutcome });
-      toast.success(`Tip settled as ${settleOutcome}`);
+      const payload = { outcome: settleOutcome };
+      if (settleSelections.length) payload.selectionOutcomes = settleSelections;
+      await adminApi.settleTip(targetTip.id, payload);
+      toast.success(`Tip and ${settleSelections.length} selection${settleSelections.length === 1 ? "" : "s"} settled`);
       setSettleModalOpen(false);
       loadData();
-    } catch {
-      toast.error("Failed settling tip");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed settling tip");
     }
+  };
+
+  const openSettleTip = (tip) => {
+    setTargetTip(tip);
+    setSettleOutcome(normalizeSettlementOutcome(tip.result?.outcome || tip.outcome) || "WON");
+    setSettleSelections(Array.isArray(tip.tips)
+      ? tip.tips.map((selection) => normalizeSettlementOutcome(selection?.outcome))
+      : []);
+    setSettleModalOpen(true);
   };
 
   const handleDelete = async (id) => {
@@ -278,6 +368,17 @@ export default function AdminTipsPage() {
     return matchesSearch && matchesStatus;
   });
 
+  const openEditTip = (tip) => {
+    setEditForm({
+      ...tip,
+      teams: tip.teams || [tip.homeTeam, tip.awayTeam].filter(Boolean).join(" vs "),
+      tipsJson: toJsonField(tip.tips),
+      extraTipsJson: toJsonField(tip.extraTips),
+      analyticsJson: toJsonField(tip.analytics),
+    });
+    setEditModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header & Controls */}
@@ -302,6 +403,16 @@ export default function AdminTipsPage() {
       {/* Filter & Bulk Control Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-dark-card border border-dark-border p-4 rounded-2xl">
         <div className="flex items-center gap-3">
+          <label className="sr-only" htmlFor="tip-day-filter">Tip date</label>
+          <select
+            id="tip-day-filter"
+            value={selectedDay}
+            onChange={(event) => { setSelectedTipIds([]); setSelectedDay(event.target.value); }}
+            className="px-3 py-2 bg-dark-bg border border-dark-border rounded-xl text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+          >
+            <option value="today">Today&apos;s tips</option>
+            <option value="yesterday">Yesterday&apos;s tips</option>
+          </select>
           <div className="relative flex-1 md:w-64">
             <input
               type="text"
@@ -374,6 +485,7 @@ export default function AdminTipsPage() {
                     />
                   </th>
                   <th className="px-4 py-3">Match / Teams</th>
+                  <th className="px-4 py-3">Tier</th>
                   <th className="px-4 py-3">Selection</th>
                   <th className="px-4 py-3">Odds</th>
                   <th className="px-4 py-3">Status</th>
@@ -394,6 +506,18 @@ export default function AdminTipsPage() {
                     <td className="px-4 py-3">
                       <div className="font-bold text-slate-100">{t.teams || `${t.homeTeam} vs ${t.awayTeam}`}</div>
                       <div className="text-[10px] text-slate-400">{t.sport} • {t.competition}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {getTipTiers(t).map((tier) => (
+                          <span key={tier} className={`rounded border px-2 py-0.5 text-[10px] font-bold ${
+                            tier === "MAXBET" ? "border-amber-500/30 bg-amber-500/10 text-amber-300" :
+                            tier === "VIP" ? "border-indigo-500/30 bg-indigo-500/10 text-indigo-300" :
+                            tier === "FREE" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" :
+                            "border-slate-700 text-slate-400"
+                          }`}>{tier === "VIP" ? "PIKK BETTER VIP" : tier}</span>
+                        ))}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="font-bold text-cyan-400">{t.selection}</div>
@@ -417,8 +541,7 @@ export default function AdminTipsPage() {
                     <td className="px-4 py-3 text-right space-x-1">
                       <button
                         onClick={() => {
-                          setEditForm(t);
-                          setEditModalOpen(true);
+                          openEditTip(t);
                         }}
                         className="p-1 text-slate-400 hover:text-cyan-400 transition-colors"
                         title="Edit Tip"
@@ -454,11 +577,7 @@ export default function AdminTipsPage() {
                       )}
 
                       <button
-                        onClick={() => {
-                          setTargetTip(t);
-                          setSettleOutcome(t.result?.outcome || "WON");
-                          setSettleModalOpen(true);
-                        }}
+                        onClick={() => openSettleTip(t)}
                         className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded text-[10px] font-semibold hover:bg-indigo-500/20"
                       >
                         Settle
@@ -563,46 +682,59 @@ export default function AdminTipsPage() {
       </Modal>
 
       {/* Edit Tip Modal */}
-      <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} title="Edit Betting Tip (`updateTip`)">
+      <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} title="Edit Tip Details">
         {editForm && (
-          <form onSubmit={handleUpdateTipSubmit} className="space-y-3 text-xs">
-            <div>
-              <label className="block text-slate-400 font-semibold mb-1">Teams / Match</label>
-              <input
-                type="text"
-                value={editForm.teams || ""}
-                onChange={(e) => setEditForm({ ...editForm, teams: e.target.value })}
-                className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-xl text-slate-100"
-              />
+          <form onSubmit={handleUpdateTipSubmit} className="max-h-[75vh] space-y-4 overflow-y-auto px-1 text-xs">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {[
+                ["source", "Source"], ["sport", "Sport"], ["competition", "Competition"],
+                ["league", "League"], ["country", "Country"], ["teams", "Teams / Match"],
+                ["kickoff", "Kickoff"], ["market", "Market"], ["selection", "Selection"],
+                ["odds", "Odds"], ["stakeUnits", "Stake (units)"], ["previewTitle", "Preview title"],
+                ["predictedScore", "Predicted score"], ["confidenceIndex", "Confidence index"],
+                ["detailsUrl", "Details URL"], ["externalId", "External ID"],
+              ].map(([field, label]) => (
+                <label key={field} className="space-y-1 text-slate-400">
+                  <span className="block font-semibold">{label}</span>
+                  <input
+                    type={field === "odds" || field === "stakeUnits" || field === "confidenceIndex" ? "number" : "text"}
+                    step={field === "odds" || field === "stakeUnits" || field === "confidenceIndex" ? "0.01" : undefined}
+                    value={editForm[field] ?? ""}
+                    onChange={(event) => setEditForm({ ...editForm, [field]: event.target.value })}
+                    className="w-full rounded-xl border border-dark-border bg-dark-bg px-3 py-2 text-slate-100"
+                  />
+                </label>
+              ))}
+              <label className="space-y-1 text-slate-400">
+                <span className="block font-semibold">Status</span>
+                <select value={editForm.status || "PENDING"} onChange={(event) => setEditForm({ ...editForm, status: event.target.value })} className="w-full rounded-xl border border-dark-border bg-dark-bg px-3 py-2 text-slate-100">
+                  {["PENDING", "PUBLISHED", "SETTLED", "CANCELLED", "LOCKED"].map((value) => <option key={value}>{value}</option>)}
+                </select>
+              </label>
+              <label className="space-y-1 text-slate-400">
+                <span className="block font-semibold">Outcome</span>
+                <select value={editForm.outcome || "PENDING"} onChange={(event) => setEditForm({ ...editForm, outcome: event.target.value })} className="w-full rounded-xl border border-dark-border bg-dark-bg px-3 py-2 text-slate-100">
+                  {["PENDING", "WON", "LOST", "VOID", "PUSH", "HALF_WON", "HALF_LOST", "CANCELLED"].map((value) => <option key={value}>{value}</option>)}
+                </select>
+              </label>
+              <label className="space-y-1 text-slate-400 sm:col-span-2">
+                <span className="block font-semibold">Result / settlement note</span>
+                <input value={editForm.result || ""} onChange={(event) => setEditForm({ ...editForm, result: event.target.value })} className="w-full rounded-xl border border-dark-border bg-dark-bg px-3 py-2 text-slate-100" />
+              </label>
+              {[["preview", "Reasoning / preview"], ["verdict", "Verdict"], ["tipsJson", "Selections JSON"], ["extraTipsJson", "Extra selections JSON"], ["analyticsJson", "Analytics JSON"]].map(([field, label]) => (
+                <label key={field} className="space-y-1 text-slate-400 sm:col-span-2">
+                  <span className="block font-semibold">{label}</span>
+                  <textarea
+                    rows={field.endsWith("Json") ? 6 : 3}
+                    value={field.endsWith("Json") ? (editForm[field] ?? (field === "analyticsJson" ? "" : "[]")) : (editForm[field] || "")}
+                    onChange={(event) => setEditForm({ ...editForm, [field]: event.target.value })}
+                    className="w-full rounded-xl border border-dark-border bg-dark-bg px-3 py-2 font-mono text-slate-100"
+                  />
+                </label>
+              ))}
             </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">Selection</label>
-                <input
-                  type="text"
-                  value={editForm.selection || ""}
-                  onChange={(e) => setEditForm({ ...editForm, selection: e.target.value })}
-                  className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-xl text-slate-100"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">Odds</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={editForm.odds || 1.85}
-                  onChange={(e) => setEditForm({ ...editForm, odds: parseFloat(e.target.value) })}
-                  className="w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-xl text-slate-100"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-md mt-2"
-            >
-              Save Tip Changes
+            <button type="submit" className="w-full rounded-xl bg-indigo-600 py-2.5 font-bold text-white shadow-md transition-all hover:bg-indigo-500">
+              Save All Tip Changes
             </button>
           </form>
         )}
@@ -642,10 +774,10 @@ export default function AdminTipsPage() {
       </Modal>
 
       {/* Settle Tip Modal */}
-      <Modal isOpen={settleModalOpen} onClose={() => setSettleModalOpen(false)} title="Settle Match Result (`settleTip`)">
+      <Modal isOpen={settleModalOpen} onClose={() => setSettleModalOpen(false)} title="Settle Tip and Selections">
         <form onSubmit={handleSettleSubmit} className="space-y-4 text-xs">
           <p className="text-slate-300">
-            Match: <strong className="text-slate-100">{targetTip?.teams}</strong> ({targetTip?.selection})
+            Match: <strong className="text-slate-100">{targetTip?.teams || `${targetTip?.homeTeam || ""} vs ${targetTip?.awayTeam || ""}`}</strong>
           </p>
 
           <div>
@@ -657,14 +789,49 @@ export default function AdminTipsPage() {
               onChange={(e) => setSettleOutcome(e.target.value)}
               className="w-full px-3 py-2.5 bg-dark-bg border border-dark-border rounded-xl text-slate-100 font-bold"
             >
-              <option value="WON">WON (100% Win)</option>
-              <option value="HALF_WON">HALF_WON (Half Win)</option>
-              <option value="LOST">LOST (Full Loss)</option>
-              <option value="HALF_LOST">HALF_LOST (Half Loss)</option>
-              <option value="VOID">VOID / PUSH (Stake Returned)</option>
-              <option value="CANCELLED">CANCELLED (Match Postponed)</option>
+              {SETTLEMENT_OUTCOMES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </select>
           </div>
+
+          {Array.isArray(targetTip?.tips) && targetTip.tips.length > 0 && (
+            <section className="space-y-3 rounded-xl border border-dark-border bg-dark-bg/70 p-3" aria-labelledby="settlement-selections-heading">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 id="settlement-selections-heading" className="font-bold text-slate-100">Selections in this tip</h3>
+                  <p className="mt-1 text-[11px] leading-5 text-slate-400">Set an outcome for each option. All selections save together.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSettleSelections(targetTip.tips.map(() => settleOutcome))}
+                  className="rounded-lg border border-indigo-400/30 bg-indigo-400/10 px-3 py-2 font-semibold text-indigo-200 hover:bg-indigo-400/20"
+                >
+                  Apply overall result to all
+                </button>
+              </div>
+              <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
+                {targetTip.tips.map((selection, index) => (
+                  <label key={`${selection.selection || selection.market || "selection"}-${index}`} className="grid gap-2 rounded-lg border border-dark-border bg-slate-900 p-3 sm:grid-cols-[minmax(0,1fr)_12rem] sm:items-center">
+                    <span className="min-w-0">
+                      <span className="block break-words font-semibold text-slate-100">{selection.selection || selection.market || `Option ${index + 1}`}</span>
+                      <span className="mt-1 block text-[10px] text-slate-400">
+                        {[selection.market, selection.odds != null ? `@${selection.odds}` : null, selection.units != null ? `${selection.units} units` : null].filter(Boolean).join(" · ")}
+                      </span>
+                    </span>
+                    <select
+                      required
+                      aria-label={`Outcome for ${selection.selection || selection.market || `option ${index + 1}`}`}
+                      value={settleSelections[index] || ""}
+                      onChange={(event) => setSettleSelections((previous) => previous.map((value, itemIndex) => itemIndex === index ? event.target.value : value))}
+                      className="w-full rounded-lg border border-dark-border bg-dark-bg px-3 py-2.5 font-semibold text-slate-100"
+                    >
+                      <option value="">Choose outcome…</option>
+                      {SETTLEMENT_OUTCOMES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
+                  </label>
+                ))}
+              </div>
+            </section>
+          )}
 
           <button
             type="submit"

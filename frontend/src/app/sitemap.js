@@ -1,7 +1,6 @@
 // frontend/src/app/sitemap.js
 import { getAllPosts } from "../lib/blog";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://expertise-wins.com";
+import { SITE_URL } from "../lib/seo";
 
 export default function sitemap() {
   const posts = getAllPosts();
@@ -20,8 +19,12 @@ export default function sitemap() {
     "/stats",
     "/products",
     "/blog",
-    "/login",
-    "/register",
+    "/about",
+    "/bookies",
+    "/coffee",
+    "/responsible-betting",
+    "/privacy",
+    "/terms",
   ].map((route) => ({
     url: `${SITE_URL}${route}`,
     lastModified: new Date().toISOString(),

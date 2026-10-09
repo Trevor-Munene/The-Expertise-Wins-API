@@ -35,7 +35,9 @@ export const authApi = {
   async updateAvatar(file) {
     const form = new FormData();
     form.append("avatar", file);
-    const { data } = await apiClient.patch("/auth/me/avatar", form);
+    const { data } = await apiClient.patch("/auth/me/avatar", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return data;
   },
 };

@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Check,
   Crown,
@@ -18,7 +19,9 @@ import toast from "react-hot-toast";
 import { productsApi } from "../../api/products.api";
 import { subscriptionsApi } from "../../api/subscriptions.api";
 import { auth } from "../../lib/auth";
+import { getTipsPathForProduct } from "../../lib/access";
 import Modal from "../../components/Modal";
+import SportsCoverage from "../../components/SportsCoverage";
 
 const defaultTiers = [
   {
@@ -127,6 +130,7 @@ function getMessage(value, fallback) {
 }
 
 export default function ProductsPage() {
+  const router = useRouter();
   const [products, setProducts] = useState([]);
   const [catalogLoaded, setCatalogLoaded] = useState(false);
   const [catalogError, setCatalogError] = useState("");
@@ -238,6 +242,7 @@ export default function ProductsPage() {
 
       setTokenCode("");
       setRedeemModalOpen(false);
+      router.push(getTipsPathForProduct(response?.accessToken?.product?.slug));
     } catch (error) {
       if (!mountedRef.current) return;
 
@@ -348,6 +353,8 @@ export default function ProductsPage() {
           </a>
         </div>
       </header>
+
+      <SportsCoverage />
 
       {/* Catalog availability */}
       {!loading && catalogError && (

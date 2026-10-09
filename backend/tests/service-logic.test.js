@@ -141,4 +141,24 @@ runService("./services/admin.service", `
   global.__tokenMissing = true;
   await assert.rejects(service.deleteAccessToken('missing-token', 'admin-1'), (error) => error.status === 404);
   assert.equal(calls.filter(([name]) => name === 'accessToken.delete').length, deletesBeforeMissing, 'missing token must not reach delete');
+
+  global.__tipFindUnique = {
+    id: 'tip-with-selections',
+    tips: [{ selection: 'Home Win', odds: 1.8 }, { selection: 'Over 2.5', odds: 2.1 }],
+  };
+  await assert.rejects(
+    service.settleTip('tip-with-selections', 'WON', null, 'admin-1', ['WON']),
+    (error) => error.status === 400
+  );
+  await assert.rejects(
+    service.settleTip('tip-with-selections', 'WON', null, 'admin-1', ['WON', 'PENDING']),
+    (error) => error.status === 400
+  );
+  const updatesBeforeSelectionSettlement = calls.filter(([name]) => name === 'tip.update').length;
+  await service.settleTip('tip-with-selections', 'WON', 'Home 2-1', 'admin-1', ['WON', 'VOID']);
+  assert.equal(calls.filter(([name]) => name === 'tip.update').length, updatesBeforeSelectionSettlement + 1, 'overall and selection outcomes save with one tip update');
+  const settledSelections = calls.filter(([name]) => name === 'tip.update').at(-1)[1].data;
+  assert.equal(settledSelections.status, 'SETTLED');
+  assert.deepEqual(settledSelections.tips.map((selection) => selection.outcome), ['WON', 'VOID']);
+  assert.equal(settledSelections.tips[1].selection, 'Over 2.5', 'settling selection outcomes preserves their source data');
 `);

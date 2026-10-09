@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const prisma = require("../lib/prisma");
+const BUSINESS_UTC_OFFSET_MS = 3 * 60 * 60 * 1000;
 
 // Select user fields returned to the client
 const USER_SELECT = {
@@ -111,6 +112,22 @@ const parsePagination = (query = {}) => {
   const page = Math.max(Number.parseInt(query.page, 10) || 1, 1);
   const limit = Math.min(Math.max(Number.parseInt(query.limit, 10) || 20, 1), 100);
   return { page, limit, skip: (page - 1) * limit };
+};
+
+const getBusinessDayKey = (timestamp = Date.now()) =>
+  new Date(timestamp + BUSINESS_UTC_OFFSET_MS).toISOString().slice(0, 10);
+
+const shiftBusinessDay = (dayKey, offset) => {
+  const day = new Date(`${dayKey}T00:00:00.000Z`);
+  day.setUTCDate(day.getUTCDate() + offset);
+  return day.toISOString().slice(0, 10);
+};
+
+const getBusinessDayRange = (dayKey) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) throw createError("Invalid admin tip date.", 400);
+  const start = Date.parse(`${dayKey}T00:00:00.000Z`) - BUSINESS_UTC_OFFSET_MS;
+  const end = Date.parse(`${dayKey}T23:59:59.999Z`) - BUSINESS_UTC_OFFSET_MS;
+  return { gte: new Date(start), lte: new Date(end) };
 };
 
 // List users with filters and pagination
@@ -237,16 +254,40 @@ const createTip = async (tipData = {}, userId, actorId = userId) => {
 const getTips = async (query = {}) => {
   const { page, limit, skip } = parsePagination(query);
   const where = {};
+  const today = getBusinessDayKey();
+  if (query.day && query.day !== "today" && query.day !== "yesterday") {
+    throw createError("Admin tip day must be today or yesterday.", 400);
+  }
+  const dayKey = query.day === "yesterday" ? shiftBusinessDay(today, -1) : today;
+  const range = getBusinessDayRange(dayKey);
+  where.AND = [{
+    OR: [
+      { scrapedAt: range },
+      { scrapedAt: null, publishedAt: range },
+      { scrapedAt: null, publishedAt: null, createdAt: range },
+    ],
+  }];
   if (query.status) where.status = query.status;
   if (query.outcome) where.outcome = query.outcome;
   if (query.sport) where.sport = query.sport;
   if (query.source) where.source = query.source;
 
   const [tips, total] = await prisma.$transaction([
-    prisma.tip.findMany({ where, select: TIP_SELECT, orderBy: { createdAt: "desc" }, skip, take: limit }),
+    prisma.tip.findMany({
+      where,
+      select: {
+        ...TIP_SELECT,
+        publications: {
+          select: { status: true, product: { select: { id: true, name: true, slug: true } } },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
     prisma.tip.count({ where }),
   ]);
-  return { tips, pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
+  return { tips, day: dayKey, pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
 };
 
 // Get a single tip with its product publications
@@ -368,13 +409,40 @@ const unpublishTipsBulk = async (ids, actorId) => {
 };
 
 // Settle a single tip with a validated outcome
-const settleTip = async (tipId, outcome, result, actorId) => {
+const settleTip = async (tipId, outcome, result, actorId, selectionOutcomes) => {
   await requireActiveAdmin(actorId);
   const validOutcomes = ["WON", "LOST", "VOID", "PUSH", "HALF_WON", "HALF_LOST", "CANCELLED"];
   if (!validOutcomes.includes(outcome)) throw createError("Invalid tip outcome.");
+  const data = { status: "SETTLED", outcome, result: result ?? null, settledAt: new Date() };
+
+  if (selectionOutcomes !== undefined) {
+    if (!Array.isArray(selectionOutcomes)) {
+      throw createError("Selection outcomes must be an array.");
+    }
+    const currentTip = await prisma.tip.findUnique({
+      where: { id: tipId },
+      select: { tips: true },
+    });
+    if (!currentTip) throw createError("Tip not found.", 404);
+    if (!Array.isArray(currentTip.tips) || selectionOutcomes.length !== currentTip.tips.length) {
+      throw createError("Provide one outcome for each selection in this tip.");
+    }
+
+    data.tips = currentTip.tips.map((selection, index) => {
+      if (!selection || typeof selection !== "object" || Array.isArray(selection)) {
+        throw createError("Tip selections must be valid objects before they can be settled.");
+      }
+      const selectionOutcome = String(selectionOutcomes[index] || "").toUpperCase();
+      if (!validOutcomes.includes(selectionOutcome)) {
+        throw createError(`Invalid outcome for selection ${index + 1}.`);
+      }
+      return { ...selection, outcome: selectionOutcome };
+    });
+  }
+
   return prisma.tip.update({
     where: { id: tipId },
-    data: { status: "SETTLED", outcome, result: result ?? null, settledAt: new Date() },
+    data,
     select: TIP_SELECT,
   });
 };

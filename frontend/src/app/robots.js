@@ -1,5 +1,5 @@
 // frontend/src/app/robots.js
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://expertise-wins.com";
+import { SITE_URL } from "../lib/seo";
 
 export default function robots() {
   return {
@@ -7,7 +7,7 @@ export default function robots() {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/api/"],
+        disallow: ["/admin", "/api/", "/profile"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

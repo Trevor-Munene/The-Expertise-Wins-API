@@ -9,12 +9,9 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import { createPageMetadata } from "../../lib/seo";
 
-export const metadata = {
-  title: "Terms of Service",
-  description:
-    "Read the Terms of Service for using The Expertise Wins website, services, and community.",
-};
+export const metadata = createPageMetadata({ title: "Terms of Service", description: "Read the Terms of Service for using The Expertise Wins website, services, and community.", pathname: "/terms" });
 
 const sections = [
   {

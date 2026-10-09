@@ -7,6 +7,7 @@ import {
   outcomeColor,
   statusColor,
 } from "../lib/utils";
+import { getSettlementMarker } from "../lib/settlementMarker";
 
 // Normalize enum values for consistent badge styling.
 function normalizeEnum(value) {
@@ -18,7 +19,7 @@ function formatBadgeLabel(value) {
   return value.replace(/_/g, " ");
 }
 
-export default function TipCard({ tip, tier }) {
+export default function TipCard({ tip, tier, showSettlementMarkers = false }) {
   if (!tip) return null;
 
   const tierValue = String(tier || tip._tier || tip.tier || tip.publications?.[0]?.product?.slug || "free").toUpperCase();
@@ -51,6 +52,9 @@ export default function TipCard({ tip, tier }) {
     tipId !== null && tipId !== undefined && String(tipId).trim() !== "";
 
   const displayResult = outcome || status;
+  const settlementMarker = showSettlementMarkers
+    ? getSettlementMarker(outcome, tierValue)
+    : "";
   const resultClasses = outcome
     ? outcomeColor(outcome)
     : statusColor(status);
@@ -88,9 +92,10 @@ export default function TipCard({ tip, tier }) {
           </div>
 
           <span
-            className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${resultClasses}`}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${resultClasses}`}
           >
             {formatBadgeLabel(displayResult)}
+            {settlementMarker && <span aria-label="Settlement marker" title="Settlement result">{settlementMarker}</span>}
           </span>
         </div>
 
@@ -116,6 +121,11 @@ export default function TipCard({ tip, tier }) {
                 <div className="min-w-0">
                   <dt className={`break-words font-extrabold leading-5 ${tierStyles.accent}`}>
                     {item.selection || item.market}
+                    {showSettlementMarkers && getSettlementMarker(item.outcome || outcome, tierValue) && (
+                      <span className="ml-1.5 whitespace-nowrap" aria-label="Selection settlement marker">
+                        {getSettlementMarker(item.outcome || outcome, tierValue)}
+                      </span>
+                    )}
                   </dt>
                   {item.market && item.market !== item.selection && (
                     <dd className="mt-0.5 break-words text-[11px] leading-4 text-slate-500">{item.market}</dd>

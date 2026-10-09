@@ -10,8 +10,9 @@ The `backend` directory contains the Express API, Prisma schema, and historical-
 - **Products & Access**: Manages products and access-token issuance/redemption. Access is represented by tokens; there is no separate `Subscription` database model.
 - **Access token issuance**: Tokens are created only through admin routes and are always assigned to one registered, active user. A missing, unknown, or suspended user is rejected, redemption requires signing in as that user, and a token's owner cannot be changed after creation.
 - **Admin Management API**: Endpoints for tip publication/settlement, access tokens, user roles, and products. Routes require an authenticated admin account.
+- **Settlement**: An admin can settle one tip with an overall result and per-selection outcomes in one request. Every outcome must be valid and the submitted selection outcome count must match the tip's selections; all changes are saved in one database update.
 - **Source privacy**: Public tip responses strip source identifiers, source URLs, provider labels, and source-only metadata; source analytics endpoints are admin-only.
-- **Usage tracking**: Every finished `/api` request records a `UsageEvent` row (path, user, status code) for the admin usage dashboard. This tracking is best-effort and can never fail a real API response.
+- **Usage tracking**: Finished `/api` requests record a `UsageEvent` row (path, user, status code) for the admin usage dashboard. Repeated GET requests from the same browser to the same route within a short development-mode window are counted once; write requests remain individually recorded. Usage writes are best-effort and cannot fail a real API response. The dashboard's daily series is grouped by Nairobi calendar day.
 
 ## 🛠 Tech Stack
 
@@ -30,15 +31,17 @@ The `backend` directory contains the Express API, Prisma schema, and historical-
 - `/api/subscriptions`: Active subscriptions, token redemption (`/redeem`, requires the assigned user to sign in), token verification, and subscription history.
 - `/api/admin`: Active-admin-only user, tip curation/publication, access-token, and product management. Tokens can be revoked (retain audit record) or permanently deleted. Routine daily tip settlement remains CLI dump → review → sync.
 
-## Verification Status (6 October 2026)
+Single-tip settlement is `POST /api/admin/tips/:id/settle` with `{ "outcome": "WON", "result": "2-1", "selectionOutcomes": ["WON", "VOID"] }`. `selectionOutcomes` is optional for older callers; when provided it must include one valid result per selection. Supported outcomes are `WON`, `HALF_WON`, `LOST`, `HALF_LOST`, `VOID`, `PUSH`, and `CANCELLED`. The admin UI lets the operator set each selection separately or copy the overall result to all selections before saving.
 
-The current Docker Compose configuration validates, PostgreSQL is healthy, and the API health endpoint plus `/api/stats/summary` return HTTP 200. The frontend home route also returns HTTP 200. This verifies startup and basic service reachability only; the current snapshot does not include a fresh full authentication, entitlement, or admin workflow run. A broader browser/API review was recorded on 4 October against an earlier database snapshot and should be treated as historical.
+## Verification Status (8 October 2026)
+
+The local Docker Compose application is running with PostgreSQL healthy. On 8 October, the API root and frontend home, tips, archive, stats, sitemap, and robots endpoints returned HTTP 200; backend service tests passed. Frontend lint passed with one existing profile-page image optimization warning. This verifies startup, public route reachability, and service-level settlement validation only; it is not full authentication, entitlement, or live database settlement acceptance. A broader browser/API review recorded on 4 October remains historical.
 
 ### Known Data State
 
 After the verified local sync on **2026-10-06**, the stats API reports **356 tips: 304 wins, 5 losses, and 47 pending**, with a 98.38% win rate, 119.67% ROI, and average odds of 2.64. The repository's 12 dated dumps total 356 records but report 301 wins and 55 pending. Eight outcomes differ and still need reconciliation. Metrics change as records are settled and synced; see [`../roadmap.md`](../roadmap.md) for the dated project status.
 
-Tip lists return today's published records when present, otherwise the most recent day with data.
+The outcome totals above are a historical 6 October checkpoint only. Later scrapes and settlements can change both the local dumps and database; reconcile their outcomes before treating either record as authoritative.
 
 ## Access Token Rules
 
@@ -54,9 +57,9 @@ Because redemption is account-bound, the anonymous redemption path described in 
 
 ## Tip and Archive Day Selection
 
-`/api/tips` (and its tier variants) and `/api/tips/archive` return **today** when today has published tips. When today has no records — before the day's scrape has run — they fall back to the **most recent day that has data** instead of returning an empty page. An explicit `day`, `from`, or `to` always wins. Both responses include a `day` field naming the day that was served, so a client can label the result.
+`/api/tips` and its tier variants are pinned to the current Nairobi business day. If today's scrape has not been published, the live list is empty; it does not silently substitute an earlier day. Historical records are served through `/api/tips/archive`, which excludes today and future dates and defaults to the previous Nairobi day when no date range is supplied. Responses include the served `day` value.
 
-Admins can read every tier through `/api/tips/vip` and `/api/tips/maxbet`. The public `/api/tips` list intentionally exposes only public (Free) products.
+Admins can read every tier through `/api/tips/vip` and `/api/tips/maxbet`. The public `/api/tips` list intentionally exposes only public (Free) products. API requests and responses are routed through the existing protected admin endpoint for single-tip settlement.
 
 ## Mutation and authorization rules
 - The public `/api/tips` router is read-only. Tip mutations are available only under `/api/admin/tips` and require an active admin JWT; AdminService independently verifies the actor before each mutation. The routine source-of-truth workflow is CLI dump → review → sync.
@@ -112,7 +115,7 @@ Tip ids are derived from the dump filename and the tip's position within it, so 
 
 > Prefer `docker compose run --rm app npm run sync` over calling the seed directly: it validates the dumps first and checks the database credentials before writing.
 
-> The repository currently contains **12 dated dumps with 356 tip records**. Run `seed:check` first to validate dump data without writing to PostgreSQL.
+> Historical 6 October checkpoint: 12 dated dumps with 356 tip records. The 8 October Docker sync dry-run validated 417 tips from 14 files without writing to PostgreSQL. Counts change as dumps are added or updated; run `seed:check` or `sync:dry` against the current data before writing.
 
 ## Syncing the Database
 
@@ -159,5 +162,5 @@ A stale client silently omits newly added models. Code that references a model m
 | `Cannot read properties of undefined (reading 'create')` | The Prisma client is stale or missing a model. Run `npm run --prefix backend prisma:generate`. |
 | API works but the frontend shows no data | `NEXT_PUBLIC_API_URL` in `frontend/.env` should be `http://localhost:3000/api`; recreate the frontend with `docker compose up -d app` after changing it. |
 | Frontend requests blocked by CORS | Ensure `http://localhost:3001` appears in `CORS_ORIGIN` in `backend/.env`. |
-| Tips or archive pages are empty | Those routes fall back to the latest day with data. If they are still empty, run `npm run expertise`, then `docker compose run --rm app npm run sync`. Check the `day` field in the response to see which day was served. |
+| Tips or archive pages are empty | `/api/tips` is limited to today, so check whether today's scrape was synced and published. `/api/tips/archive` covers earlier Nairobi days and defaults to yesterday; check the request's `day` field and matching dated dump. |
 | Win rate and ROI show `0` | Run `npm run settlement` to record results, then `docker compose run --rm app npm run sync` to publish them. |

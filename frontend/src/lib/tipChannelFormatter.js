@@ -1,3 +1,5 @@
+import { getSettlementMarker } from "./settlementMarker";
+
 const formatOdds = (odds) => {
   const value = Number(odds);
   return Number.isFinite(value) ? value.toFixed(2) : "";
@@ -64,7 +66,8 @@ const formatSelection = (selection, market) => {
   return `${cleanSelection} ${cleanMarket}`;
 };
 
-const formatOutcome = (outcome) => {
+const formatOutcome = (outcome, tier, showSettlementMarkers = false) => {
+  if (showSettlementMarkers) return ` ${getSettlementMarker(outcome, tier)}`.trimEnd();
   if (["win", "won"].includes(String(outcome || "").toLowerCase())) return " ✅✅";
   if (["lose", "lost"].includes(String(outcome || "").toLowerCase())) return " ❎❎";
   return "";
@@ -176,7 +179,7 @@ const leagueText = (tip) => {
   return "";
 };
 
-export function formatTipChannelCard(tip) {
+export function formatTipChannelCard(tip, { tier = "VIP", showSettlementMarkers = false } = {}) {
   if (!tip) return "";
 
   const sport = String(tip.sport || "Match");
@@ -216,17 +219,16 @@ export function formatTipChannelCard(tip) {
       const odds = formatOdds(selection.odds);
       const units = Number(selection.units ?? selection.stakeUnits ?? 1);
       const selectionWithMarket = formatSelection(selection.selection, selection.market);
-      lines.push(`${selectionWithMarket || name}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(selection.outcome)}`);
+      lines.push(`${selectionWithMarket || name}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(selection.outcome, tier, showSettlementMarkers)}`);
     }
   } else {
     const odds = formatOdds(mainTip.odds);
     const units = Number(mainTip.units ?? mainTip.stakeUnits ?? 2);
-    lines.push(`${normalizeLabel(mainTip.selection)}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(mainTip.outcome || tip.outcome)}`);
+    lines.push(`${normalizeLabel(mainTip.selection)}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(mainTip.outcome || tip.outcome, tier, showSettlementMarkers)}`);
   }
 
   return lines.join("\n").trim();
 }
-
 export function formatFreeTipChannelCard(tip) {
   if (!tip) return "";
 

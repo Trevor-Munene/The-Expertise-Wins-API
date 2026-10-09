@@ -6,6 +6,14 @@ import { marked } from "marked";
 
 const BLOG_DIR = path.join(process.cwd(), "content", "blog");
 
+function removeDuplicateTitleHeading(content, title) {
+  const match = content.match(/^\s*#\s+(.+?)\s*(?:\r?\n|$)/);
+  if (!match || match[1].trim().toLowerCase() !== String(title || "").trim().toLowerCase()) {
+    return content;
+  }
+  return content.slice(match[0].length).replace(/^\s*\r?\n/, "");
+}
+
 /** Ensure blog directory exists */
 function getBlogDirectory() {
   if (!fs.existsSync(BLOG_DIR)) {
@@ -55,18 +63,20 @@ export function getPostBySlug(slug) {
 
   const fileContents = fs.readFileSync(targetPath, "utf8");
   const { data, content } = matter(fileContents);
-  const htmlContent = marked.parse(content);
+  const title = data.title || slug.replace(/-/g, " ");
+  const articleContent = removeDuplicateTitleHeading(content, title);
+  const htmlContent = marked.parse(articleContent);
 
   return {
     slug,
-    title: data.title || slug.replace(/-/g, " "),
+    title,
     date: data.date || "2026-09-01",
     author: data.author || "PikkBetter Team",
     category: data.category || "General",
     excerpt: data.excerpt || "",
     readTime: data.readTime || "4 min read",
     tags: data.tags || [],
-    content,
+    content: articleContent,
     htmlContent,
   };
 }

@@ -1,12 +1,12 @@
 # V2 Ideation — Open Proposal
 
-**Status:** early product ideation, recorded 6 October 2026. This is a discussion document, not an approved feature list, delivery promise, estimate, or replacement for V1 acceptance work. Add, revise, combine, reprioritize, or remove ideas as the product and operating experience develop.
+**Status:** early product ideation, refreshed 8 October 2026. This is a discussion document, not an approved feature list, delivery promise, estimate, or replacement for V1 acceptance work. Add, revise, combine, reprioritize, or remove ideas as the product and operating experience develop.
 
 ## Why keep this document
 
 V1 is being exercised with real operating workflows. Its immediate purpose is to make tip collection, review, publishing, settlement, access control, and transparent reporting dependable. V2 ideas can be explored while that work continues, without treating them as work already underway.
 
-The current application has a manual CLI publishing and settlement workflow, a Dockerized web application, an Express REST API, admin curation and access-token tools, and aggregate statistics. The running database and source dumps also need settlement reconciliation; see the dated V1 status in [`roadmap.md`](./roadmap.md). V2 should build on evidence from V1 rather than assume these workflows are finished.
+The current application has a manual CLI publishing and settlement workflow, a Dockerized web application, an Express REST API, admin curation and access-token tools, aggregate statistics, and one-save settlement of a tip with its individual selections. The 8 October Docker dry run validated 417 tips in 14 dump files without changing the database; database/dump settlement reconciliation and full V1 acceptance remain open. See the dated V1 status in [`roadmap.md`](./roadmap.md). V2 should build on evidence from V1 rather than assume these workflows are finished.
 
 ## Possible V2 directions
 

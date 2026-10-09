@@ -45,6 +45,8 @@ An unmarked **free-channel** selection defaults to a win; an unmarked **paid-gro
 
 A marker is matched by selection text, falling back to the printed odds and stake on the result line, so a selection that was reworded between the dump and the channel (for example `Over (9/10)` versus `Over Total Goals`) still settles correctly. Fixture lookup also considers every occurrence of the team name, so a fixture that shares a name with an earlier card is matched against the right block.
 
+The web admin also supports settling every selection within one stored tip in one save. That operation is part of the backend/web app workflow; it does not modify the local CLI settlement template or dated JSON dumps. Keep CLI settlement and application admin settlement in sync by reviewing and syncing the operator's chosen source of truth.
+
 Run the CLI tests:
 
 ```bash
@@ -106,6 +108,6 @@ docker compose run --rm app npm run sync
 
 ## Current Data State
 
-As of **2026-10-06 after local sync**, `settlement/previous-day-results/` contains **12 dated dumps from 25 September through 6 October 2026**, with **356 tip records**. The dump files contain 301 wins and 55 pending tips; the live database reports 304 wins, 5 losses, and 47 pending. Eight outcomes differ. Reconcile this before using the database and dumps together as a final performance record.
+The figures below are a **historical 2026-10-06 checkpoint**, not current totals. At that point, 12 dated dumps contained 356 tip records; the dump outcomes and synced database outcomes differed by eight results. Later local scrape/settlement files may exist. Review and reconcile the current dated dump and database after each sync before relying on combined performance totals.
 
-The newest dump is `freetips-6th Oct 2026.json`. `/api/tips` and `/api/archive` prefer today's published data and otherwise fall back to the most recent day with records. Review settlement output before syncing it into Docker PostgreSQL.
+Review settlement output before syncing it into Docker PostgreSQL. The live `/api/tips` feeds are restricted to the current Nairobi day and do not fall back to older tips; the archive is used for previous days.

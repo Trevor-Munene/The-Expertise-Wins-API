@@ -15,7 +15,6 @@ import {
 import toast from "react-hot-toast";
 
 import { authApi } from "../../api/auth.api";
-import { auth } from "../../lib/auth";
 
 const initialFormData = {
   email: "",
@@ -74,28 +73,6 @@ export default function RegisterPage() {
         registrationResponse?.message ||
           "Account registered successfully!"
       );
-
-      try {
-        const loginResponse = await authApi.login({
-          email,
-          password,
-        });
-
-        if (loginResponse?.token && loginResponse?.user) {
-          auth.setToken(loginResponse.token);
-          auth.setUser(loginResponse.user);
-
-          router.push(
-            auth.isAdmin(loginResponse.user)
-              ? "/admin"
-              : "/profile"
-          );
-
-          return;
-        }
-      } catch {
-        // Registration succeeded; fall back to the normal login page.
-      }
 
       router.push("/login");
     } catch (err) {

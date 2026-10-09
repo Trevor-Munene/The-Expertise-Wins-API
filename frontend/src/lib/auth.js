@@ -19,6 +19,7 @@ export const auth = {
   setUser(user) {
     if (typeof window === "undefined") return;
     localStorage.setItem(USER_KEY, JSON.stringify(user));
+    window.dispatchEvent(new Event("tew-auth-change"));
   },
 
   getUser() {
@@ -40,7 +41,7 @@ export const auth = {
 
   isAdmin(user) {
     const u = user || this.getUser();
-    return u?.role === "ADMIN" || u?.role === "TIPSTER" || u?.role === "EDITOR";
+    return u?.role === "ADMIN";
   },
 
   isSuperAdmin(user) {

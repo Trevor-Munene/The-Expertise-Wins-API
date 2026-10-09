@@ -10,14 +10,14 @@ module.exports = {
     extend: {
       colors: {
         cyan: {
-          400: "#22d3ee",
-          500: "#06b6d4",
-          600: "#0891b2",
+          400: "#6ee7b7",
+          500: "#10b981",
+          600: "#059669",
         },
         electric: {
-          glow: "#00f0ff",
-          blue: "#0072ff",
-          cyan: "#00c6ff",
+          glow: "#34d399",
+          blue: "#047857",
+          cyan: "#10b981",
         },
         dark: {
           bg: "#050c0a",
@@ -27,8 +27,9 @@ module.exports = {
         },
       },
       backgroundImage: {
-        "cyan-gradient": "linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)",
-        "cyan-glow": "radial-gradient(circle, rgba(0,240,255,0.15) 0%, rgba(5,8,17,0) 70%)",
+        "brand-gradient": "linear-gradient(135deg, #34d399 0%, #10b981 58%, #d6a94b 100%)",
+        "cyan-gradient": "linear-gradient(135deg, #34d399 0%, #10b981 58%, #d6a94b 100%)",
+        "cyan-glow": "radial-gradient(circle, rgba(52,211,153,0.15) 0%, rgba(5,12,10,0) 70%)",
       },
     },
   },

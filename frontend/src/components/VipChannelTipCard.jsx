@@ -15,7 +15,7 @@ const TIER_STYLES = {
   },
 };
 
-export default function VipChannelTipCard({ tip, tier = "VIP", cardNumber = 1 }) {
+export default function VipChannelTipCard({ tip, tier = "VIP", cardNumber = 1, showSettlementMarkers = false }) {
   if (!tip) return null;
 
   const tierName = String(tier).toUpperCase() === "MAXBET" ? "MAXBET" : "VIP";
@@ -32,7 +32,7 @@ export default function VipChannelTipCard({ tip, tier = "VIP", cardNumber = 1 })
         </span>
       </header>
       <pre className="whitespace-pre-wrap break-words px-5 py-5 font-mono text-sm leading-7 text-slate-100 [overflow-wrap:anywhere]">
-        {formatTipChannelCard(tip)}
+        {formatTipChannelCard(tip, { tier: tierName, showSettlementMarkers })}
       </pre>
       {hasTipId && (
         <footer className="border-t border-slate-800 px-5 py-2">
