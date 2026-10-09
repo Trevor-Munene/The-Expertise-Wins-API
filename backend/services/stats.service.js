@@ -184,7 +184,7 @@ const getUsageStats = async () => {
   const since = new Date();
   since.setDate(since.getDate() - 30);
 
-  const [totalEvents, uniqueUsers, topPaths, daily] = await Promise.all([
+  const [totalEvents, uniqueUsers, topPaths, recentEvents] = await Promise.all([
     prisma.usageEvent.count({ where: { createdAt: { gte: since } } }),
     prisma.usageEvent.findMany({
       where: { createdAt: { gte: since }, userId: { not: null } },
@@ -198,14 +198,24 @@ const getUsageStats = async () => {
       orderBy: { _count: { path: "desc" } },
       take: 10,
     }),
-    prisma.usageEvent.groupBy({
-      by: ["event"],
+    prisma.usageEvent.findMany({
       where: { createdAt: { gte: since } },
-      _count: { _all: true },
-      orderBy: { _count: { event: "desc" } },
-      take: 10,
+      select: { createdAt: true },
     }),
   ]);
+
+  // Bucket by Nairobi calendar day; a groupBy on `event` was previously
+  // returned under the misleading `daily` field and counted event names.
+  const dailyCounts = new Map();
+  for (const item of recentEvents) {
+    const date = new Date(item.createdAt.getTime() + 3 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+    dailyCounts.set(date, (dailyCounts.get(date) || 0) + 1);
+  }
+  const daily = [...dailyCounts]
+    .map(([date, count]) => ({ date, count }))
+    .sort((left, right) => left.date.localeCompare(right.date));
 
   return { periodDays: 30, totalEvents, uniqueUsers: uniqueUsers.length, topPaths, daily };
 };

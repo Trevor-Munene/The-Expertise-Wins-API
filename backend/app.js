@@ -3,9 +3,11 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const { passport } = require("./middleware/authentication");
 const errorHandler = require("./middleware/errorHandler");
+const { createUsageTracker } = require("./middleware/usageTracker");
 
 const authRouter = require("./routes/auth.routes");
 const tipsRouter = require("./routes/tips.routes");
@@ -14,33 +16,6 @@ const productsRouter = require("./routes/products.routes");
 const subscriptionsRouter = require("./routes/subscriptions.routes");
 const adminRouter = require("./routes/admin.routes");
 const prisma = require("./lib/prisma");
-
-// Record a usage event for every finished API request
-const appUsageTracker = (req, res, next) => {
-  res.on("finish", () => {
-    // Read the full path because mounted routers strip their prefix from req.path
-    const path = req.originalUrl.split("?")[0];
-    if (!path.startsWith("/api")) return;
-
-    // Never let analytics break a real API response: guard the model and
-    // swallow every failure, otherwise a stale or unreachable database
-    // raises an unhandled rejection that can take the whole process down.
-    Promise.resolve()
-      .then(() => {
-        if (typeof prisma.usageEvent?.create !== "function") return;
-        return prisma.usageEvent.create({
-          data: {
-            event: `${req.method} ${path}`,
-            path,
-            userId: req.user?.id || null,
-            metadata: { statusCode: res.statusCode },
-          },
-        });
-      })
-      .catch(() => {});
-  });
-  next();
-};
 
 const app = express();
 
@@ -69,7 +44,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 
 // Serve uploaded files such as avatars
-app.use("/public", express.static("public"));
+app.use("/public", express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Respond to the health check
 app.get("/", (req, res) =>
@@ -77,7 +53,7 @@ app.get("/", (req, res) =>
 );
 
 // Track usage, then mount all API routes under /api
-app.use(appUsageTracker);
+app.use(createUsageTracker(prisma));
 app.use("/api/auth", authRouter);
 app.use("/api/tips", tipsRouter);
 app.use("/api/stats", statsRouter);

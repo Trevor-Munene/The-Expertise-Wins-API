@@ -19,6 +19,7 @@ import { authApi } from "../../api/auth.api";
 import { subscriptionsApi } from "../../api/subscriptions.api";
 import { productsApi } from "../../api/products.api";
 import { auth } from "../../lib/auth";
+import { getTipsPathForProduct } from "../../lib/access";
 import { formatDate } from "../../lib/utils";
 import Modal from "../../components/Modal";
 
@@ -292,6 +293,7 @@ export default function ProfilePage() {
       toast.success(getSuccessMessage(response, "Access token redeemed!"));
       setTokenCode("");
       await loadProfileData();
+      router.push(getTipsPathForProduct(response?.accessToken?.product?.slug));
     } catch (error) {
       if (mountedRef.current) {
         toast.error(getErrorMessage(error, "Invalid or expired token"));
@@ -456,6 +458,7 @@ export default function ProfilePage() {
       );
 
       if (response?.result?.avatarUrl) {
+        auth.setUser({ ...user, avatarUrl: response.result.avatarUrl });
         setUser((previous) =>
           previous
             ? { ...previous, avatarUrl: response.result.avatarUrl }

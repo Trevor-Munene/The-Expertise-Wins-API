@@ -185,8 +185,8 @@ const unpublishTip = async (req, res, next) => {
 const settleTip = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { outcome, result: resInfo } = req.body ?? {};
-    const tip = await adminService.settleTip(id, outcome, resInfo, req.user?.id);
+    const { outcome, result: resInfo, selectionOutcomes } = req.body ?? {};
+    const tip = await adminService.settleTip(id, outcome, resInfo, req.user?.id, selectionOutcomes);
     res.status(200).json({ message: "Tip settled successfully.", tip });
   } catch (error) {
     next(error);

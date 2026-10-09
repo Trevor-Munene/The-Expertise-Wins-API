@@ -8,12 +8,9 @@ import {
   ShieldCheck,
   Wallet,
 } from "lucide-react";
+import { createPageMetadata } from "../../lib/seo";
 
-export const metadata = {
-  title: "Responsible Betting",
-  description:
-    "Practical guidance for approaching sports betting responsibly and keeping it within your limits.",
-};
+export const metadata = createPageMetadata({ title: "Responsible Betting", description: "Practical guidance for approaching sports betting responsibly and keeping it within your limits.", pathname: "/responsible-betting" });
 
 const guidanceSections = [
   {

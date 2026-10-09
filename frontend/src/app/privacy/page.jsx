@@ -9,12 +9,9 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import { createPageMetadata } from "../../lib/seo";
 
-export const metadata = {
-  title: "Privacy Policy",
-  description:
-    "Learn how The Expertise Wins collects, uses, and protects your information.",
-};
+export const metadata = createPageMetadata({ title: "Privacy Policy", description: "Learn how The Expertise Wins collects, uses, and protects your information.", pathname: "/privacy" });
 
 const privacySections = [
   {

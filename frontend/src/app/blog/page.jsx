@@ -10,12 +10,12 @@ import {
 
 import { getAllPosts } from "../../lib/blog";
 import { formatDate } from "../../lib/utils";
-import { generateStructuredData } from "../../lib/seo";
+import { createPageMetadata, generateStructuredData } from "../../lib/seo";
 
-export const metadata = {
-  title: "Insights Blog & Betting Strategy — The Expertise Wins",
-  description:
-    "Read technical breakdowns on betting strategies, odds normalization, value curation, and bankroll management.",
+export const metadata = createPageMetadata({
+  title: "Insights Blog & Betting Strategy",
+  description: "Read technical breakdowns on betting strategies, odds normalization, value curation, and bankroll management.",
+  pathname: "/blog",
   keywords: [
     "betting strategy",
     "odds normalization",
@@ -23,7 +23,7 @@ export const metadata = {
     "bankroll management",
     "sports analytics",
   ],
-};
+});
 
 const cardClassName =
   "bg-slate-900/80 border border-slate-800 hover:border-emerald-400/30 rounded-2xl p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-emerald-950/20 flex flex-col justify-between group";
@@ -32,7 +32,7 @@ export default function BlogPage() {
   const posts = getAllPosts();
 
   const jsonLd = generateStructuredData({
-    type: "WebSite",
+    type: "CollectionPage",
     title: metadata.title,
     description: metadata.description,
     url: "/blog",

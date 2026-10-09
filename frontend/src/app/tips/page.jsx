@@ -16,8 +16,12 @@ import {
 } from "lucide-react";
 
 import { tipsApi } from "../../api/tips.api";
+import { subscriptionsApi } from "../../api/subscriptions.api";
+import { auth } from "../../lib/auth";
+import { getPreferredTipsTab } from "../../lib/access";
 import TipCard from "../../components/TipCard";
 import VipChannelTipCard from "../../components/VipChannelTipCard";
+import SportsCoverage from "../../components/SportsCoverage";
 
 const tabs = [
   {
@@ -234,7 +238,7 @@ function getKickoffMinutes(tip) {
 }
 
 export default function TipsPage() {
-  const [activeTab, setActiveTab] = useState("free");
+  const [activeTab, setActiveTab] = useState(null);
   const [tips, setTips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -245,8 +249,39 @@ export default function TipsPage() {
   const [error, setError] = useState("");
   const [retryCount, setRetryCount] = useState(0);
 
+  // Plain /tips visits land on the best active membership. VIP takes priority
+  // when both premium products are available; explicit tab links take priority.
   useEffect(() => {
     let cancelled = false;
+
+    async function selectInitialTier() {
+      const requested = new URLSearchParams(window.location.search).get("tab");
+      if (["free", "vip", "maxbet", "all"].includes(requested)) {
+        setActiveTab(requested);
+        return;
+      }
+
+      if (!auth.getToken()) {
+        setActiveTab("free");
+        return;
+      }
+
+      try {
+        const access = await subscriptionsApi.getMyAccess();
+        if (!cancelled) setActiveTab(getPreferredTipsTab(access));
+      } catch {
+        if (!cancelled) setActiveTab("free");
+      }
+    }
+
+    selectInitialTier();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!activeTab) return () => { cancelled = true; };
 
     async function loadTips() {
       setLoading(true);
@@ -495,7 +530,9 @@ export default function TipsPage() {
       : "Access Restricted";
 
   const accessDescription = isPremiumView
-    ? "This section requires an active VIP or MaxBet membership. Sign in with your account or activate the access token provided by Admin."
+    ? accessStatus === 403 && auth.getToken()
+      ? `You are signed in, but your account does not have active ${activeTab === "vip" ? "Pikk Better VIP" : "Pikk MaxBet VIP"} access. Activate the matching access token to view this tier.`
+      : "This section requires an active VIP or MaxBet membership. Sign in with your account or activate the access token provided by Admin."
     : "This view is currently restricted. Sign in with your account or contact Admin if you believe you should have access.";
 
   const viewStatus = loading
@@ -582,6 +619,8 @@ export default function TipsPage() {
           </a>
         </div>
       </header>
+
+      <SportsCoverage />
 
       {/* Access guide */}
       <section aria-labelledby="access-guide-heading">
@@ -796,12 +835,14 @@ export default function TipsPage() {
             </div>
 
             <div className="flex flex-wrap justify-center gap-3">
-              <Link
-                href="/login"
-                className={`${buttonStyles} bg-emerald-500 text-slate-950 hover:bg-emerald-400`}
-              >
-                Sign In
-              </Link>
+              {accessStatus === 401 && (
+                <Link
+                  href="/login"
+                  className={`${buttonStyles} bg-emerald-500 text-slate-950 hover:bg-emerald-400`}
+                >
+                  Sign In
+                </Link>
+              )}
 
               <Link
                 href="/products"

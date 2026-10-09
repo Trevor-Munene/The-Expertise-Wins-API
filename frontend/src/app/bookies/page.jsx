@@ -10,12 +10,9 @@ import {
   Star,
   WalletCards,
 } from "lucide-react";
+import { createPageMetadata } from "../../lib/seo";
 
-export const metadata = {
-  title: "Where We Place Our Bets | The Expertise Wins",
-  description:
-    "Explore featured bookmaker registration links, promo-code instructions, and responsible betting guidance from The Expertise Wins.",
-};
+export const metadata = createPageMetadata({ title: "Where We Place Our Bets", description: "Explore featured bookmaker registration links, promo-code instructions, and responsible betting guidance from The Expertise Wins.", pathname: "/bookies" });
 
 const bookmakers = [
   {

@@ -1,16 +1,16 @@
 # The Expertise Wins — V1 Status and Roadmap
 
-This document distinguishes the implemented V1 baseline from the remaining acceptance work. Snapshot date: **6 October 2026**. Phase checkboxes record milestones; they do not imply that production deployment or every real-user workflow has been accepted.
+This document distinguishes the implemented V1 baseline from the remaining acceptance work. Code and documentation snapshot date: **8 October 2026**. The operational data figures below are a dated 6 October snapshot and are not a current live-system check. Phase checkboxes record milestones; they do not imply that production deployment or every real-user workflow has been accepted.
 
 > V1 now has a Dockerized application stack. The current focus is data reconciliation, operational hardening, and real-user acceptance.
 
 ---
 
-## Current status (6 October 2026)
+## Current status (8 October 2026 code snapshot)
 
 The repository contains the CLI workflow, Express/Prisma REST API, Next.js frontend, and Docker Compose setup. The API and frontend run in the Docker `app` service; PostgreSQL is a separate healthy container. The published local ports are API `3000`, frontend `3001`, and database `5432`. The frontend and backend settings are held in separate ignored env files.
 
-On 6 October, Compose configuration validation passed; the database was healthy; and the API health endpoint, `/api/stats/summary`, and frontend home page each returned HTTP 200. These checks establish that the current Docker services start and answer requests. The full login, customer, admin, backup, and recovery workflows have not been re-accepted as part of this snapshot. The 4 October browser check remains historical evidence, not a current full regression pass.
+The Compose application runs the API, frontend, and PostgreSQL together, with separate frontend and backend environment files and standard ports. Current code includes the public/archive/stats experience, tier-specific access, admin tip management with today/yesterday selection, and daily CLI scrape/settlement sync. A fresh local verification on 8 October confirmed the app container is running, PostgreSQL is healthy, the API readiness route and public frontend/SEO routes respond, backend and CLI test suites pass, frontend lint passes, and Docker sync dry-run validation passes. This is development-stack and automated-check evidence, not full browser or real-user acceptance. Login, customer, end-to-end admin, backup, and recovery workflows still require acceptance. The 4 October browser check and 6 October data checkpoint remain historical evidence.
 
 ### V1 capabilities in the repository
 
@@ -28,7 +28,7 @@ After the verified local Docker sync on 6 October, the stats API reports **356 t
 - Reconcile the eight database outcome differences with the dated CLI dumps and document which state is authoritative after corrections.
 - Exercise the actual registration/login, access-token, entitlement, admin, scrape, settlement, and sync workflows with real users and a fresh database.
 - Add repeatable UI-to-API acceptance coverage and verify migration, backup, and restore procedures.
-- Align sitemap, robots, and metadata domains before deployment.
+- Set `NEXT_PUBLIC_SITE_URL` to the production domain before deployment; page canonical/Open Graph metadata, structured data, sitemap, and robots now share that setting.
 - Complete production configuration and security review. Local Docker health is not production readiness.
 
 V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They are open proposals, not approved scope or current V1 commitments.
@@ -169,6 +169,7 @@ V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They 
 * [x] `/api/products`: Available product tier details
 * [x] `/api/subscriptions`: Active access check, token redemption, subscription history
 * [x] `/api/admin`: User roles, bulk publish/settle, single/bulk access token generation
+* [x] Settle one tip and all of its selection outcomes atomically through one admin action
 
 ---
 
@@ -180,7 +181,7 @@ V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They 
 * [x] Responsive branded UI with light/dark theme preference.
 * [x] **SEO foundations**:
   * Dynamic XML sitemap (`/sitemap.xml`) for a configured subset of public routes and blog posts.
-  * [ ] Align sitemap/robots URLs with the metadata canonical domain and include remaining public pages.
+* [x] Align page metadata, structured data, sitemap, and robots to `NEXT_PUBLIC_SITE_URL` and include all public informational pages.
 * [x] **Admin Dashboard UI (`/admin`)**:
   * Client-side role checks support navigation; the API independently enforces active-admin access. Admin tip curation exists, while routine daily production and settlement remain CLI-driven.
 * [x] Historical tip archive (`/archive`) with detail previews and recorded outcomes.
@@ -213,7 +214,7 @@ V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They 
 * [ ] Complete operator real-user and fresh-database acceptance of V1
 * [ ] Add UI-to-API acceptance coverage
 * [ ] Verify backup and restore procedures
-* [ ] Align sitemap/robots domains with the metadata canonical domain
+* [x] Align page metadata, sitemap, robots, and structured data to `NEXT_PUBLIC_SITE_URL`
 * [ ] Complete a production configuration and security review
 
 V2 automation, developer API services, commercial installation packaging, deeper sport analytics, richer tipping and personal workflows, and a historical-tips calculator are ideation topics in [`v2-ideation.md`](./v2-ideation.md), not Phase 11 commitments.
@@ -234,6 +235,6 @@ V2 automation, developer API services, commercial installation packaging, deeper
 | **Phase 6** | Performance Analytics & ROI Engine | ✅ Aggregate metrics and sport/market breakdowns are implemented; current settlement totals need reconciliation |
 | **Phase 7** | Prisma ORM, Docker PostgreSQL & Historical Seed | ✅ Compose database is healthy and seeded; eight outcome differences remain between the 356 database and dump records |
 | **Phase 8** | Express REST API, Archive & JWT Auth | ✅ Public tips API is read-only; admin curation is active-admin-only, token revoke/delete and mocked-persistence service tests are in place; V1 acceptance is operator real-user/database testing |
-| **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | 🟡 Docker home route is live; full current browser acceptance, automated end-to-end coverage, and sitemap/domain alignment remain |
+| **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | 🟡 Docker public routes and SEO endpoints respond; lint passes; full browser acceptance and end-to-end coverage remain |
 | **Phase 10** | CLI ↔ Database Sync | ✅ Docker sync command is available and idempotent; daily scrape, review, settlement, and sync remain operator-driven |
 | **Phase 11** | V1 Hardening & Acceptance | 🟡 Data reconciliation, real-user acceptance, UI/API coverage, recovery procedures, and deployment review remain |

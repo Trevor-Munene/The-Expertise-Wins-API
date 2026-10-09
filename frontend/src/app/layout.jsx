@@ -5,9 +5,10 @@ import Script from "next/script";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ToastProvider from "../components/ToastProvider";
+import { SITE_URL } from "../lib/seo";
 
 export const metadata = {
-  metadataBase: new URL("https://theexpertisewins.com"),
+  metadataBase: new URL(SITE_URL),
 
   title: {
     default: "The Expertise Wins — Sports Tips & Analytics",
@@ -58,7 +59,7 @@ export const metadata = {
   },
 
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.png",
   },
 };
 

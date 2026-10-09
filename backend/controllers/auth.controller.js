@@ -86,8 +86,9 @@ const updatePassword = async (req, res, next) => {
 const updateAvatar = async (req, res, next) => {
   try {
     const { userId } = getRequestData(req);
-    // Read the stored file path set by the imageHandler middleware
-    const avatarUrl = req.file?.path;
+    const avatarUrl = req.file
+      ? `${req.protocol}://${req.get("host")}/uploads/avatars/${encodeURIComponent(req.file.filename)}`
+      : null;
     if (!avatarUrl) {
       return res.status(400).json({ message: "Avatar file is required." });
     }

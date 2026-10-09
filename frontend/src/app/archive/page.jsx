@@ -883,11 +883,12 @@ export default function ArchivePage() {
                           className="min-w-0"
                         >
                           {group.id === "free" ? (
-                            <TipCard tip={tip} tier="FREE" />
+                            <TipCard tip={tip} tier="FREE" showSettlementMarkers />
                           ) : (
                             <VipChannelTipCard
                               tip={tip}
                               tier={group.id}
+                              showSettlementMarkers
                               cardNumber={(page - 1) * PAGE_SIZE + index + 1}
                             />
                           )}

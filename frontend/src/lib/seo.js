@@ -1,44 +1,48 @@
-// frontend/src/lib/seo.js
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://expertise-wins.com";
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://theexpertisewins.com").replace(/\/$/, "");
 
-export function generateStructuredData({ type = "WebSite", title, description, url, image, datePublished }) {
-  const baseUrl = url ? `${SITE_URL}${url}` : SITE_URL;
+const DEFAULT_IMAGE = "/app-icon.png";
 
+export function createPageMetadata({ title, description, pathname, keywords, noindex = false, type = "website" }) {
+  const url = `${SITE_URL}${pathname}`;
+  const image = `${SITE_URL}${DEFAULT_IMAGE}`;
+  return {
+    title,
+    description,
+    ...(keywords ? { keywords } : {}),
+    alternates: { canonical: pathname },
+    robots: noindex ? { index: false, follow: true } : { index: true, follow: true },
+    openGraph: { title, description, type, url, siteName: "The Expertise Wins", images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
+  };
+}
+
+export function generateStructuredData({ type = "WebSite", title, description, url = "/", image, datePublished, dateModified, author }) {
+  const canonicalUrl = `${SITE_URL}${url}`;
   if (type === "Article") {
     return {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       headline: title,
-      description: description,
-      url: baseUrl,
-      image: image || `${SITE_URL}/og-image.png`,
-      datePublished: datePublished || "2026-09-01",
-      author: {
-        "@type": "Organization",
-        name: "The Expertise Wins / PikkBetter",
-        url: SITE_URL,
-      },
+      description,
+      url: canonicalUrl,
+      image: image || `${SITE_URL}${DEFAULT_IMAGE}`,
+      ...(datePublished ? { datePublished } : {}),
+      ...(dateModified ? { dateModified } : {}),
+      author: { "@type": "Person", name: author || "The Expertise Wins" },
       publisher: {
         "@type": "Organization",
         name: "The Expertise Wins",
-        logo: {
-          "@type": "ImageObject",
-          url: `${SITE_URL}/favicon.ico`,
-        },
+        url: SITE_URL,
+        logo: { "@type": "ImageObject", url: `${SITE_URL}${DEFAULT_IMAGE}` },
       },
     };
   }
 
   return {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "The Expertise Wins",
-    url: SITE_URL,
-    description: "The Expertise Wins is a Kenyan-curated sports data pipeline with transparent Free, VIP, and MaxBet tip archives, normalized markets, and performance tracking.",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${SITE_URL}/tips?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
-    },
+    "@type": type,
+    name: title || "The Expertise Wins",
+    url: canonicalUrl,
+    description: description || "Daily sports tips, transparent archives, and performance tracking from The Expertise Wins.",
   };
 }

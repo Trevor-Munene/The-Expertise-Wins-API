@@ -10,12 +10,26 @@ const apiClient = axios.create({
   timeout: 15000,
 });
 
+function getUsageClientId() {
+  if (typeof window === "undefined") return null;
+
+  const storageKey = "tew_usage_client_id";
+  let clientId = window.localStorage.getItem(storageKey);
+  if (!clientId) {
+    clientId = window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    window.localStorage.setItem(storageKey, clientId);
+  }
+  return clientId;
+}
+
 // Attach JWT to every request
 apiClient.interceptors.request.use((config) => {
   const token = auth.getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  const usageClientId = getUsageClientId();
+  if (usageClientId) config.headers["X-TEW-Client-Id"] = usageClientId;
   return config;
 });
 

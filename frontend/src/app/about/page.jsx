@@ -1,5 +1,7 @@
 // frontend/src/app/about/page.jsx
 import Link from "next/link";
+import SportsCoverage from "../../components/SportsCoverage";
+import { createPageMetadata } from "../../lib/seo";
 import {
   ArrowRight,
   BarChart3,
@@ -13,11 +15,7 @@ import {
   Users,
 } from "lucide-react";
 
-export const metadata = {
-  title: "About The Expertise Wins",
-  description:
-    "Learn about The Expertise Wins, our approach to sports analysis, community, and open-source development.",
-};
+export const metadata = createPageMetadata({ title: "About The Expertise Wins", description: "Learn about The Expertise Wins, our approach to sports analysis, community, and open-source development.", pathname: "/about" });
 
 const principles = [
   {
@@ -117,6 +115,8 @@ export default function AboutPage() {
             and evaluate.
           </p>
         </header>
+
+        <SportsCoverage className="mt-8" />
 
         {/* Project principles */}
         <section

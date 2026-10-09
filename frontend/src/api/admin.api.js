@@ -101,7 +101,7 @@ export const adminApi = {
     return data;
   },
 
-  // Settle a single tip, expecting a payload of { outcome, result }
+  // Settle a tip and optionally settle every nested selection in the same request.
   async settleTip(id, payload) {
     const { data } = await apiClient.post(`/admin/tips/${id}/settle`, payload);
     return data;

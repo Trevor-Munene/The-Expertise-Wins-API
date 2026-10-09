@@ -69,7 +69,8 @@ export default function Navbar() {
       if (
         event.key === null ||
         event.key === "tekw_user" ||
-        event.key === "tekw_token"
+        event.key === "tekw_token" ||
+        event.type === "tew-auth-change"
       ) {
         setCurrentUser(auth.getUser());
       }
@@ -85,9 +86,11 @@ export default function Navbar() {
     };
 
     window.addEventListener("storage", syncStoredState);
+    window.addEventListener("tew-auth-change", syncStoredState);
 
     return () => {
       window.removeEventListener("storage", syncStoredState);
+      window.removeEventListener("tew-auth-change", syncStoredState);
     };
   }, []);
 

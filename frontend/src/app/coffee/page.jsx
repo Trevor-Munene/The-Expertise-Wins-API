@@ -2,12 +2,9 @@
 
 import Link from "next/link";
 import { Coffee, Heart, Send, ShieldCheck } from "lucide-react";
+import { createPageMetadata } from "../../lib/seo";
 
-export const metadata = {
-  title: "Support The Expertise Wins",
-  description:
-    "Support The Expertise Wins and stay connected with the official Telegram channel and admin.",
-};
+export const metadata = createPageMetadata({ title: "Support The Expertise Wins", description: "Support The Expertise Wins and stay connected with the official Telegram channel and admin.", pathname: "/coffee" });
 
 export default function CoffeePage() {
   return (
