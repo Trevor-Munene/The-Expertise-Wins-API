@@ -219,7 +219,11 @@ export function formatTipChannelCard(tip, { tier = "VIP", showSettlementMarkers 
       const odds = formatOdds(selection.odds);
       const units = Number(selection.units ?? selection.stakeUnits ?? 1);
       const selectionWithMarket = formatSelection(selection.selection, selection.market);
-      lines.push(`${selectionWithMarket || name}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(selection.outcome, tier, showSettlementMarkers)}`);
+      // Older and bulk-settled tips may only have an outcome on the parent
+      // record. Use each selection's explicit result when present, otherwise
+      // mirror the parent result so archive markers match the card status.
+      const outcome = selection.outcome || tip.outcome || tip.result?.outcome;
+      lines.push(`${selectionWithMarket || name}${odds ? ` @${odds}` : ""} - ${units} Unit${units === 1 ? "" : "s"}${formatOutcome(outcome, tier, showSettlementMarkers)}`);
     }
   } else {
     const odds = formatOdds(mainTip.odds);
