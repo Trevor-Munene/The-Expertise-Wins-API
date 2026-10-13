@@ -71,6 +71,17 @@ const getCurrentUser = async (req, res, next) => {
   }
 };
 
+// Update only the signed-in user's public profile details.
+const updateCurrentUserProfile = async (req, res, next) => {
+  try {
+    const { userId, body } = getRequestData(req);
+    const user = await authService.updateCurrentUserProfile(userId, body);
+    res.status(200).json({ message: "Profile updated successfully.", user });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Change the current user's password
 const updatePassword = async (req, res, next) => {
   try {
@@ -104,6 +115,7 @@ module.exports = {
   loginUser,
   logoutUser,
   getCurrentUser,
+  updateCurrentUserProfile,
   updatePassword,
   updateAvatar,
 };

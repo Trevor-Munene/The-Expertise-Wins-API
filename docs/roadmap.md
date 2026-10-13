@@ -1,23 +1,25 @@
 # The Expertise Wins — V1 Status and Roadmap
 
-This document distinguishes the implemented V1 baseline from the remaining acceptance work. Code and documentation snapshot date: **8 October 2026**. The operational data figures below are a dated 6 October snapshot and are not a current live-system check. Phase checkboxes record milestones; they do not imply that production deployment or every real-user workflow has been accepted.
+> **Production release status (10 October 2026): not yet cleared.** Backend and CLI test suites, frontend lint, and the optimized frontend build pass locally. Production deployment, enabling and verifying Cloudflare bot controls, origin isolation, real-user/database acceptance, data reconciliation, and backup/restore verification are still required. The current Compose setup is for development and publishes PostgreSQL. See [`cloudflare-launch.md`](./cloudflare-launch.md).
+
+This document distinguishes the implemented V1 baseline from remaining acceptance work. Review status date: **10 October 2026**. The operational data figures below are a dated 6 October snapshot and are not current live-system totals. Phase checkboxes record implementation milestones; they do not imply production deployment or acceptance of every real-user workflow.
 
 > V1 now has a Dockerized application stack. The current focus is data reconciliation, operational hardening, and real-user acceptance.
 
 ---
 
-## Current status (8 October 2026 code snapshot)
+## Current status (10 October 2026 review)
 
-The repository contains the CLI workflow, Express/Prisma REST API, Next.js frontend, and Docker Compose setup. The API and frontend run in the Docker `app` service; PostgreSQL is a separate healthy container. The published local ports are API `3000`, frontend `3001`, and database `5432`. The frontend and backend settings are held in separate ignored env files.
+The repository contains the CLI workflow, Express/Prisma REST API, Next.js frontend, and Docker Compose setup. In local development, the API and frontend run in the Docker `app` service; PostgreSQL is a separate container. The published local ports are API `3000`, frontend `3001`, and database `5432`. The frontend and backend settings are held in separate ignored env files. This is not a production topology.
 
-The Compose application runs the API, frontend, and PostgreSQL together, with separate frontend and backend environment files and standard ports. Current code includes the public/archive/stats experience, tier-specific access, admin tip management with today/yesterday selection, and daily CLI scrape/settlement sync. A fresh local verification on 8 October confirmed the app container is running, PostgreSQL is healthy, the API readiness route and public frontend/SEO routes respond, backend and CLI test suites pass, frontend lint passes, and Docker sync dry-run validation passes. This is development-stack and automated-check evidence, not full browser or real-user acceptance. Login, customer, end-to-end admin, backup, and recovery workflows still require acceptance. The 4 October browser check and 6 October data checkpoint remain historical evidence.
+Current code includes public pages, a public historical archive and performance views, token-gated current VIP/MaxBet feeds, account/admin workflows, and daily CLI scrape/settlement/sync. On 10 October, backend and CLI test suites, frontend lint, and an optimized Next.js build completed successfully; frontend checks show an existing profile-page `<img>` optimization warning. On 8 October, local Docker routes and sync dry-run were checked. This is local/code-level evidence, not full browser or real-user acceptance. Cloudflare bot controls have not been applied to a production zone; see [`cloudflare-launch.md`](./cloudflare-launch.md). Login, customer, end-to-end admin, live database, backup, and recovery workflows still require acceptance. The 4 October browser check and 6 October data checkpoint remain historical evidence.
 
 ### V1 capabilities in the repository
 
 - **CLI:** scrape and normalize FreeTips records, write dated JSON, format channel-ready cards, settle a chosen day's dump from manually pasted markers, and sync dumps to PostgreSQL. Scrape and settlement can run locally; the API, frontend, database, and standard sync workflow are Dockerized.
-- **Backend:** Express REST API with JWT accounts, public Free and access-gated VIP/MaxBet reads, archive and tip details, aggregate stats, products, token redemption, user/admin routes, and active-admin tip curation. Admin curation is protected under `/api/admin/tips`; the public tips router is read-only. There is no developer API key product or live channel-publishing integration.
+- **Backend:** Express REST API with JWT accounts, public Free and access-gated current VIP/MaxBet reads, public historical archive and tier performance, tip details, aggregate stats, products, token redemption, user/admin routes, and active-admin tip curation. Admin curation is protected under `/api/admin/tips`; the public tips router is read-only. There is no developer API key product or live channel-publishing integration.
 - **Frontend:** public site and blog, tips and archive pages, stats, products, login/registration, user profile, and admin pages for users, tips, access tokens, and products. Client-side role checks are for presentation; the API enforces protected operations.
-- **Access and data handling:** tokens are assigned to registered users, can be revoked or deleted, and source identifiers are removed from public tip responses. Settlement is manual; live result verification is not implemented.
+- **Access and data handling:** tokens are assigned to registered users, can be revoked or deleted, and source identifiers are removed from public tip responses. Cloudflare is intended to deter bots/scrapers at deployment while leaving visitor access to public site content intact; zone-level settings are not configured by this repository. Settlement is manual; live result verification is not implemented.
 
 ### Data snapshot
 
@@ -30,6 +32,7 @@ After the verified local Docker sync on 6 October, the stats API reports **356 t
 - Add repeatable UI-to-API acceptance coverage and verify migration, backup, and restore procedures.
 - Set `NEXT_PUBLIC_SITE_URL` to the production domain before deployment; page canonical/Open Graph metadata, structured data, sitemap, and robots now share that setting.
 - Complete production configuration and security review. Local Docker health is not production readiness.
+- At deployment, enable and verify Cloudflare bot mitigation and API rate limits, publish only web/API services through the proxy or Tunnel, and keep PostgreSQL private. Confirm normal browser/API flows still work after bot controls are enabled.
 
 V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They are open proposals, not approved scope or current V1 commitments.
 
@@ -210,12 +213,13 @@ V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They 
 
 * [x] Keep the public tips router read-only and protect admin curation and token management with active-admin authorization
 * [x] Add backend service-logic tests with mocked persistence
+* [x] Reject missing/short JWT signing secrets, apply Joi validation to registration/login/password changes, and avoid returning internal 5xx details
 * [ ] Reconcile the eight differing outcomes across the 356 database and dated dump records
 * [ ] Complete operator real-user and fresh-database acceptance of V1
 * [ ] Add UI-to-API acceptance coverage
 * [ ] Verify backup and restore procedures
 * [x] Align page metadata, sitemap, robots, and structured data to `NEXT_PUBLIC_SITE_URL`
-* [ ] Complete a production configuration and security review
+* [ ] Complete a production configuration and security review, including Cloudflare bot/rate-limit rollout and origin isolation
 
 V2 automation, developer API services, commercial installation packaging, deeper sport analytics, richer tipping and personal workflows, and a historical-tips calculator are ideation topics in [`v2-ideation.md`](./v2-ideation.md), not Phase 11 commitments.
 
@@ -233,8 +237,8 @@ V2 automation, developer API services, commercial installation packaging, deeper
 | **Phase 5** | Pricing & Multi-Currency Tiers | ✅ Completed |
 | **Phase 5.5** | Settlement Engine | ✅ Completed |
 | **Phase 6** | Performance Analytics & ROI Engine | ✅ Aggregate metrics and sport/market breakdowns are implemented; current settlement totals need reconciliation |
-| **Phase 7** | Prisma ORM, Docker PostgreSQL & Historical Seed | ✅ Compose database is healthy and seeded; eight outcome differences remain between the 356 database and dump records |
+| **Phase 7** | Prisma ORM, Docker PostgreSQL & Historical Seed | ✅ Local Compose initialization/seed workflow exists; 6 October snapshot had eight outcome differences which still require reconciliation |
 | **Phase 8** | Express REST API, Archive & JWT Auth | ✅ Public tips API is read-only; admin curation is active-admin-only, token revoke/delete and mocked-persistence service tests are in place; V1 acceptance is operator real-user/database testing |
-| **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | 🟡 Docker public routes and SEO endpoints respond; lint passes; full browser acceptance and end-to-end coverage remain |
-| **Phase 10** | CLI ↔ Database Sync | ✅ Docker sync command is available and idempotent; daily scrape, review, settlement, and sync remain operator-driven |
+| **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | 🟡 10 October local optimized build and lint pass; full browser acceptance and end-to-end coverage remain |
+| **Phase 10** | CLI ↔ Database Sync | ✅ Sync command is available and idempotent; 8 October dry-run validated 417 tips in 14 files; daily scrape, review, settlement, and sync remain operator-driven |
 | **Phase 11** | V1 Hardening & Acceptance | 🟡 Data reconciliation, real-user acceptance, UI/API coverage, recovery procedures, and deployment review remain |

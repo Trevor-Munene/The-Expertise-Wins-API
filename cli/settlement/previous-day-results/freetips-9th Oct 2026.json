@@ -24,18 +24,19 @@
         "odds": 2.2,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/betting/bet-of-the-day/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [],
-    "scrapedAt": "2026-10-09T05:34:33.837Z"
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
   },
   {
     "source": "freetips",
@@ -62,18 +63,19 @@
         "odds": 1.91,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/betting/tennis-bet-of-the-day/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [],
-    "scrapedAt": "2026-10-09T05:34:33.837Z"
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
   },
   {
     "source": "freetips",
@@ -100,7 +102,8 @@
         "odds": 1.72,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/6a320699240918101555/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "10bet",
@@ -109,7 +112,8 @@
         "odds": 2.1,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/a82c3234190213122144/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "1xBet",
@@ -118,7 +122,8 @@
         "odds": 1.83,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Bc.Game Sport",
@@ -127,37 +132,41 @@
         "odds": 1.83,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/f56557260105173714/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/cricket/afghanistan-vs-bangladesh-test-betting-tips-20261008-0010/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [
       {
         "selection": "Hasan Mahmud",
         "market": "Take Over 3.5 Wickets",
         "odds": 2.1,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "selection": "Tanzid Hasan",
         "market": "Score Over 59.5 Runs",
         "odds": 1.83,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "selection": "Abdul Malik",
         "market": "Score Over 46.5 Runs",
         "odds": 1.83,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-09T05:34:33.838Z"
@@ -187,7 +196,8 @@
         "odds": 1.91,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "1xBet",
@@ -196,23 +206,25 @@
         "odds": 1.6,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/rugby-union/northland-vs-tasman-betting-tips-20261008-0011/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Northland Win",
         "market": "Result",
         "odds": 1.6,
         "stakeUnits": 3,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-09T05:34:33.838Z"
@@ -242,7 +254,8 @@
         "odds": 1.66,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -251,23 +264,25 @@
         "odds": 1.61,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/qinwen-zheng-vs-elina-svitolina-betting-tips-20261008-0048/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [
       {
         "selection": "Over 20.5",
         "market": "Total Games",
         "odds": 1.61,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-09T05:34:33.838Z"
@@ -297,7 +312,8 @@
         "odds": 1.83,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -306,7 +322,8 @@
         "odds": 2.15,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Shuffle Sport (MAXBONUS) FT",
@@ -315,7 +332,8 @@
         "odds": 2,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/10c4684d240703114815/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Melbet",
@@ -324,37 +342,41 @@
         "odds": 1.9,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/8a0bd097200214211027/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/cricket/south-africa-vs-australia-test-1st-test-20261008-0004/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [
       {
         "selection": "South Africa Win",
         "market": "Result",
         "odds": 2.15,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "selection": "Marco Jansen",
         "market": "Take Over 5.5 Wickets",
         "odds": 2,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "selection": "Mitchell Starc",
         "market": "Take Over 5.5 Wickets",
         "odds": 1.9,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-09T05:34:33.838Z"
@@ -384,7 +406,8 @@
         "odds": 1.87,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "1xBet",
@@ -393,23 +416,25 @@
         "odds": 1.8,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/basketball/illawarra-hawks-vs-tasmania-jackjumpers-tips-20261007-0048/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Will Magnay 15+",
         "market": "Points",
         "odds": 1.8,
         "stakeUnits": 3,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-09T05:34:33.838Z"
@@ -439,16 +464,17 @@
         "odds": 2.05,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/1w-team-vs-aurora-gaming-betting-tips-20261008-0027/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [],
     "scrapedAt": "2026-10-09T05:34:33.838Z"
   },
@@ -477,16 +503,17 @@
         "odds": 1.45,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/t1-vs-paper-rex-betting-tips-20261008-0032/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [],
     "scrapedAt": "2026-10-09T05:34:33.838Z"
   },
@@ -515,7 +542,8 @@
         "odds": 2.25,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -524,23 +552,25 @@
         "odds": 4,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/novak-djokovic-vs-hubert-hurkacz-tips-live-stream-20261008-0051/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [
       {
         "selection": "Novak Djokovic Win 2-1",
         "market": "Set Betting",
         "odds": 4,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "scrapedAt": "2026-10-09T05:34:33.838Z"
@@ -554,7 +584,7 @@
     "country": null,
     "homeTeam": "Elise Mertens",
     "awayTeam": "Iga Swiatek",
-    "kickoff": "5h 26m",
+    "kickoff": "50m",
     "market": "Correct Score",
     "selection": "Swiatek 2-0",
     "odds": 1.59,
@@ -570,7 +600,8 @@
         "odds": 1.59,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -579,26 +610,28 @@
         "odds": 1.51,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/tennis/elise-mertens-vs-iga-swiatek-betting-tips-20261008-0050/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [
       {
         "selection": "Under 21.5",
         "market": "Total Games",
         "odds": 1.51,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
-    "scrapedAt": "2026-10-09T05:34:33.838Z"
+    "scrapedAt": "2026-10-09T10:10:22.608Z"
   },
   {
     "source": "freetips",
@@ -609,7 +642,7 @@
     "country": null,
     "homeTeam": "Team Vitality",
     "awayTeam": "PARIVISION",
-    "kickoff": "6h 26m",
+    "kickoff": "1h 50m",
     "market": "Map Handicap",
     "selection": "Team Vitality -1.5 Map",
     "odds": 1.62,
@@ -625,18 +658,19 @@
         "odds": 1.62,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/team-vitality-vs-parivision-betting-tips-20261008-0029/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [],
-    "scrapedAt": "2026-10-09T05:34:33.838Z"
+    "scrapedAt": "2026-10-09T10:10:22.608Z"
   },
   {
     "source": "freetips",
@@ -647,7 +681,7 @@
     "country": null,
     "homeTeam": "100 Thieves",
     "awayTeam": "Nongshim RedForce",
-    "kickoff": "6h 26m",
+    "kickoff": "1h 50m",
     "market": "Moneyline",
     "selection": "100 Thieves To Win",
     "odds": 1.48,
@@ -663,18 +697,19 @@
         "odds": 1.48,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/100-thieves-vs-nongshim-redforce-betting-tips-20261008-0047/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [],
-    "scrapedAt": "2026-10-09T05:34:33.838Z"
+    "scrapedAt": "2026-10-09T10:10:22.608Z"
   },
   {
     "source": "freetips",
@@ -685,7 +720,7 @@
     "country": null,
     "homeTeam": "FURIA",
     "awayTeam": "MOUZ",
-    "kickoff": "8h 56m",
+    "kickoff": "4h 20m",
     "market": "Map Handicap",
     "selection": "MOUZ -1.5 Maps",
     "odds": 2.8,
@@ -701,18 +736,19 @@
         "odds": 2.8,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/furia-vs-mouz-betting-tips-20261008-0026/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [],
-    "scrapedAt": "2026-10-09T05:34:33.838Z"
+    "scrapedAt": "2026-10-09T10:10:22.609Z"
   },
   {
     "source": "freetips",
@@ -723,7 +759,7 @@
     "country": null,
     "homeTeam": "Heidenheim",
     "awayTeam": "Kaiserslautern",
-    "kickoff": "10h 56m",
+    "kickoff": "6h 20m",
     "market": "Full-Time Result",
     "selection": "Heidenheim Win",
     "odds": 1.9,
@@ -739,7 +775,8 @@
         "odds": 1.9,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -748,7 +785,8 @@
         "odds": 6.5,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -757,33 +795,36 @@
         "odds": 2.4,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/heidenheim-vs-kaiserslautern-tips-20261007-0010/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Budu Zivzivadze",
         "market": "First Goalscorer",
         "odds": 6.5,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "selection": "Budu Zivzivadze",
         "market": "Anytime Goalscorer",
         "odds": 2.4,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
-    "scrapedAt": "2026-10-09T05:34:33.838Z"
+    "scrapedAt": "2026-10-09T10:10:22.609Z"
   },
   {
     "source": "freetips",
@@ -794,7 +835,7 @@
     "country": null,
     "homeTeam": "Team Falcons",
     "awayTeam": "Team Spirit",
-    "kickoff": "11h 26m",
+    "kickoff": "6h 50m",
     "market": "Moneyline",
     "selection": "Team Spirit To Win",
     "odds": 1.72,
@@ -810,18 +851,19 @@
         "odds": 1.72,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/esports/team-falcons-vs-team-spirit-betting-tips-20261008-0030/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [],
-    "scrapedAt": "2026-10-09T05:34:33.838Z"
+    "scrapedAt": "2026-10-09T10:10:22.609Z"
   },
   {
     "source": "freetips",
@@ -832,7 +874,7 @@
     "country": null,
     "homeTeam": "Galatasaray",
     "awayTeam": "Kasimpasa",
-    "kickoff": "11h 26m",
+    "kickoff": "6h 50m",
     "market": "Result/Both to Score",
     "selection": "Galatasaray Win & BTTS",
     "odds": 2.62,
@@ -848,18 +890,19 @@
         "odds": 2.62,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/galatasaray-vs-kasimpasa-tips-20261007-0007/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [],
-    "scrapedAt": "2026-10-09T05:34:33.838Z"
+    "scrapedAt": "2026-10-09T10:10:22.609Z"
   },
   {
     "source": "freetips",
@@ -870,7 +913,7 @@
     "country": null,
     "homeTeam": "SK Brann",
     "awayTeam": "Viking FK",
-    "kickoff": "11h 26m",
+    "kickoff": "6h 50m",
     "market": "Full-Time Result",
     "selection": "Viking Win",
     "odds": 2.2,
@@ -886,7 +929,8 @@
         "odds": 2.2,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -895,26 +939,28 @@
         "odds": 3.4,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/brann-vs-viking-tips-20261007-0012/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Viking Win & BTTS",
         "market": "Result/Both to Score",
         "odds": 3.4,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
-    "scrapedAt": "2026-10-09T05:34:33.838Z"
+    "scrapedAt": "2026-10-09T10:10:22.609Z"
   },
   {
     "source": "freetips",
@@ -925,7 +971,7 @@
     "country": null,
     "homeTeam": "Moreirense",
     "awayTeam": "Gil Vicente",
-    "kickoff": "16h 32m",
+    "kickoff": "10m",
     "market": "Double Chance",
     "selection": "Moreirense",
     "odds": 1.67,
@@ -941,7 +987,8 @@
         "odds": 1.67,
         "units": 3,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -950,7 +997,8 @@
         "odds": 3.2,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -959,33 +1007,36 @@
         "odds": 6.5,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/422d030210308094711/",
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/football/primeira-liga/moreirense-vs-gil-vicente-tips-live-stream-20261005-0016/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "win",
     "extraTips": [
       {
         "selection": "Draw",
         "market": "Full Time Result",
         "odds": 3.2,
         "stakeUnits": 2,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       },
       {
         "selection": "1-1 Draw",
         "market": "Correct Score",
         "odds": 6.5,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "win",
+        "status": "settled"
       }
     ],
-    "scrapedAt": "2026-10-09T01:13:41.129Z"
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
   },
   {
     "source": "freetips",
@@ -996,7 +1047,7 @@
     "country": null,
     "homeTeam": "India",
     "awayTeam": "West Indies 2nd T20",
-    "kickoff": "7h 56m",
+    "kickoff": "3h 20m",
     "market": "Hit Over 1.5 Sixes",
     "selection": "Shreyas Iyer",
     "odds": 1.83,
@@ -1012,7 +1063,8 @@
         "odds": 1.83,
         "units": 2,
         "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Stake.com",
@@ -1021,7 +1073,8 @@
         "odds": 4.5,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "Bc.Game Sport",
@@ -1030,7 +1083,8 @@
         "odds": 1.83,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/f56557260105173714/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "bookmaker": "10bet",
@@ -1039,39 +1093,1118 @@
         "odds": 1.83,
         "units": 1,
         "betUrl": "https://www.freetips.com/link/a82c3234190213122144/",
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
     "analytics": null,
     "confidenceIndex": null,
     "predictedScore": null,
     "detailsUrl": "https://www.freetips.com/cricket/india-vs-west-indies-2nd-t20i-betting-tips-20261009-0003/",
-    "status": "pending",
+    "status": "settled",
     "result": null,
-    "outcome": null,
+    "outcome": "lose",
     "extraTips": [
       {
         "selection": "Roston Chase",
         "market": "Take 2+ Wickets",
         "odds": 4.5,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "selection": "Shai Hope",
         "market": "Score Over 25.5 Runs",
         "odds": 1.83,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       },
       {
         "selection": "Kuldeep Yadav",
         "market": "Take 2+ Wickets",
         "odds": 1.83,
         "stakeUnits": 1,
-        "outcome": null
+        "outcome": "lose",
+        "status": "settled"
       }
     ],
-    "scrapedAt": "2026-10-09T05:34:33.838Z"
+    "scrapedAt": "2026-10-09T10:10:22.608Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Basketball",
+    "competition": "EuroLeague",
+    "league": "EuroLeague",
+    "country": null,
+    "homeTeam": "Olympiacos",
+    "awayTeam": "Anadolu Efes",
+    "kickoff": "40m",
+    "market": "Asian Handicap",
+    "selection": "Olympiakos -9.5",
+    "odds": 1.9,
+    "stakeUnits": 2,
+    "previewTitle": "Olympiakos vs Anadolu Efes Live Stream & Tips – One-Sided Match in the EuroLeague",
+    "preview": "I expect a positive reaction from Olympiakos after suffering an unexpected loss in Italy last week. The visitors can't count on their star player Mike James, who will be out for at least six months, so a one-sided game is likely in Piraeus.",
+    "verdict": "I expect a positive reaction from Olympiakos after suffering an unexpected loss in Italy last week. The visitors can't count on their star player Mike James, who will be out for at least six months, so a one-sided game is likely in Piraeus.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Olympiakos -9.5",
+        "market": "Asian Handicap",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/basketball/olympiakos-vs-anadolu-efes-live-stream-20261008-0043/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Basketball",
+    "competition": "EuroLeague",
+    "league": "EuroLeague",
+    "country": null,
+    "homeTeam": "Barcelona",
+    "awayTeam": "Zalgiris",
+    "kickoff": "55m",
+    "market": "Result",
+    "selection": "Zalgiris Win",
+    "odds": 1.9,
+    "stakeUnits": 2,
+    "previewTitle": "Barcelona vs Zalgiris Live Stream & Tips – Away Win is Tipped in the EuroLeague",
+    "preview": "I have faith in Zalgiris' roster not only to beat Barcelona here but to be a serious Top 8 contender once again. I believe the Spanish side has no answer for Tubelis and Valanciunas inside the paint, so an away win is the best bet.",
+    "verdict": "I have faith in Zalgiris' roster not only to beat Barcelona here but to be a serious Top 8 contender once again. I believe the Spanish side has no answer for Tubelis and Valanciunas inside the paint, so an away win is the best bet.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Zalgiris Win",
+        "market": "Result",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/basketball/barcelona-vs-zalgiris-live-stream-20261008-0042/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Basketball",
+    "competition": "EuroLeague",
+    "league": "EuroLeague",
+    "country": null,
+    "homeTeam": "Baskonia",
+    "awayTeam": "Besiktas",
+    "kickoff": "55m",
+    "market": "Result",
+    "selection": "Baskonia Win",
+    "odds": 1.7,
+    "stakeUnits": 3,
+    "previewTitle": "Baskonia vs Besiktas Live Stream & Tips – Home Advantage in the EuroLeague",
+    "preview": "Baskonia have finally found some consistency and registered back-to-back victories in the last seven days. It's no secret they usually excel at home, especially in EuroLeague matches, so I will back them to beat inconsistent Besiktas tonight.",
+    "verdict": "Baskonia have finally found some consistency and registered back-to-back victories in the last seven days. It's no secret they usually excel at home, especially in EuroLeague matches, so I will back them to beat inconsistent Besiktas tonight.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Baskonia Win",
+        "market": "Result",
+        "odds": 1.7,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/basketball/baskonia-vs-besiktas-live-stream-20261009-0006/",
+    "status": "settled",
+    "result": null,
+    "outcome": "lose",
+    "extraTips": [],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Bundesliga",
+    "league": "Bundesliga",
+    "country": null,
+    "homeTeam": "Borussia Dortmund",
+    "awayTeam": "Werder Bremen",
+    "kickoff": "55m",
+    "market": "Half-Time/Full-Time",
+    "selection": "Dortmund Win HT-FT",
+    "odds": 1.95,
+    "stakeUnits": 2,
+    "previewTitle": "Borussia Dortmund vs Werder Bremen Tips & Live Stream – BVB to Score Early in the Bundesliga",
+    "preview": "Werder Bremen perform significantly weaker on the road than at home this season, so I don't expect them to get much at Signal Iduna Park. Borussia Dortmund are tipped to score early and win HT-FT, while I am also backing their #9 Serhour Guirassy to find the net.",
+    "verdict": "Werder Bremen perform significantly weaker on the road than at home this season, so I don't expect them to get much at Signal Iduna Park. Borussia Dortmund are tipped to score early and win HT-FT, while I am also backing their #9 Serhour Guirassy to find the net.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Dortmund Win HT-FT",
+        "market": "Half-Time/Full-Time",
+        "odds": 1.95,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Serhou Guirassy",
+        "market": "Anytime Goalscorer",
+        "odds": 1.8,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Serhou Guirassy",
+        "market": "First Goalscorer",
+        "odds": 4.5,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/german-bundesliga/borussia-dortmund-vs-werder-bremen-tips-20261007-0005/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Serhou Guirassy",
+        "market": "Anytime Goalscorer",
+        "odds": 1.8,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Serhou Guirassy",
+        "market": "First Goalscorer",
+        "odds": 4.5,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Ligue 1",
+    "league": "Ligue 1",
+    "country": null,
+    "homeTeam": "Lens",
+    "awayTeam": "Lyon",
+    "kickoff": "1h 10m",
+    "market": "Full Time Result",
+    "selection": "Draw",
+    "odds": 3.7,
+    "stakeUnits": 3,
+    "previewTitle": "Lens vs Lyon Predictions, Betting Tips & Live Stream - Lens to be Content with a Draw in Ligue 1",
+    "preview": "Lyon haven’t lost in Ligue 1 where they have the best defence, conceding two goals in five gams. Lens are incredibly hard to beat at home, the stage set for a draw in the Friday night clash.",
+    "verdict": "Lyon haven’t lost in Ligue 1 where they have the best defence, conceding two goals in five gams. Lens are incredibly hard to beat at home, the stage set for a draw in the Friday night clash.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Draw",
+        "market": "Full Time Result",
+        "odds": 3.7,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "1-1 Draw",
+        "market": "Correct Score",
+        "odds": 7.5,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/ligue-1/lens-vs-lyon-tips-live-stream-20261005-0008/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "1-1 Draw",
+        "market": "Correct Score",
+        "odds": 7.5,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Rugby Union",
+    "competition": "Rugby Union",
+    "league": "Rugby Union",
+    "country": null,
+    "homeTeam": "Glasgow Warriors",
+    "awayTeam": "Connacht",
+    "kickoff": "1h 10m",
+    "market": "Handicap",
+    "selection": "Glasgow Warriors -12.5",
+    "odds": 1.91,
+    "stakeUnits": 3,
+    "previewTitle": "Glasgow Warriors vs Connacht Betting Tips - Warriors to return to winning ways in URC",
+    "preview": "The Glasgow Warriors have a proven track record against Connacht at home and are tipped to cover the -12.5 handicap.",
+    "verdict": "The Glasgow Warriors have a proven track record against Connacht at home and are tipped to cover the -12.5 handicap.",
+    "tips": [
+      {
+        "bookmaker": "10bet",
+        "selection": "Glasgow Warriors -12.5",
+        "market": "Handicap",
+        "odds": 1.91,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/a82c3234190213122144/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/rugby-union/glasgow-warriors-vs-connacht-betting-tips-20261008-0013/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Rugby Union",
+    "competition": "Rugby Union",
+    "league": "Rugby Union",
+    "country": null,
+    "homeTeam": "Leicester Tigers",
+    "awayTeam": "Gloucester",
+    "kickoff": "1h 10m",
+    "market": "Handicap",
+    "selection": "Gloucester +7.5",
+    "odds": 1.81,
+    "stakeUnits": 3,
+    "previewTitle": "Leicester Tigers vs Gloucester Betting Tips - Gloucester to continue superb start to Premiership season",
+    "preview": "Gloucester have momentum coming into their clash with Leicester Tigers and are tipped to cover the +7.5 handicap.",
+    "verdict": "Gloucester have momentum coming into their clash with Leicester Tigers and are tipped to cover the +7.5 handicap.",
+    "tips": [
+      {
+        "bookmaker": "1xBet",
+        "selection": "Gloucester +7.5",
+        "market": "Handicap",
+        "odds": 1.81,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Gloucester Win",
+        "market": "Result",
+        "odds": 3,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/rugby-union/leicester-tigers-vs-gloucester-betting-tips-20261008-0015/",
+    "status": "settled",
+    "result": null,
+    "outcome": "lose",
+    "extraTips": [
+      {
+        "selection": "Gloucester Win",
+        "market": "Result",
+        "odds": 3,
+        "stakeUnits": 1,
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Rugby Union",
+    "competition": "Rugby Union",
+    "league": "Rugby Union",
+    "country": null,
+    "homeTeam": "Dragons",
+    "awayTeam": "Ospreys",
+    "kickoff": "1h 10m",
+    "market": "Handicap",
+    "selection": "Dragons -2.5",
+    "odds": 1.91,
+    "stakeUnits": 3,
+    "previewTitle": "Dragons vs Ospreys Betting Tips - Welsh derby to go in Dragons favour in URC encounter",
+    "preview": "The Dragons have had success against the Ospreys at home in recent matchups and are tipped to cover the -2.5 handicap.",
+    "verdict": "The Dragons have had success against the Ospreys at home in recent matchups and are tipped to cover the -2.5 handicap.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Dragons -2.5",
+        "market": "Handicap",
+        "odds": 1.91,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "1xBet",
+        "selection": "Dragons Win",
+        "market": "Result",
+        "odds": 1.61,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/rugby-union/dragons-vs-ospreys-betting-tips-20261008-0012/",
+    "status": "settled",
+    "result": null,
+    "outcome": "lose",
+    "extraTips": [
+      {
+        "selection": "Dragons Win",
+        "market": "Result",
+        "odds": 1.61,
+        "stakeUnits": 3,
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Spanish La Liga",
+    "league": "Spanish La Liga",
+    "country": null,
+    "homeTeam": "Malaga",
+    "awayTeam": "Espanyol",
+    "kickoff": "1h 25m",
+    "market": "Full-Time Result",
+    "selection": "Draw",
+    "odds": 3.1,
+    "stakeUnits": 2,
+    "previewTitle": "Malaga vs Espanyol Tips & Live Stream – Struggling La Liga Sides to Settle for a Draw",
+    "preview": "Malaga are still winless this season while two of their three home games ended without a winner. Espanyol have a stronger lineup but can't be trusted at the moment, so a draw seems likely on Friday.",
+    "verdict": "Malaga are still winless this season while two of their three home games ended without a winner. Espanyol have a stronger lineup but can't be trusted at the moment, so a draw seems likely on Friday.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Draw",
+        "market": "Full-Time Result",
+        "odds": 3.1,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/spanish-la-liga/malaga-vs-espanyol-tips-20261007-0006/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Championship",
+    "league": "Championship",
+    "country": null,
+    "homeTeam": "West Ham",
+    "awayTeam": "QPR",
+    "kickoff": "1h 25m",
+    "market": "Full Time Result & Total Goals",
+    "selection": "West Ham & Over 2.5",
+    "odds": 2.1,
+    "stakeUnits": 2,
+    "previewTitle": "West Ham vs QPR Betting Tips & Live Stream - Jarrod Bowen to Score in the Championship",
+    "preview": "West Ham have hit top form at the London Stadium and the Hammers have enough quality to defeat QPR. Jarrod Bowen has found scoring form in the Championship and he can get on the scoresheet in East London.",
+    "verdict": "West Ham have hit top form at the London Stadium and the Hammers have enough quality to defeat QPR. Jarrod Bowen has found scoring form in the Championship and he can get on the scoresheet in East London.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "West Ham & Over 2.5",
+        "market": "Full Time Result & Total Goals",
+        "odds": 2.1,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Roobet ",
+        "selection": "Over 3.5 Goals",
+        "market": "Total Goals",
+        "odds": 2.38,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/57a5a0c4260605151656/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Roobet ",
+        "selection": "Jarrod Bowen",
+        "market": "Anytime Goalscorer",
+        "odds": 2.5,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/57a5a0c4260605151656/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Roobet ",
+        "selection": "Jarrod Bowen",
+        "market": "First Goalscorer",
+        "odds": 6,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/57a5a0c4260605151656/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/west-ham-vs-qpr-betting-tips-live-stream-20261007-0014/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Over 3.5 Goals",
+        "market": "Total Goals",
+        "odds": 2.38,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Jarrod Bowen",
+        "market": "Anytime Goalscorer",
+        "odds": 2.5,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Jarrod Bowen",
+        "market": "First Goalscorer",
+        "odds": 6,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Primeira Liga",
+    "league": "Primeira Liga",
+    "country": null,
+    "homeTeam": "Braga",
+    "awayTeam": "Sporting",
+    "kickoff": "1h 40m",
+    "market": "BTTS",
+    "selection": "BTTS Yes",
+    "odds": 1.8,
+    "stakeUnits": 4,
+    "previewTitle": "Braga vs Sporting CP Predictions, Betting Tips & Live Stream - Braga to Hold Sporting to a Draw in Liga Portugal",
+    "preview": "Braga haven’t lost at home since March and drawn their previous three matches against Sporting. The visitors come into this clash with defensive and personnel doubts, a score draw predicted in Portugal.",
+    "verdict": "Braga haven’t lost at home since March and drawn their previous three matches against Sporting. The visitors come into this clash with defensive and personnel doubts, a score draw predicted in Portugal.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS Yes",
+        "market": "BTTS",
+        "odds": 1.8,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Draw",
+        "market": "Full Time Result",
+        "odds": 3.5,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "1-1 Draw",
+        "market": "Correct Score",
+        "odds": 7,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/primeira-liga/braga-vs-sporting-cp-tips-live-stream-20261007-0044/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Draw",
+        "market": "Full Time Result",
+        "odds": 3.5,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "1-1 Draw",
+        "market": "Correct Score",
+        "odds": 7,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.176Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "American Football",
+    "competition": "Hamilton Tiger",
+    "league": "Hamilton Tiger",
+    "country": null,
+    "homeTeam": "EDM Elks",
+    "awayTeam": "HAM Tiger-Cats",
+    "kickoff": "5h 25m",
+    "market": "Spread",
+    "selection": "Hamilton +6.5",
+    "odds": 1.9,
+    "stakeUnits": 4,
+    "previewTitle": "Edmonton Elks at Hamilton Tiger-Cats Betting Tips – TiCats To Cover As CFL Underdogs",
+    "preview": "Edmonton are the better team and a Grey Cup contender, but they had a hard time putting away Hamilton at home a couple of weeks ago.That continued the trend of the betting underdog covering in recent meetings between the two teams, so give us the Tiger-Cats and the free points.",
+    "verdict": "Edmonton are the better team and a Grey Cup contender, but they had a hard time putting away Hamilton at home a couple of weeks ago.That continued the trend of the betting underdog covering in recent meetings between the two teams, so give us the Tiger-Cats and the free points.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Hamilton +6.5",
+        "market": "Spread",
+        "odds": 1.9,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "1xBet",
+        "selection": "Over 61.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/nfl/edmonton-elks-at-hamilton-tiger-cats-cfl-betting-tips-20261008-0040/",
+    "status": "settled",
+    "result": null,
+    "outcome": "lose",
+    "extraTips": [
+      {
+        "selection": "Over 61.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "stakeUnits": 1,
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.177Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Ice Hockey",
+    "competition": "Ice Hockey",
+    "league": "Ice Hockey",
+    "country": null,
+    "homeTeam": "ANA Ducks",
+    "awayTeam": "WPG Jets",
+    "kickoff": "6h 32m",
+    "market": "4+ Shots",
+    "selection": "Kyle Connor",
+    "odds": 1.83,
+    "stakeUnits": 3,
+    "previewTitle": "Anaheim Ducks vs Winnipeg Jets Prediction - Connor Shots on Goal",
+    "preview": "Jets to win, with Kyle Connor to record 4+ shots on goal with Leo Carlsson registering 2 points.",
+    "verdict": "Jets to win, with Kyle Connor to record 4+ shots on goal with Leo Carlsson registering 2 points.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Kyle Connor",
+        "market": "4+ Shots",
+        "odds": 1.83,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Winnipeg Jets",
+        "market": "Money Line",
+        "odds": 1.8,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Leo Carlsson",
+        "market": "2+ Points",
+        "odds": 3.1,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/ice-hockey/anaheim-ducks-vs-winnipeg-jets-prediction-20261009-0025/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Winnipeg Jets",
+        "market": "Money Line",
+        "odds": 1.8,
+        "stakeUnits": 2,
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "selection": "Leo Carlsson",
+        "market": "2+ Points",
+        "odds": 3.1,
+        "stakeUnits": 1,
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.177Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "American Football",
+    "competition": "Washington Betting Tips",
+    "league": "Washington Betting Tips",
+    "country": null,
+    "homeTeam": "Iowa",
+    "awayTeam": "Washington",
+    "kickoff": "7h 25m",
+    "market": "Spread",
+    "selection": "Iowa +3.5",
+    "odds": 1.8,
+    "stakeUnits": 4,
+    "previewTitle": "Iowa at Washington Betting Tips – Take Hawkeyes & Free Points In Friday College Football Clash",
+    "preview": "Iowa’s knack for keeping things close was not on show last weekend, but there was certainly no shame in losing by a couple of touchdowns to a contender in Ohio State.We expect the Hawkeyes to get back to what they do best on Friday night, ensuring they cover the spread as an underdog.",
+    "verdict": "Iowa’s knack for keeping things close was not on show last weekend, but there was certainly no shame in losing by a couple of touchdowns to a contender in Ohio State.We expect the Hawkeyes to get back to what they do best on Friday night, ensuring they cover the spread as an underdog.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Iowa +3.5",
+        "market": "Spread",
+        "odds": 1.8,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 41.5",
+        "market": "Total Points",
+        "odds": 1.83,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/nfl/iowa-at-washington-college-football-betting-tips-20261007-0025/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Under 41.5",
+        "market": "Total Points",
+        "odds": 1.83,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.177Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "American Football",
+    "competition": "BC Lions Betting Tips",
+    "league": "BC Lions Betting Tips",
+    "country": null,
+    "homeTeam": "OTT Redblacks",
+    "awayTeam": "BC Lions",
+    "kickoff": "8h 25m",
+    "market": "Spread",
+    "selection": "BC Lions -13.5",
+    "odds": 1.9,
+    "stakeUnits": 4,
+    "previewTitle": "Ottawa Redblacks at BC Lions Betting Tips – Lions To Rout Winless Redblacks In CFL",
+    "preview": "This is a lot of points, but the Lions are on a red-hot run right now while Ottawa continue to pile up losses.BC blew out the Redblacks in the recent meeting on the road, and we expect to see more of the same now they are back home.",
+    "verdict": "This is a lot of points, but the Lions are on a red-hot run right now while Ottawa continue to pile up losses.BC blew out the Redblacks in the recent meeting on the road, and we expect to see more of the same now they are back home.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BC Lions -13.5",
+        "market": "Spread",
+        "odds": 1.9,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "1xBet",
+        "selection": "Over 63.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/nfl/ottawa-redblacks-at-bc-lions-cfl-betting-tips-20261008-0041/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Over 63.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.177Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "American Football",
+    "competition": "BYU Betting Tips",
+    "league": "BYU Betting Tips",
+    "country": null,
+    "homeTeam": "Iowa State",
+    "awayTeam": "BYU",
+    "kickoff": "8h 40m",
+    "market": "Spread",
+    "selection": "BYU -10.5",
+    "odds": 1.9,
+    "stakeUnits": 4,
+    "previewTitle": "Iowa State at BYU Betting Tips – Cougars To Record Friday College Football Cover",
+    "preview": "Iowa State’s offense is coming off an historic display, but they face a much tougher defense and a much more challenging environment here.BYU are off to a good start and have covered in all four games so far, so we are siding with the Cougars in this one.",
+    "verdict": "Iowa State’s offense is coming off an historic display, but they face a much tougher defense and a much more challenging environment here.BYU are off to a good start and have covered in all four games so far, so we are siding with the Cougars in this one.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BYU -10.5",
+        "market": "Spread",
+        "odds": 1.9,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 46.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/nfl/iowa-state-at-byu-college-football-betting-tips-20261007-0026/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Under 46.5",
+        "market": "Total Points",
+        "odds": 1.9,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.177Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Football",
+    "league": "Football",
+    "country": null,
+    "homeTeam": "Tigres UANL",
+    "awayTeam": "Toluca",
+    "kickoff": "9h 25m",
+    "market": "Double Chance",
+    "selection": "Tigres",
+    "odds": 1.66,
+    "stakeUnits": 4,
+    "previewTitle": "Tigres vs Toluca Predictions & Tips - Hosts Backed to Hold Liga MX Leaders",
+    "preview": "Tigres' unbeaten home record should stand them in good stead against the Liga MX leaders. Recent stats point to a likely low-scoring contest, while I also fancy the hosts to avoid defeat this weekend.",
+    "verdict": "Tigres' unbeaten home record should stand them in good stead against the Liga MX leaders. Recent stats point to a likely low-scoring contest, while I also fancy the hosts to avoid defeat this weekend.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Tigres",
+        "market": "Double Chance",
+        "odds": 1.66,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 2.5 Goals",
+        "market": "Total Goals",
+        "odds": 2.1,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/tigres-vs-toluca-predictions-20261008-0023/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Under 2.5 Goals",
+        "market": "Total Goals",
+        "odds": 2.1,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.177Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Rugby Union",
+    "competition": "Eden Park in Bledisloe Cup opener",
+    "league": "Eden Park in Bledisloe Cup opener",
+    "country": null,
+    "homeTeam": "New Zealand",
+    "awayTeam": "Australia 1st Test",
+    "kickoff": "12h 35m",
+    "market": "Handicap",
+    "selection": "Australia +11.5",
+    "odds": 1.91,
+    "stakeUnits": 3,
+    "previewTitle": "New Zealand vs Australia 1st Bledisloe Cup Test Betting Tips - Wallabies can get close at Eden Park in Bledisloe Cup opener",
+    "preview": "I am backing Australia to get within the 11.5 handicap at Eden Park. They are in good form and confident while the All Blacks need to bounce back from three straight defeats. In the try scorer markets, Will Jordan is certainly one to look out for.",
+    "verdict": "I am backing Australia to get within the 11.5 handicap at Eden Park. They are in good form and confident while the All Blacks need to bounce back from three straight defeats. In the try scorer markets, Will Jordan is certainly one to look out for.",
+    "tips": [
+      {
+        "bookmaker": "Bc.Game Sport",
+        "selection": "Australia +11.5",
+        "market": "Handicap",
+        "odds": 1.91,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/f56557260105173714/",
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Planbet",
+        "selection": "Will Jordan",
+        "market": "Anytime Try Scorer",
+        "odds": 1.66,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/6a320699240918101555/",
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Will Jordan",
+        "market": "First Try Scorer",
+        "odds": 9,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "1xBet",
+        "selection": "Will Jordan",
+        "market": "2+ Tries",
+        "odds": 4,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/rugby-union/new-zealand-vs-australia-1st-bledisloe-cup-test-betting-tips-20261009-0001/",
+    "status": "settled",
+    "result": null,
+    "outcome": "lose",
+    "extraTips": [
+      {
+        "selection": "Will Jordan",
+        "market": "Anytime Try Scorer",
+        "odds": 1.66,
+        "stakeUnits": 3,
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "selection": "Will Jordan",
+        "market": "First Try Scorer",
+        "odds": 9,
+        "stakeUnits": 1,
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "selection": "Will Jordan",
+        "market": "2+ Tries",
+        "odds": 4,
+        "stakeUnits": 1,
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-09T17:37:08.177Z"
   }
 ]

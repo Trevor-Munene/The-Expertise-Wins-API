@@ -1,7 +1,7 @@
 // frontend/src/app/admin/tips/page.jsx
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { adminApi } from "../../../api/admin.api";
 import { productsApi } from "../../../api/products.api";
 import { formatOdds, formatDate, outcomeColor, statusColor } from "../../../lib/utils";
@@ -51,11 +51,8 @@ function toJsonField(value) {
 export default function AdminTipsPage() {
   const [tips, setTips] = useState([]);
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [selectedDay, setSelectedDay] = useState("today");
-  const [selectedTipIds, setSelectedTipIds] = useState([]);
+  const [sportFilter, setSportFilter] = useState("ALL");  const [tierFilter, setTierFilter] = useState("ALL");
+
 
   // Create Modal State
   const [createModalOpen, setCreateModalOpen] = useState(false);

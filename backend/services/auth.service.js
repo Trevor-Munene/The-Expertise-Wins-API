@@ -1,6 +1,7 @@
 const prisma = require("../lib/prisma");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { getJwtSecret } = require("../lib/jwtSecret");
 
 // Create an error with an HTTP status the error handler can read
 const createError = (message, statusCode = 400) => {
@@ -56,10 +57,9 @@ const registerUser = async (userData = {}) => {
 // Sign a JWT for an authenticated user
 const loginUser = async (user) => {
   const payload = { id: user.id, role: user.role };
-  const secret = process.env.JWT_SECRET || "default_secret";
   const expiresIn = process.env.JWT_EXPIRES_IN || "7d";
 
-  const token = jwt.sign(payload, secret, { expiresIn });
+  const token = jwt.sign(payload, getJwtSecret(), { expiresIn });
 
   // Return user data without the password
   const userInfo = {
@@ -173,11 +173,46 @@ const updateProfile = async (userId, profileData = {}) => {
   return updated;
 };
 
+// Update the signed-in user's display name and username without exposing
+// administrative fields such as role, status, or avatar URL.
+const updateCurrentUserProfile = async (userId, profileData = {}) => {
+  const username = String(profileData.username || "").trim();
+  if (!username) throw createError("Username is required.");
+
+  const existingUsername = await prisma.user.findFirst({
+    where: { username, NOT: { id: userId } },
+    select: { id: true },
+  });
+  if (existingUsername) throw createError("Username already in use.", 409);
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      username,
+      firstName: String(profileData.firstName || "").trim() || null,
+      lastName: String(profileData.lastName || "").trim() || null,
+    },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+      status: true,
+      avatarUrl: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
 module.exports = {
   registerUser,
   loginUser,
   logoutUser,
   getCurrentUser,
+  updateCurrentUserProfile,
   updatePassword,
   updateProfile,
 };

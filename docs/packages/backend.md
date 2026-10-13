@@ -5,7 +5,7 @@ The `backend` directory contains the Express API, Prisma schema, and historical-
 ## 📌 Features & Responsibilities
 
 - **Authentication**: Passport Local and JWT authentication are implemented in source. Admin endpoints enforce the `ADMIN` role.
-- **Tips & Curation Engine**: Includes free and token-gated VIP/MaxBet endpoints, an entitlement-aware historical archive, tip details, and admin-only mutations.
+- **Tips & Curation Engine**: Includes public Free and token-gated current VIP/MaxBet endpoints, a public historical archive across active tiers, tip details, and admin-only mutations.
 - **Performance & Analytics Engine**: Calculates real-time win rates, estimated ROI, average odds, sport breakdowns, market performance, time-based reports, and admin-only application usage summaries for the last 30 days.
 - **Products & Access**: Manages products and access-token issuance/redemption. Access is represented by tokens; there is no separate `Subscription` database model.
 - **Access token issuance**: Tokens are created only through admin routes and are always assigned to one registered, active user. A missing, unknown, or suspended user is rejected, redemption requires signing in as that user, and a token's owner cannot be changed after creation.
@@ -24,8 +24,8 @@ The `backend` directory contains the Express API, Prisma schema, and historical-
 
 ## 📡 API Route Architecture
 
-- `/api/auth`: User registration, login, logout, me, password updates, avatar upload.
-- `/api/tips`: Public Free reads (`/`, `/free`), entitlement-gated VIP/MaxBet reads, archive and details. This router is read-only; routine tip curation and settlement start from CLI dumps.
+- `/api/auth`: User registration, login, logout, profile read/update (`GET/PATCH /me`), password updates, and avatar upload.
+- `/api/tips`: Public Free reads (`/`, `/free`), entitlement-gated current VIP/MaxBet reads, a public historical archive across tiers, and tip details. This router is read-only; routine tip curation and settlement start from CLI dumps.
 - `/api/stats`: Comprehensive analytics, win rates, ROI, sport/market breakdowns, and time period statistics.
 - `/api/products`: Public and authenticated product tier information.
 - `/api/subscriptions`: Active subscriptions, token redemption (`/redeem`, requires the assigned user to sign in), token verification, and subscription history.
@@ -33,9 +33,9 @@ The `backend` directory contains the Express API, Prisma schema, and historical-
 
 Single-tip settlement is `POST /api/admin/tips/:id/settle` with `{ "outcome": "WON", "result": "2-1", "selectionOutcomes": ["WON", "VOID"] }`. `selectionOutcomes` is optional for older callers; when provided it must include one valid result per selection. Supported outcomes are `WON`, `HALF_WON`, `LOST`, `HALF_LOST`, `VOID`, `PUSH`, and `CANCELLED`. The admin UI lets the operator set each selection separately or copy the overall result to all selections before saving.
 
-## Verification Status (8 October 2026)
+## Verification Status (10 October 2026)
 
-The local Docker Compose application is running with PostgreSQL healthy. On 8 October, the API root and frontend home, tips, archive, stats, sitemap, and robots endpoints returned HTTP 200; backend service tests passed. Frontend lint passed with one existing profile-page image optimization warning. This verifies startup, public route reachability, and service-level settlement validation only; it is not full authentication, entitlement, or live database settlement acceptance. A broader browser/API review recorded on 4 October remains historical.
+On 10 October, backend and CLI test suites passed, frontend lint and an optimized Next.js production build completed, and changed backend files passed Node syntax checks. Frontend lint/build retain one existing profile-page image optimization warning. On 8 October, local Docker routes and a database sync dry run were checked. These results verify code-level tests and a local frontend build only; this review did not run browser account flows, current database settlement acceptance, Cloudflare, or production-origin checks. A broader browser/API review recorded on 4 October remains historical.
 
 ### Known Data State
 
@@ -57,9 +57,9 @@ Because redemption is account-bound, the anonymous redemption path described in 
 
 ## Tip and Archive Day Selection
 
-`/api/tips` and its tier variants are pinned to the current Nairobi business day. If today's scrape has not been published, the live list is empty; it does not silently substitute an earlier day. Historical records are served through `/api/tips/archive`, which excludes today and future dates and defaults to the previous Nairobi day when no date range is supplied. Responses include the served `day` value.
+`/api/tips` and its tier variants are pinned to the current Nairobi business day. If today's scrape has not been published, the live list is empty; it does not silently substitute an earlier day. Historical records are served through the public `/api/tips/archive`, which includes published tips across active tiers, excludes today and future dates, and defaults to the previous Nairobi day when no date range is supplied. Responses include the served `day` value. Cloudflare bot controls at deployment should deter automated extraction while leaving these routes available to website visitors.
 
-Admins can read every tier through `/api/tips/vip` and `/api/tips/maxbet`. The public `/api/tips` list intentionally exposes only public (Free) products. API requests and responses are routed through the existing protected admin endpoint for single-tip settlement.
+Admins can read every live tier through `/api/tips/vip` and `/api/tips/maxbet`. The public `/api/tips` list intentionally exposes only public (Free) products. Product performance endpoints for VIP and MaxBet are also public to support transparent results. API requests and responses are routed through the existing protected admin endpoint for single-tip settlement.
 
 ## Mutation and authorization rules
 - The public `/api/tips` router is read-only. Tip mutations are available only under `/api/admin/tips` and require an active admin JWT; AdminService independently verifies the actor before each mutation. The routine source-of-truth workflow is CLI dump → review → sync.
@@ -99,7 +99,7 @@ docker compose up -d app
 | Variable | Purpose |
 |---|---|
 | `DATABASE_URL` | PostgreSQL URL (`localhost:5432` for host-run sync; Compose uses `db:5432` for the API) |
-| `JWT_SECRET` | Signing key for issued JWTs; use a strong random value in production |
+| `JWT_SECRET` | Required signing key for issued JWTs; at least 32 random characters. The API rejects a missing or shorter value. |
 | `JWT_EXPIRES_IN` | Token lifetime (default `7d`) |
 | `PORT` | API port (`3000` in the container and on the host) |
 | `CORS_ORIGIN` | Comma-separated list of allowed browser origins |
@@ -109,7 +109,7 @@ docker compose up -d app
 
 Before running `seed`, set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `backend/.env`. Register that email through `/api/auth/register` first if you want the normal signup flow; `seed` then promotes the existing account **without changing its password**. If no account exists for that email, `seed` creates an active admin using `ADMIN_PASSWORD`. Passwords are stored as bcrypt hashes.
 
-The seed imports tips from `cli/settlement/previous-day-results/`, ensures the default Free, VIP, and MaxBet products exist, and creates published product assignments: non-featured football goes to Free, featured tips go to MaxBet, and other sports go to VIP. Only the Free product is public; premium lists remain access-controlled.
+The seed imports tips from `cli/settlement/previous-day-results/`, ensures the default Free, VIP, and MaxBet products exist, and creates published product assignments: non-featured football goes to Free, featured tips go to MaxBet, and other sports go to VIP. Only the Free product is public for current-day feeds; current premium lists remain access-controlled, while published historical results and performance summaries are public.
 
 Tip ids are derived from the dump filename and the tip's position within it, so re-running the seed updates the same rows instead of duplicating them, and a tip that appears in several daily dumps stays one row per day. When refreshing an already-settled tip, the seed preserves its saved outcome, result, status, and settlement timestamp. A dump that carries a real settlement result (`win`/`lose`) is recorded as that result rather than being rewritten to `WON`.
 

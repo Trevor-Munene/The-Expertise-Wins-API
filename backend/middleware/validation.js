@@ -18,8 +18,10 @@ function validate(schema) {
 
 const registrationSchema = Joi.object({
   email: Joi.string().email().required(),
+  username: Joi.string().alphanum().min(3).max(30).required(),
   password: Joi.string().min(8).required(),
-  name: Joi.string().max(100).optional(),
+  firstName: Joi.string().max(50).allow("", null).optional(),
+  lastName: Joi.string().max(50).allow("", null).optional(),
 });
 
 const loginSchema = Joi.object({
@@ -28,17 +30,15 @@ const loginSchema = Joi.object({
 });
 
 const updatePasswordSchema = Joi.object({
-  currentPassword: Joi.string().required(),
+  oldPassword: Joi.string().required(),
   newPassword: Joi.string().min(8).required(),
 });
 
 const updateProfileSchema = Joi.object({
-  name: Joi.string().max(100),
-  username: Joi.string().alphanum().min(3).max(30),
-  firstName: Joi.string().max(50),
-  lastName: Joi.string().max(50),
-  telegramUsername: Joi.string().max(50),
-}).or('name', 'username', 'firstName', 'lastName', 'telegramUsername');
+  username: Joi.string().trim().alphanum().min(3).max(30).required(),
+  firstName: Joi.string().trim().max(50).allow(""),
+  lastName: Joi.string().trim().max(50).allow(""),
+});
 
 module.exports = {
   validateRegistration: validate(registrationSchema),

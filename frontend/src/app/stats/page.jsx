@@ -19,7 +19,7 @@ import StatCard from "../../components/StatCard";
 import { formatPercent, formatOdds } from "../../lib/utils";
 
 const PERIOD_OPTIONS = [
-  { id: "today", label: "Today" },
+  { id: "yesterday", label: "Yesterday" },
   { id: "week", label: "7 Days" },
   { id: "14-days", label: "14 Days" },
   { id: "month", label: "30 Days" },
@@ -175,12 +175,12 @@ export default function StatsPage() {
         {
           key: "volume",
           label: "Tip volume",
-          run: () => statsApi.getVolumeStats(),
+          run: () => statsApi.getVolumeStats({ period, product: productFilter }),
         },
         {
           key: "scraped",
           label: "Scraped tips",
-          run: () => statsApi.getScrapedStats(),
+          run: () => statsApi.getScrapedStats({ period, product: productFilter }),
         },
         {
           key: "report",
@@ -292,8 +292,8 @@ export default function StatsPage() {
   const roi = summary?.roi ?? null;
   const averageOdds = summary?.avgOdds ?? null;
 
-  // Volume and breakdown endpoints are deliberately overall, so they ignore the
-  // period and product controls.
+  // Volume and scraped counts use the same period and product filters as the
+  // headline performance metrics.
   const totalVolume = getFiniteNumber(data.volume?.total);
   const publishedCount = getFiniteNumber(data.volume?.published);
   const scrapedCount = getFiniteNumber(data.scraped?.scrapedTips);
@@ -370,9 +370,9 @@ export default function StatsPage() {
 
         <div className="space-y-2 text-xs leading-5 text-slate-400">
           <p>
-            Period and product controls apply to win rate, ROI, and average
-            odds. Tip volume and breakdowns show overall statistics.
-            Reports use their own period controls.
+            Period and product controls apply to the headline metrics and tip
+            volume. Breakdown panels show overall statistics. Reports use their
+            own period controls.
           </p>
 
           <p role="status" aria-live="polite" aria-atomic="true">
@@ -438,8 +438,8 @@ export default function StatsPage() {
           value={formatCount(totalVolume)}
           subtitle={
             loading
-              ? "Loading overall volume…"
-              : `Overall · Scraped: ${formatCount(
+              ? "Loading selected volume…"
+              : `${scopeLabel} · Scraped: ${formatCount(
                   scrapedCount
                 )} · Published: ${formatCount(publishedCount)}`
           }

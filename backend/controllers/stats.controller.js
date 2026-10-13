@@ -308,7 +308,10 @@ const getSourceStats = async (req, res, next) => {
 // Get tip volume counts
 const getVolumeStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getVolumeStats();
+    const stats = await statsService.getVolumeStats({
+      periodId: req.query.period,
+      productId: req.query.product,
+    });
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
@@ -318,7 +321,10 @@ const getVolumeStats = async (req, res, next) => {
 // Get scraped versus manual tip counts
 const getScrapedStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getScrapedStats();
+    const stats = await statsService.getScrapedStats({
+      periodId: req.query.period,
+      productId: req.query.product,
+    });
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
