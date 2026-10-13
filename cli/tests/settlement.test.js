@@ -295,6 +295,25 @@ const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt
         const freeSection = result.freeCards.join("\n");
         assert.ok(!freeSection.includes("🔥"), "Free tip cards must never carry the fire emoji");
 
+        // -------------------------------------------------------------------
+        // 6. Verify that saveTestResults does NOT mutate the dump once created,
+        //    ensuring settlement is the only command that mutates the json
+        //    awaiting the sync command.
+        // -------------------------------------------------------------------
+        const { saveTestResults } = require("../orchestrator/test-results");
+        const freetipsWorkingPath = path.resolve(__dirname, "..", "orchestrator", "test-results", "freetips.json");
+        const workingBefore = fs.existsSync(freetipsWorkingPath) ? fs.readFileSync(freetipsWorkingPath, "utf8") : null;
+        try {
+            const dumpBefore = fs.readFileSync(testJsonPath, "utf8");
+            saveTestResults("freetips", [{ homeTeam: "Different", awayTeam: "Team", selection: "X", market: "M", scrapedAt: `${TEST_DATE}T12:00:00Z` }], { date: TEST_DATE });
+            const dumpAfter = fs.readFileSync(testJsonPath, "utf8");
+            assert.strictEqual(dumpAfter, dumpBefore, "saveTestResults must not mutate an existing dump awaiting sync");
+        } finally {
+            if (workingBefore !== null) {
+                fs.writeFileSync(freetipsWorkingPath, workingBefore, "utf8");
+            }
+        }
+
         console.log(`✅ Settled ${settled.length} fixture tips, wrote back to the previous-day dump, and verified the fire emoji rules.`);
         console.log("settlement test passed");
     } finally {

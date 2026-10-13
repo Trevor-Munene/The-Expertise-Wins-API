@@ -73,7 +73,9 @@ docker compose up -d --build app
 
 The frontend and backend share the Docker app service; configure both env files and initialize PostgreSQL before using API-backed pages.
 
-## Current Readiness (10 October 2026)
+## Current Readiness (13 October 2026)
+
+The project is under **active testing and validation**. On 13 October, a critical runtime crash in the Admin Tips page was fixed: five required state variables (`loading`, `selectedDay`, `searchTerm`, `statusFilter`, `selectedTipIds`) were missing their `useState` declarations — the component would throw immediately on render. These have been added. The full frontend-to-API contract was also reviewed: every API call in the six frontend API modules was confirmed to match a corresponding backend route with no missing or mismatched endpoints.
 
 On 10 October, frontend lint and the optimized Next.js build completed; both report the existing profile-page `img` optimization warning. Backend and CLI test suites also passed. The 8 October local Docker HTTP route check remains the latest recorded container reachability check. These checks do not constitute end-to-end acceptance of login, redemption, avatar upload, all admin actions, settlement against the current database, Cloudflare bot settings, or production deployment; real-user workflow acceptance remains open.
 

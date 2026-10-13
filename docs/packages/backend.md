@@ -33,9 +33,9 @@ The `backend` directory contains the Express API, Prisma schema, and historical-
 
 Single-tip settlement is `POST /api/admin/tips/:id/settle` with `{ "outcome": "WON", "result": "2-1", "selectionOutcomes": ["WON", "VOID"] }`. `selectionOutcomes` is optional for older callers; when provided it must include one valid result per selection. Supported outcomes are `WON`, `HALF_WON`, `LOST`, `HALF_LOST`, `VOID`, `PUSH`, and `CANCELLED`. The admin UI lets the operator set each selection separately or copy the overall result to all selections before saving.
 
-## Verification Status (10 October 2026)
+## Verification Status (13 October 2026)
 
-On 10 October, backend and CLI test suites passed, frontend lint and an optimized Next.js production build completed, and changed backend files passed Node syntax checks. Frontend lint/build retain one existing profile-page image optimization warning. On 8 October, local Docker routes and a database sync dry run were checked. These results verify code-level tests and a local frontend build only; this review did not run browser account flows, current database settlement acceptance, Cloudflare, or production-origin checks. A broader browser/API review recorded on 4 October remains historical.
+The project is under **active testing and validation**. On 13 October, the full frontend-to-API contract was reviewed: every frontend API call in `auth.api.js`, `tips.api.js`, `stats.api.js`, `subscriptions.api.js`, `products.api.js`, and `admin.api.js` was confirmed to match a corresponding backend route. No missing or mismatched endpoints were found. On 10 October, backend and CLI test suites passed, frontend lint and an optimized Next.js production build completed, and changed backend files passed Node syntax checks. Frontend lint/build retain one existing profile-page image optimization warning. On 8 October, local Docker routes and a database sync dry run were checked. These results verify code-level tests and a local frontend build only; this review did not run browser account flows, current database settlement acceptance, Cloudflare, or production-origin checks. A broader browser/API review recorded on 4 October remains historical.
 
 ### Known Data State
 
@@ -140,7 +140,7 @@ docker compose up -d app
 docker compose logs -f app
 ```
 
-The health endpoint is `GET /`, returning `{"status":200,"message":"The Expertise Wins API is ready for development."}`.
+The health endpoint is `GET /`, returning `{"status":200,"message":"The Expertise Wins API — under active testing and validation."}`.
 
 ## Regenerating the Prisma Client
 

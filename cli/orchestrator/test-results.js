@@ -92,10 +92,14 @@ function saveTestResults(source, tips, opts = {}) {
     fs.writeFileSync(targetFile, JSON.stringify(mergedTips, null, 2), "utf8");
 
     // Export the dump to the previous day results dir (settlement layer)
+    // Only write if the dump file does not already exist. Once created, only
+    // the settlement command is allowed to mutate the json awaiting the sync command.
     fs.mkdirSync(previousDayResultsRoot, { recursive: true });
     const formattedDate = getFormattedDate(dateIso);
     const exportFile = path.join(previousDayResultsRoot, `${source}-${formattedDate}.json`);
-    fs.writeFileSync(exportFile, JSON.stringify(mergedTips, null, 2), "utf8");
+    if (!fs.existsSync(exportFile)) {
+        fs.writeFileSync(exportFile, JSON.stringify(mergedTips, null, 2), "utf8");
+    }
 }
 
 function loadTestResults(source, opts = {}) {
