@@ -4,6 +4,7 @@ const LocalStrategy = require("passport-local").Strategy;
 const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
 const bcrypt = require("bcrypt");
 const prisma = require("../lib/prisma");
+const { getJwtSecret } = require("../lib/jwtSecret");
 
 passport.use(
     new LocalStrategy(
@@ -36,7 +37,7 @@ passport.use(
   new JwtStrategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET || "default_secret",
+      secretOrKey: getJwtSecret(),
     },
     async (payload, done) => {
       try {

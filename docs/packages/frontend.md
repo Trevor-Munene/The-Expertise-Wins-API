@@ -28,7 +28,7 @@ The `frontend` directory contains the Next.js 14 Web Application (App Router, Ja
   - Tip Detail (`/tips/[id]`) — Match preview, market, odds, status, and recorded outcome
   - Stats & Analytics (`/stats`) — Win rate, ROI, sport/market performance charts
   - Products & Membership (`/products`) — Tier breakdown and token redemption modal
-  - User Profile (`/profile`) — Avatar upload, password security, redeemed-token/access history, and membership actions
+  - User Profile (`/profile`) — Full name and username editing, avatar upload, password security, redeemed-token/access history, and membership actions
 
 ## 🛠 Tech Stack
 
@@ -73,15 +73,16 @@ docker compose up -d --build app
 
 The frontend and backend share the Docker app service; configure both env files and initialize PostgreSQL before using API-backed pages.
 
-## Current Readiness (8 October 2026)
+## Current Readiness (10 October 2026)
 
-The running local Docker services returned HTTP 200 for the API root and frontend home, tips, archive, stats, sitemap, and robots routes on 8 October. Frontend lint passed with one existing profile-page `img` optimization warning. The backend service tests passed. A production Next.js build was not run during this review. These checks do not constitute end-to-end acceptance of login, redemption, avatar upload, all admin actions, settlement against the live database, or production deployment; real-user workflow acceptance remains open.
+On 10 October, frontend lint and the optimized Next.js build completed; both report the existing profile-page `img` optimization warning. Backend and CLI test suites also passed. The 8 October local Docker HTTP route check remains the latest recorded container reachability check. These checks do not constitute end-to-end acceptance of login, redemption, avatar upload, all admin actions, settlement against the current database, Cloudflare bot settings, or production deployment; real-user workflow acceptance remains open.
 
 ### Known Data Behavior
 
 - `/tips` is scoped to the current Nairobi day across all tiers; older selections belong in `/archive`. The admin tips list defaults to today and can be switched between today and yesterday for review and settlement.
 - Settlement results reach PostgreSQL after local `npm run settlement` and `docker compose run --rm app npm run sync`; current dump and database outcomes still need reconciliation.
 - Premium feeds require the matching product entitlement. A signed-in user who lacks that tier sees an access-options prompt without a sign-in prompt. A plain `/tips` visit selects VIP first when the account has both premium entitlements, otherwise MaxBet, otherwise Free. The public tips list exposes public (Free) tips.
+- Historical archive tiers and VIP/MaxBet performance summaries remain public to support transparent historical results. Deployment Cloudflare controls are intended to make automated scraping harder without restricting normal visitors; they must be enabled and checked on the production zone. See [`../cloudflare-launch.md`](../cloudflare-launch.md).
 - The product, tips, home, and about pages list scraper-supported sports. The free channel remains football-focused; availability of an individual premium sport or market can vary by day.
 - The profile access history reads all tokens assigned to the account, including redeemed tokens. Avatar uploads are stored under the backend uploads directory and served from `/uploads`.
 - Settlement defaults: an unmarked **free-channel** pick settles as a win and an unmarked **paid-group** pick settles as a loss; explicit markers always override the default.
@@ -96,7 +97,7 @@ For one tip, choose **Settle**, select the overall result, and set an outcome fo
 
 ### Security Notes
 
-The admin UI's role checks are client-side presentation only; the API independently enforces an active `ADMIN` account for protected routes and admin tip mutations. Admin curation controls use `/api/admin/*`; the routine source-of-truth workflow remains CLI scrape/settlement followed by `docker compose run --rm app npm run sync`. Backend service-logic tests use mocked persistence; end-to-end and database-backed acceptance remains operator testing.
+The admin UI's role checks are client-side presentation only; the API independently enforces an active `ADMIN` account for protected routes and admin tip mutations. Admin curation controls use `/api/admin/*`; the routine source-of-truth workflow remains CLI scrape/settlement followed by `docker compose run --rm app npm run sync`. Backend service-logic tests use mocked persistence; end-to-end and database-backed acceptance remains operator testing. `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`, and production CORS settings must be configured before building/deploying. The checked-in Compose app runs development servers and is not the production deployment configuration.
 
 ### SEO Notes
 

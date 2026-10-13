@@ -186,14 +186,18 @@ export const statsApi = {
   },
 
   // Get tip volume counts
-  async getVolumeStats() {
-    const { data } = await apiClient.get("/stats/volume");
+  async getVolumeStats({ period, product } = {}) {
+    const { data } = await apiClient.get("/stats/volume", {
+      params: { period, product },
+    });
     return data;
   },
 
   // Get scraped versus manual tip counts
-  async getScrapedStats() {
-    const { data } = await apiClient.get("/stats/scraped");
+  async getScrapedStats({ period, product } = {}) {
+    const { data } = await apiClient.get("/stats/scraped", {
+      params: { period, product },
+    });
     return data;
   },
 

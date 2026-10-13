@@ -17,6 +17,7 @@ All documentation lives in [`docs/`](./docs):
 | Document | What it covers |
 |---|---|
 | [`docs/runbook.md`](./docs/runbook.md) | Docker-first setup, database initialization, syncing, and local CLI operations |
+| [`docs/cloudflare-launch.md`](./docs/cloudflare-launch.md) | Deployment-time Cloudflare bot controls, rate limits, Tunnel/origin setup, and verification |
 | [`docs/roadmap.md`](./docs/roadmap.md) | Development phases, current status, and open work |
 | [`docs/v2-ideation.md`](./docs/v2-ideation.md) | Open, non-committal V2 ideas for discussion |
 | [`docs/packages/backend.md`](./docs/packages/backend.md) | Express API, Prisma schema, route map, database setup |
@@ -27,7 +28,7 @@ All documentation lives in [`docs/`](./docs):
 
 Docker runs the API, frontend, and PostgreSQL. Node.js is only needed on the host if you choose to run the CLI locally.
 
-Install Docker Desktop with Linux container support enabled. From the repository root in PowerShell, configure the local admin password in the ignored `backend/.env` file, then initialize the database:
+Install Docker Desktop with Linux container support enabled. From the repository root in PowerShell, set a private random `JWT_SECRET` of at least 32 characters and configure the local admin credentials in the ignored `backend/.env` file, then initialize the database:
 
 ```powershell
 if (-not (Test-Path backend/.env)) { Copy-Item backend/.env.example backend/.env }
@@ -55,7 +56,7 @@ npm run settlement
 
 These commands write to the shared CLI files; they do not start another API or database. Sync reviewed dumps into the Docker database with `docker compose run --rm app npm run sync`. The scrape and settlement commands can also run in Docker with `docker compose run --rm app npm run expertise` and `docker compose run --rm app npm run settlement`.
 
-Before the first CLI run in Docker, install its dependencies into the persistent volume with `docker compose run --rm --no-deps app npm ci --prefix cli`.
+The Docker image includes CLI dependencies. When Compose first starts with an empty or older `cli_node_modules` volume, its entrypoint installs the CLI dependencies into that volume automatically. You can then run `docker compose run --rm --no-deps app npm run expertise` directly.
 
 Stop the services while preserving data:
 
@@ -65,7 +66,7 @@ docker compose down
 
 `docker compose down --volumes` also erases PostgreSQL data and dependency caches. That is destructive and resets the environment.
 
-The API, frontend, and PostgreSQL use the same ports on the host and in their containers: API `3000`, frontend `3001`, and database `5432`. Frontend settings live in `frontend/.env`; API/database and admin settings live in `backend/.env`. The API container connects to PostgreSQL at `db:5432`; host-run CLI sync uses `localhost:5432`. Dependency and database data live in Docker volumes, so `docker compose down` keeps them.
+For local development, the API, frontend, and PostgreSQL use host ports `3000`, `3001`, and `5432`. Frontend settings live in `frontend/.env`; API/database and admin settings live in `backend/.env`. The API container connects to PostgreSQL at `db:5432`; host-run CLI sync uses `localhost:5432`. Dependency and database data live in Docker volumes, so `docker compose down` keeps them. These ports and development servers are not a production deployment; keep the database private and use the [Cloudflare deployment checklist](./docs/cloudflare-launch.md) when publishing the site.
 
 ## Daily Workflow
 
@@ -96,7 +97,7 @@ Use `docker compose run --rm app npm run sync` to run the local sync against the
 | Area | Current purpose |
 |---|---|
 | Authentication | Registration, login, profiles, password changes, and avatar upload |
-| Tips | Public Free tips, entitlement-gated VIP/MaxBet tips, a tier-aware historical archive, and admin curation under `/api/admin/tips`. Routine daily production and settlement use CLI dump → review → sync. |
+| Tips | Public Free tips, entitlement-gated current VIP/MaxBet feeds, a public historical archive across tiers, and admin curation under `/api/admin/tips`. Routine daily production and settlement use CLI dump → review → sync. |
 | Statistics | Win rate, ROI, odds, sport/market/competition breakdowns, time-filtered analytics, and admin-only application usage |
 | Products and access | Product tiers plus access tokens, which are **always issued by an admin to a registered user** |
 | Administration | User, access-token, and product management; admin routes and mutation services enforce an active `ADMIN` role. Daily tip production/settlement remains CLI dump → review → sync. |
@@ -113,11 +114,11 @@ Tokens are issued **only by an admin** and **only for a specific registered, act
 - Revoke disables a token while retaining its record; `DELETE /api/admin/subscription-tokens/:id` permanently deletes it.
 - Run backend service-logic checks in Docker with `docker compose run --rm --no-deps app npm run --prefix backend test`; they use mocked persistence and do not require PostgreSQL.
 
-## V1 Status (8 October 2026)
+## V1 Status (10 October 2026)
 
-V1 is an actively tested and hardened product, not yet declared production-ready. The current codebase includes the daily scrape → review → sync workflow; public Free tips; access-controlled VIP and MaxBet feeds; archives and transparent performance statistics; accounts, admin curation, access-token redemption, and a content/blog area. The API, frontend, and PostgreSQL are intended to run through Docker Compose. CLI scrape and settlement commands can be run locally when an operator prefers direct access to the generated files.
+V1 feature work is substantially implemented, but this repository is not yet cleared for production launch. The current codebase includes the daily scrape → review → sync workflow; public Free tips; access-controlled VIP and MaxBet feeds; archives and transparent performance statistics; accounts, admin curation, access-token redemption, and a content/blog area. The API, frontend, and PostgreSQL are intended to run through Docker Compose. CLI scrape and settlement commands can be run locally when an operator prefers direct access to the generated files.
 
-This document records the implementation and intended workflow as of this writing. It does not claim a fresh production deployment check or acceptance of every browser/database workflow. Before launch, complete the remaining V1 acceptance, security, backup/restore, and operational checks tracked in [`docs/roadmap.md`](./docs/roadmap.md).
+This document records the implementation and intended workflow as of this writing. It does not claim a production deployment check or acceptance of every browser/database workflow. The checked-in Compose stack is development-oriented. Production deployment, enabling and verifying Cloudflare bot controls, origin isolation, backup/restore, and real-user acceptance remain launch steps. The Cloudflare plan is designed to keep pages and data available to visitors while challenging recognized bots and limiting abusive request rates; it is not enabled until configured on the production zone. Use [`docs/cloudflare-launch.md`](./docs/cloudflare-launch.md) and [`docs/roadmap.md`](./docs/roadmap.md) before launch.
 
 ### Verification recorded 8 October 2026
 
@@ -128,6 +129,12 @@ This document records the implementation and intended workflow as of this writin
 - The production frontend build, authentication/entitlement flows, settlement against a live database, and full browser acceptance were not re-run in this review. Treat those as open checks, not verified behavior.
 - SEO now uses `NEXT_PUBLIC_SITE_URL` for canonical URLs, social metadata, sitemap, and robots. The local example uses `https://theexpertisewins.com`; set the actual public domain in `frontend/.env` before a production build.
 - Admins can settle a single tip and assign an outcome to every selection in that tip in one save. The overall tip result and each selection result are stored together.
+
+### Review run 10 October 2026
+
+- Backend service tests and CLI scraper/contract/settlement tests pass; frontend lint and optimized production build complete. Lint/build report the existing profile-page `<img>` optimization warning.
+- Production JWT configuration now fails closed when `JWT_SECRET` is missing or shorter than 32 characters. Registration, login, and password-change routes now apply their Joi request validation. Unhandled server errors return a generic response.
+- These checks do not exercise a production database, browser account flows, Cloudflare configuration, origin firewall, or database recovery. Public historical archive and tier performance routes remain available to website visitors. Deployment bot controls are intended to deter automated extraction without introducing a content paywall; see [`docs/cloudflare-launch.md`](./docs/cloudflare-launch.md).
 
 | Area | Implemented in V1 | Still needs work or validation |
 |---|---|---|

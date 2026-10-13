@@ -124,6 +124,19 @@ function normalizeSport(value) {
     .toUpperCase();
 }
 
+function getSportLabel(sport) {
+  const labels = {
+    FOOTBALL: "Football",
+    SOCCER: "Soccer",
+    TENNIS: "Tennis",
+    BASKETBALL: "Basketball",
+    ESPORT: "Esports",
+    ESPORTS: "Esports",
+  };
+
+  return labels[sport] || sport.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 // Strict football check for the free public view.
 function isFootballTip(tip) {
   const sport = normalizeSport(tip.sport);
@@ -285,6 +298,7 @@ export default function TipsPage() {
 
     async function loadTips() {
       setLoading(true);
+      setSelectedSport("ALL");
       setRequiresAuth(false);
       setAccessStatus(null);
       setError("");
@@ -388,7 +402,9 @@ export default function TipsPage() {
             _tier: activeTab === "free" ? "FREE" : activeTab === "vip" ? "VIP" : "MAXBET",
           }));
         const orderedList = activeTab === "free"
-          ? list
+          ? [...list].sort((a, b) =>
+              getKickoffMinutes(a) - getKickoffMinutes(b)
+            )
           : [...list].sort((a, b) =>
               getSportRank(a) - getSportRank(b) ||
               getKickoffMinutes(a) - getKickoffMinutes(b)
@@ -427,6 +443,14 @@ export default function TipsPage() {
   }, [activeTab, retryCount]);
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
+  const availableSports = Array.from(
+    new Set(
+      tips
+        .filter((tip) => activeTab !== "free" || isFootballTip(tip))
+        .map((tip) => normalizeSport(tip.sport || "Football"))
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b));
 
   /*
    * Every tab shows today's selections and their current outcomes for its tier.
@@ -763,9 +787,11 @@ export default function TipsPage() {
                 className={`min-h-[44px] w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-3 text-sm text-slate-200 ${focusStyles}`}
               >
                 <option value="ALL">All Sports</option>
-                <option value="FOOTBALL">Football</option>
-                <option value="BASKETBALL">Basketball</option>
-                <option value="TENNIS">Tennis</option>
+                {availableSports.map((sport) => (
+                  <option key={sport} value={sport}>
+                    {getSportLabel(sport)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

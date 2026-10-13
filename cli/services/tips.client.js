@@ -69,47 +69,94 @@ class TipsConsumptionClient {
     }
 
     groupMaxbetVip(tips) {
-        return this.filterAndFormat(tips, (tip) => this.isFeaturedTip(tip), this.formatMaxbetVipCard);
+        return this.sortAndFormat(tips, (tip) => this.isFeaturedTip(tip), this.formatMaxbetVipCard, true);
     }
 
     groupExpertiseWinsFree(tips) {
-        return this.filterAndFormat(tips, (tip) => this.isFootballListingTip(tip), this.formatExpertiseWinsFreeCard);
+        return this.sortAndFormat(tips, (tip) => this.isFootballListingTip(tip), this.formatExpertiseWinsFreeCard, false);
     }
 
     groupPikkBetterVip(tips) {
         if (!Array.isArray(tips)) return [];
 
-        // Select non-feature, non-football tips for Pikk Better VIP
+        // Select non-feature, non-football tips for Pikk Better VIP.
         const items = (Array.isArray(tips) ? tips : [])
             .filter(Boolean)
             .filter((tip) => !this.isFeaturedTip(tip) && !this.isFootballListingTip(tip));
 
-        // Grouping strategy: sort so tips of the same sport are contiguous,
-        // then by league/competition, then by kickoff time or preview title.
-        items.sort((a, b) => {
-            const sportA = String(a?.sport || "").toLowerCase();
-            const sportB = String(b?.sport || "").toLowerCase();
-            if (sportA !== sportB) return sportA.localeCompare(sportB);
-
-            const leagueA = String(a?.league || a?.competition || a?.previewTitle || "").toLowerCase();
-            const leagueB = String(b?.league || b?.competition || b?.previewTitle || "").toLowerCase();
-            if (leagueA !== leagueB) return leagueA.localeCompare(leagueB);
-
-            const timeA = String(a?.kickoff || a?.time || a?.fixtureId || "");
-            const timeB = String(b?.kickoff || b?.time || b?.fixtureId || "");
-            if (timeA !== timeB) return timeA.localeCompare(timeB);
-
-            const titleA = String(a?.previewTitle || a?.selection || "").toLowerCase();
-            const titleB = String(b?.previewTitle || b?.selection || "").toLowerCase();
-            return titleA.localeCompare(titleB);
-        });
+        // Mirror the frontend "All"/VIP ordering: sport class first (tennis,
+        // basketball, then other sports), then beginning time.
+        items.sort((a, b) =>
+            this.getSportRank(a) - this.getSportRank(b) ||
+            this.getKickoffMinutes(a) - this.getKickoffMinutes(b)
+        );
 
         return items.map((tip) => this.formatPikkBetterVipCard(tip)).filter(Boolean);
+    }
+
+    /**
+     * Filter tips to one tier, order them the way the frontend does, then format.
+     *
+     * Paid tiers (MaxBet, VIP) are ordered by sport class — tennis, basketball,
+     * then every other sport — and then by beginning time. The free football tier
+     * keeps football ordering but is still ordered by beginning time, matching the
+     * tips page and home page.
+     *
+     * @param {Array} tips
+     * @param {Function} predicate
+     * @param {Function} formatter
+     * @param {boolean} sortBySport  true to apply the sport-class rank first
+     */
+    sortAndFormat(tips, predicate, formatter, sortBySport = false) {
+        if (!Array.isArray(tips)) return [];
+        const items = tips.filter(Boolean).filter(predicate);
+        items.sort((a, b) => {
+            if (sortBySport) {
+                const sportDifference = this.getSportRank(a) - this.getSportRank(b);
+                if (sportDifference !== 0) return sportDifference;
+            }
+            return this.getKickoffMinutes(a) - this.getKickoffMinutes(b);
+        });
+        return items.map((tip) => formatter.call(this, tip)).filter(Boolean);
     }
 
     filterAndFormat(tips, predicate, formatter) {
         if (!Array.isArray(tips)) return [];
         return tips.filter(Boolean).filter(predicate).map((tip) => formatter.call(this, tip)).filter(Boolean);
+    }
+
+    /**
+     * Sport class rank used by the frontend tips page for premium tiers:
+     * tennis first, basketball second, everything else last.
+     */
+    getSportRank(tip) {
+        const sport = String(tip?.sport || "").trim().toUpperCase();
+        if (sport === "TENNIS") return 0;
+        if (sport === "BASKETBALL") return 1;
+        return 2;
+    }
+
+    /**
+     * Convert a tip's kickoff value into minutes past midnight so tips can be
+     * ordered by their beginning time. A relative duration ("2h 30m") is resolved
+     * against the current Nairobi time, matching the frontend tips page helper.
+     */
+    getKickoffMinutes(tip) {
+        const value = String(tip?.kickoff ?? "").trim();
+        const time = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+        if (time) return Number(time[1]) * 60 + Number(time[2]);
+
+        const duration = value.match(/^(?:(\d+)\s*h(?:ours?)?\s*)?(?:(\d+)\s*m(?:in(?:utes?))?)?$/i);
+        if (duration && (duration[1] || duration[2])) {
+            const parts = new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Africa/Nairobi", hour: "2-digit", minute: "2-digit", hour12: false,
+            }).formatToParts(new Date());
+            const nowMinutes = Number(parts.find((part) => part.type === "hour")?.value || 0) * 60 +
+                Number(parts.find((part) => part.type === "minute")?.value || 0);
+            return (nowMinutes + Number(duration[1] || 0) * 60 + Number(duration[2] || 0)) % 1440;
+        }
+
+        return Number.MAX_SAFE_INTEGER;
     }
 
     consumeTips(tips) {
@@ -377,7 +424,9 @@ class TipsConsumptionClient {
     formatExpertiseWinsFreeCard(tip) {
         if (!tip) return null;
 
-        const lines = ["The Expertise Wins Free Tips:", ""];
+        // The channel header is printed once by the orchestrator (cli/services/app.js),
+        // so each free card starts directly with the fixture to avoid repeating it.
+        const lines = [];
         const fixture = tip.homeTeam && tip.awayTeam ? `${tip.homeTeam} vs ${tip.awayTeam}` : (tip.selection || "Match");
         lines.push(fixture);
 

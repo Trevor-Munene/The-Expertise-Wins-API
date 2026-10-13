@@ -82,6 +82,14 @@ function normalizeStatus(status) {
     : "UNKNOWN";
 }
 
+function getDistinctUsername(user) {
+  const username = String(user?.username || "").trim();
+  const email = String(user?.email || "").trim();
+  return username && username.toLowerCase() !== email.toLowerCase()
+    ? username
+    : "";
+}
+
 function getStatusClasses(status) {
   switch (normalizeStatus(status)) {
     case "ACTIVE":
@@ -101,6 +109,12 @@ export default function ProfilePage() {
   const router = useRouter();
 
   const [user, setUser] = useState(null);
+  const [profileForm, setProfileForm] = useState({
+    firstName: "",
+    lastName: "",
+    username: "",
+  });
+  const [updatingProfile, setUpdatingProfile] = useState(false);
   const [activeSub, setActiveSub] = useState(null);
   const [subHistory, setSubHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -195,6 +209,11 @@ export default function ProfilePage() {
       !Array.isArray(meRes.value)
     ) {
       setUser(meRes.value);
+      setProfileForm({
+        firstName: meRes.value.firstName || "",
+        lastName: meRes.value.lastName || "",
+        username: getDistinctUsername(meRes.value),
+      });
     } else {
       setUser(null);
       setProfileError(
@@ -241,6 +260,49 @@ export default function ProfilePage() {
   useEffect(() => {
     setAvatarFailed(false);
   }, [user?.avatarUrl]);
+
+  const handleProfileUpdate = async (event) => {
+    event.preventDefault();
+
+    const payload = {
+      firstName: profileForm.firstName.trim(),
+      lastName: profileForm.lastName.trim(),
+      username: profileForm.username.trim(),
+    };
+
+    if (payload.username.length < 3) {
+      toast.error("Username must be at least 3 characters.");
+      return;
+    }
+
+    if (!beginAction("profile")) return;
+    setUpdatingProfile(true);
+
+    try {
+      const response = await authApi.updateProfile(payload);
+      if (!mountedRef.current) return;
+
+      const updatedUser = response?.user;
+      if (updatedUser) {
+        setUser(updatedUser);
+        setProfileForm({
+          firstName: updatedUser.firstName || "",
+          lastName: updatedUser.lastName || "",
+          username: getDistinctUsername(updatedUser),
+        });
+        auth.setUser(updatedUser);
+      }
+
+      toast.success(getSuccessMessage(response, "Profile updated successfully."));
+    } catch (error) {
+      if (mountedRef.current) {
+        toast.error(getErrorMessage(error, "Failed updating profile."));
+      }
+    } finally {
+      endAction("profile");
+      if (mountedRef.current) setUpdatingProfile(false);
+    }
+  };
 
   const handlePasswordUpdate = async (event) => {
     event.preventDefault();
@@ -523,7 +585,11 @@ export default function ProfilePage() {
     );
   }
 
-  const displayName = user.username || user.email || "Your Profile";
+  const fullName = [user.firstName, user.lastName]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ");
+  const displayName = fullName || "Your Profile";
   const initial = String(displayName).charAt(0).toUpperCase();
   const activeSubId = activeSub?.id ?? activeSub?._id;
   const hasActiveSubId =
@@ -572,9 +638,14 @@ export default function ProfilePage() {
                 {user.role || "USER"}
               </span>
             </div>
-            <p className="mt-2 text-sm text-slate-400 [overflow-wrap:anywhere]">
-              {user.email}
-            </p>
+            <div className="mt-2 space-y-1 text-sm text-slate-400 [overflow-wrap:anywhere]">
+              <p>
+                {getDistinctUsername(user)
+                  ? `@${getDistinctUsername(user)}`
+                  : "Username not set"}
+              </p>
+              <p>{user.email || "Email not set"}</p>
+            </div>
           </div>
         </div>
 
@@ -610,6 +681,72 @@ export default function ProfilePage() {
           </div>
         </form>
       </header>
+
+      <section className={`${panelStyles} space-y-4`}>
+        <div>
+          <h2 className="text-base font-bold text-slate-100">Personal details</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-400">
+            Set the name and username shown on your profile.
+          </p>
+        </div>
+        <form onSubmit={handleProfileUpdate} className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="space-y-2 text-sm text-slate-300">
+              <span>First name</span>
+              <input
+                type="text"
+                name="firstName"
+                autoComplete="given-name"
+                maxLength={50}
+                value={profileForm.firstName}
+                onChange={(event) =>
+                  setProfileForm((current) => ({ ...current, firstName: event.target.value }))
+                }
+                className={inputStyles}
+              />
+            </label>
+            <label className="space-y-2 text-sm text-slate-300">
+              <span>Last name</span>
+              <input
+                type="text"
+                name="lastName"
+                autoComplete="family-name"
+                maxLength={50}
+                value={profileForm.lastName}
+                onChange={(event) =>
+                  setProfileForm((current) => ({ ...current, lastName: event.target.value }))
+                }
+                className={inputStyles}
+              />
+            </label>
+          </div>
+          <label className="block max-w-xl space-y-2 text-sm text-slate-300">
+            <span>Username</span>
+            <input
+              type="text"
+              name="username"
+              autoComplete="username"
+              minLength={3}
+              maxLength={30}
+              pattern="[A-Za-z0-9]+"
+              required
+              value={profileForm.username}
+              onChange={(event) =>
+                setProfileForm((current) => ({ ...current, username: event.target.value }))
+              }
+              className={inputStyles}
+            />
+            <span className="block text-xs text-slate-500">Use 3–30 letters or numbers.</span>
+          </label>
+          <button
+            type="submit"
+            disabled={updatingProfile || refreshing}
+            className={`${buttonStyles} bg-emerald-400 text-slate-950 hover:bg-emerald-300`}
+          >
+            {updatingProfile ? "Saving…" : "Save profile details"}
+          </button>
+        </form>
+      </section>
 
       {/* Profile data status */}
       <div role="status" aria-live="polite" className="text-xs text-slate-400">

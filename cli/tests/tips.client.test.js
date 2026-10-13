@@ -130,8 +130,8 @@ assert.ok(String(maxbetText).includes("Bet of the Day"), "Featured card should l
 assert.ok(String(maxbetText).includes("League:"), "Featured cards should include the league metadata line");
 
 const freeText = result.expertiseWinsFreeCards[0];
-assert.ok(String(freeText).includes("The Expertise Wins Free Tips"), "Free tips should include the main channel header");
-assert.ok(String(freeText).includes("Estoril vs Porto"), "Football listing should keep the match fixture header");
+assert.ok(!String(freeText).includes("The Expertise Wins Free Tips"), "Free cards should not repeat the channel header printed once by the orchestrator");
+assert.ok(String(freeText).startsWith("Estoril vs Porto"), "Free cards should start directly with the match fixture header");
 
 const freeBucketText = result.freeCards[0];
 assert.ok(String(freeBucketText).includes("Estoril vs Porto"), "Free bucket should contain the plain football fixture");

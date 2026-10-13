@@ -2,7 +2,7 @@
 
 This is the **operator's runbook** for the whole workspace. Package-specific detail lives in [`packages/cli.md`](./packages/cli.md), [`packages/backend.md`](./packages/backend.md), and [`packages/frontend.md`](./packages/frontend.md).
 
-> **Where this fits:** the root [`README.md`](../README.md) explains what the project is and why it exists. [`roadmap.md`](./roadmap.md) explains where it's going. **This file explains how to actually run it.**
+> **Where this fits:** the root [`README.md`](../README.md) explains what the project is and why it exists. [`roadmap.md`](./roadmap.md) explains current status and remaining work. **This file explains how to run local development and the operator workflow.** Production deployment and Cloudflare bot controls are not activated by these local commands; use [`cloudflare-launch.md`](./cloudflare-launch.md) at deployment.
 
 ---
 
@@ -31,7 +31,7 @@ docker compose up -d db
 docker compose ps
 ```
 
-The frontend, API, and PostgreSQL are available on `localhost:3001`, `localhost:3000`, and `localhost:5432`. The app container reaches PostgreSQL as `db:5432`; do not use `localhost` from inside a container.
+For local development, the frontend, API, and PostgreSQL are available on `localhost:3001`, `localhost:3000`, and `localhost:5432`. The app container reaches PostgreSQL as `db:5432`; do not use `localhost` from inside a container. These development ports must not be published as a live production stack.
 
 ### Initialize the API database
 
@@ -53,16 +53,15 @@ The first `docker compose run app` builds the shared development image, includin
 docker compose run --rm app npm run --prefix backend seed
 ```
 
-The **6 October 2026 historical checkpoint** had 12 dated dumps and 356 tip records; the Docker database also had 356 tips, with eight outcomes differing between those records. On 8 October, the Docker sync dry-run validated 417 tips from 14 dump files without writing to the database. These counts are time-specific; reconcile live database and dump results before treating performance as authoritative. The seed creates missing Free/VIP/MaxBet products and assigns each tip to a published tier based on the CLI classification rules. Free football is public; VIP and MaxBet lists require access. It preserves valid outcomes already settled in the database. It promotes an existing `ADMIN_EMAIL` account without changing its password, or creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. Database data remains in the named `postgres_data` volume when containers stop.
+The **6 October 2026 historical checkpoint** had 12 dated dumps and 356 tip records; the Docker database also had 356 tips, with eight outcomes differing between those records. On 8 October, the Docker sync dry-run validated 417 tips from 14 dump files without writing to the database. These counts are time-specific; reconcile the current database and dump results before treating performance as authoritative. The seed creates missing Free/VIP/MaxBet products and assigns each tip to a published tier based on the CLI classification rules. Current-day Free tips are public; current-day VIP and MaxBet feeds require access. The historical archive and tier performance summaries are public to visitors. The seed preserves valid outcomes already settled in the database. It promotes an existing `ADMIN_EMAIL` account without changing its password, or creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. Database data remains in the named `postgres_data` volume when containers stop.
 
 > Prefer the Docker sync command over calling the seed directly — see [Syncing the CLI dumps to a database](#syncing-the-cli-dumps-to-a-database).
 
 The API readiness endpoint is `http://localhost:3000/`; the frontend is at `http://localhost:3001` after the app service starts. The current development stack is Docker Compose, with the CLI scrape and settlement commands optionally run on the host. See [`packages/backend.md`](./packages/backend.md) for API routes, settlement behavior, and authorization rules.
 
-The first time you run the CLI, install its dependencies into the persistent Docker volume, then run its tests:
+The Docker image includes the CLI dependencies. On the first run, or when an older `cli_node_modules` volume is empty, the container entrypoint installs them into the persistent volume automatically. Run the tests directly:
 
 ```powershell
-docker compose run --rm --no-deps app npm ci --prefix cli
 docker compose run --rm --no-deps app npm run --prefix cli test
 ```
 
@@ -101,7 +100,7 @@ These commands update the shared dump and settlement files without starting loca
 docker compose run --rm app npm run sync
 ```
 
-The same CLI commands can run inside Docker using `docker compose run --rm app npm run expertise` and `docker compose run --rm app npm run settlement`. Before the first scrape in Docker, install CLI dependencies into its persistent volume with `docker compose run --rm --no-deps app npm ci --prefix cli`. The repository bind mount keeps CLI output in your workspace.
+The same CLI commands can run inside Docker using `docker compose run --rm app npm run expertise` and `docker compose run --rm app npm run settlement`. The container entrypoint initializes missing CLI dependencies automatically. The repository bind mount keeps CLI output in your workspace.
 
 Admin tip settlement is separate from the CLI's marker-based daily settlement. In the admin Tips page, one tip can be settled with an overall outcome and one outcome for each nested selection, submitted atomically in a single save. Review database and dump results for consistency before treating either as the authoritative history.
 

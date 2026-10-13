@@ -25,6 +25,12 @@ export const authApi = {
     return data.user;
   },
 
+  // Update the signed-in user's display name and username
+  async updateProfile(payload) {
+    const { data } = await apiClient.patch("/auth/me", payload);
+    return data;
+  },
+
   // Change the current user's password, expecting { oldPassword, newPassword }
   async updatePassword(payload) {
     const { data } = await apiClient.patch("/auth/password", payload);

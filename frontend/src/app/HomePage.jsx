@@ -85,6 +85,27 @@ function isFootballTip(tip) {
   return sport === "FOOTBALL" || sport === "SOCCER";
 }
 
+// Convert a tip's kickoff value into minutes past midnight so free football tips
+// can be ordered by their beginning time, matching the tips page and the CLI.
+// A relative duration ("2h 30m") is resolved against the current Nairobi time.
+function getKickoffMinutes(tip) {
+  const value = String(tip?.kickoff ?? "").trim();
+  const time = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (time) return Number(time[1]) * 60 + Number(time[2]);
+
+  const duration = value.match(/^(?:(\d+)\s*h(?:ours?)?\s*)?(?:(\d+)\s*m(?:in(?:utes?))?)?$/i);
+  if (duration && (duration[1] || duration[2])) {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Africa/Nairobi", hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(new Date());
+    const nowMinutes = Number(parts.find((part) => part.type === "hour")?.value || 0) * 60 +
+      Number(parts.find((part) => part.type === "minute")?.value || 0);
+    return (nowMinutes + Number(duration[1] || 0) * 60 + Number(duration[2] || 0)) % 1440;
+  }
+
+  return Number.MAX_SAFE_INTEGER;
+}
+
 function isTipForToday(tip) {
   const timestamp = tip?.scrapedAt ?? tip?.publishedAt ?? tip?.createdAt;
   if (!timestamp) return false;
@@ -167,6 +188,10 @@ export default function HomePage() {
                 .filter((tip) => tip && typeof tip === "object")
                 .filter(isTipForToday)
                 .filter(isFootballTip)
+                .sort(
+                  (a, b) =>
+                    getKickoffMinutes(a) - getKickoffMinutes(b)
+                )
             );
           } else {
             setFreeTips([]);
