@@ -49,7 +49,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Respond to the health check
 app.get("/", (req, res) =>
-  res.json({ status: 200, message: "The Expertise Wins API is ready for development." })
+  res.json({ status: 200, message: "The Expertise Wins API — under active testing and validation." })
 );
 
 // Track usage, then mount all API routes under /api

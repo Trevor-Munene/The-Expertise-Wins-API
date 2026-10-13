@@ -56,13 +56,18 @@ const formatKickoff = (kickoff) => {
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")} Kenyan Time`;
 };
 
-const formatSelection = (selection, market) => {
+export const formatSelection = (selection, market) => {
   const cleanSelection = normalizeLabel(selection || "");
   const cleanMarket = normalizeLabel(market || "");
   if (!cleanSelection) return cleanMarket || "Tip";
   if (!cleanMarket || cleanSelection.toLowerCase() === cleanMarket.toLowerCase()) return cleanSelection;
   if (cleanSelection.toLowerCase().includes(cleanMarket.toLowerCase())) return cleanSelection;
-  if (/match result|full time result|winner|moneyline|to win/i.test(cleanMarket)) return cleanSelection;
+  if (/match result|full[- ]?time result|winner|moneyline|to win/i.test(cleanMarket)) return cleanSelection;
+  if (/total goals/i.test(cleanMarket) && /over|under|goals/i.test(cleanSelection)) return cleanSelection;
+  if (/both teams to score|btts/i.test(cleanMarket) && /btts/i.test(cleanSelection)) return cleanSelection;
+  if (/correct score/i.test(cleanMarket) && (/\d+-\d+/.test(cleanSelection) || /draw/i.test(cleanSelection))) return cleanSelection;
+  if (/result\s*[\/&]\s*total goals/i.test(cleanMarket) && (/win|draw|over|under/i.test(cleanSelection))) return cleanSelection;
+  if (/handicap/i.test(cleanMarket) && (/handicap|[+-]\d+|\(.*\)/i.test(cleanSelection))) return cleanSelection;
   return `${cleanSelection} ${cleanMarket}`;
 };
 

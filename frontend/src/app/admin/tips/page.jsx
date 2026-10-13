@@ -51,8 +51,14 @@ function toJsonField(value) {
 export default function AdminTipsPage() {
   const [tips, setTips] = useState([]);
   const [products, setProducts] = useState([]);
-  const [sportFilter, setSportFilter] = useState("ALL");  const [tierFilter, setTierFilter] = useState("ALL");
-
+  const [sportFilter, setSportFilter] = useState("ALL");
+  const [tierFilter, setTierFilter] = useState("ALL");
+  // Filter and selection state
+  const [loading, setLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState("today");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [selectedTipIds, setSelectedTipIds] = useState([]);
 
   // Create Modal State
   const [createModalOpen, setCreateModalOpen] = useState(false);

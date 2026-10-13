@@ -422,29 +422,7 @@ class TipsConsumptionClient {
     }
 
     formatExpertiseWinsFreeCard(tip) {
-        if (!tip) return null;
-
-        // The channel header is printed once by the orchestrator (cli/services/app.js),
-        // so each free card starts directly with the fixture to avoid repeating it.
-        const lines = [];
-        const fixture = tip.homeTeam && tip.awayTeam ? `${tip.homeTeam} vs ${tip.awayTeam}` : (tip.selection || "Match");
-        lines.push(fixture);
-
-        const tipsList = Array.isArray(tip.tips) ? tip.tips : [];
-        if (tipsList.length > 0) {
-            for (const item of tipsList) {
-                const normalizedSelection = this.normalizeLabel(item.selection || item.market || "Tip");
-                const oddsText = Number.isFinite(Number(item.odds)) ? ` @${this.formatOdds(item.odds)}` : "";
-                const units = Number(item.units ?? item.stakeUnits ?? 1);
-                lines.push(`${normalizedSelection}${oddsText} - ${units} Unit${units === 1 ? "" : "s"}${this.formatOutcome(item.outcome)}`);
-            }
-        } else if (tip.selection) {
-            const oddsText = Number.isFinite(Number(tip.odds)) ? ` @${this.formatOdds(tip.odds)}` : "";
-            const units = Number(tip.stakeUnits ?? tip.units ?? 1);
-            lines.push(`${this.normalizeLabel(tip.selection)}${oddsText} - ${units} Unit${units === 1 ? "" : "s"}${this.formatOutcome(tip.outcome)}`);
-        }
-
-        return lines.join("\n").trim();
+        return this.formatPlainFreeCard(tip);
     }
 
     formatPikkBetterVipCard(tip) {
@@ -519,7 +497,12 @@ class TipsConsumptionClient {
         if (!normalizedMarket) return normalizedSelection;
         if (normalizedSelection.toLowerCase() === normalizedMarket.toLowerCase()) return normalizedSelection;
         if (normalizedSelection.toLowerCase().includes(normalizedMarket.toLowerCase())) return normalizedSelection;
-        if (/match result|full time result|winner|moneyline|to win/i.test(normalizedMarket)) return normalizedSelection;
+        if (/match result|full[- ]?time result|winner|moneyline|to win/i.test(normalizedMarket)) return normalizedSelection;
+        if (/total goals/i.test(normalizedMarket) && /over|under|goals/i.test(normalizedSelection)) return normalizedSelection;
+        if (/both teams to score|btts/i.test(normalizedMarket) && /btts/i.test(normalizedSelection)) return normalizedSelection;
+        if (/correct score/i.test(normalizedMarket) && (/\d+-\d+/.test(normalizedSelection) || /draw/i.test(normalizedSelection))) return normalizedSelection;
+        if (/result\s*[\/&]\s*total goals/i.test(normalizedMarket) && (/win|draw|over|under/i.test(normalizedSelection))) return normalizedSelection;
+        if (/handicap/i.test(normalizedMarket) && (/handicap|[+-]\d+|\(.*\)/i.test(normalizedSelection))) return normalizedSelection;
         return `${normalizedSelection} ${normalizedMarket}`;
     }
 
@@ -553,21 +536,22 @@ class TipsConsumptionClient {
         if (!tip) return null;
 
         const lines = [];
-        const fixture = tip.homeTeam && tip.awayTeam ? `${tip.homeTeam} vs ${tip.awayTeam}` : (tip.selection || "Match");
+        const fixture = tip.homeTeam && tip.awayTeam ? `${tip.homeTeam} vs ${tip.awayTeam}` : (tip.teams || tip.selection || "Match");
         lines.push(fixture);
 
         const listedTips = Array.isArray(tip.tips) ? tip.tips : [];
         if (listedTips.length > 0) {
             for (const item of listedTips) {
-                const normalizedSelection = this.normalizeLabel(item.selection || item.market || "Tip");
+                const normalizedSelection = this.formatSelectionWithMarket(item.selection, item.market);
                 const oddsText = Number.isFinite(Number(item.odds)) ? ` @${this.formatOdds(item.odds)}` : "";
                 const units = Number(item.units ?? item.stakeUnits ?? 1);
                 lines.push(`${normalizedSelection}${oddsText} - ${units} Unit${units === 1 ? "" : "s"}${this.formatOutcome(item.outcome)}`);
             }
         } else if (tip.selection) {
+            const normalizedSelection = this.formatSelectionWithMarket(tip.selection, tip.market);
             const oddsText = Number.isFinite(Number(tip.odds)) ? ` @${this.formatOdds(tip.odds)}` : "";
             const units = Number(tip.stakeUnits ?? tip.units ?? 1);
-            lines.push(`${this.normalizeLabel(tip.selection)}${oddsText} - ${units} Unit${units === 1 ? "" : "s"}${this.formatOutcome(tip.outcome)}`);
+            lines.push(`${normalizedSelection}${oddsText} - ${units} Unit${units === 1 ? "" : "s"}${this.formatOutcome(tip.outcome)}`);
         }
 
         return lines.join("\n").trim();

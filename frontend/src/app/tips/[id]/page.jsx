@@ -25,6 +25,7 @@ import {
   outcomeColor,
   statusColor,
 } from "../../../lib/utils";
+import { formatSelection } from "../../../lib/tipChannelFormatter";
 
 const focusStyles =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-card";
@@ -235,18 +236,37 @@ export default function TipDetailPage() {
   const market = tip.market || "—";
   const selection = tip.selection || tip.prediction || "—";
 
+  const stakeUnits = Number(
+    tip.stakeUnits ??
+      tip.units ??
+      tip.unitsToStake ??
+      (Array.isArray(tip.tips) && tip.tips.length > 0
+        ? tip.tips[0]?.units ?? tip.tips[0]?.stakeUnits
+        : null)
+  );
+  const hasStakeUnits = Number.isFinite(stakeUnits) && stakeUnits > 0;
+
   const hasResult = Boolean(outcome);
   const kickoff = tip.kickoff || tip.matchDate;
   const displayedDate = kickoff || tip.createdAt;
   const preview = tip.verdict || tip.preview;
 
-  const extraTips = Array.isArray(tip.extraTips)
-    ? tip.extraTips.filter(
-        (extraTip) =>
-          typeof extraTip === "string" ||
-          (extraTip && typeof extraTip === "object")
-      )
-    : [];
+  const rawExtraTips =
+    Array.isArray(tip.extraTips) && tip.extraTips.length > 0
+      ? tip.extraTips
+      : Array.isArray(tip.tips) && tip.tips.length > 1
+        ? tip.tips.filter(
+            (t) =>
+              t &&
+              (t.selection !== tip.selection || t.market !== tip.market)
+          )
+        : [];
+
+  const extraTips = rawExtraTips.filter(
+    (extraTip) =>
+      typeof extraTip === "string" ||
+      (extraTip && typeof extraTip === "object")
+  );
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -348,7 +368,7 @@ export default function TipDetailPage() {
               </div>
             </div>
 
-            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="min-w-0 rounded-xl border border-dark-border bg-dark-bg p-4">
                 <dt className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   Market
@@ -374,6 +394,17 @@ export default function TipDetailPage() {
                 <dd className="inline-flex rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-base font-black text-amber-400 tabular-nums">
                   {hasValidOdds(tip.odds)
                     ? `@${formatOdds(tip.odds)}`
+                    : "—"}
+                </dd>
+              </div>
+
+              <div className="min-w-0 rounded-xl border border-indigo-500/20 bg-dark-bg p-4">
+                <dt className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Units to Stake
+                </dt>
+                <dd className="inline-flex rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-base font-black text-indigo-300 tabular-nums">
+                  {hasStakeUnits
+                    ? `${stakeUnits} Unit${stakeUnits === 1 ? "" : "s"}`
                     : "—"}
                 </dd>
               </div>
@@ -497,16 +528,28 @@ export default function TipDetailPage() {
 
               <ul className="space-y-2">
                 {extraTips.map((extraTip, index) => {
-                  const isObject = typeof extraTip === "object";
+                  const isObject = extraTip !== null && typeof extraTip === "object";
+
+                  // Mirror the home page / tips list card format:
+                  // "[Selection Market] @Odds - N Unit(s)". The market is only
+                  // appended when it adds context the selection does not carry.
                   const extraSelection = isObject
-                    ? extraTip.selection ||
-                      extraTip.name ||
-                      "Additional selection"
+                    ? formatSelection(
+                        extraTip.selection || extraTip.name || extraTip.market,
+                        extraTip.market
+                      )
                     : extraTip;
 
                   const extraOdds = isObject
                     ? extraTip.odds
                     : undefined;
+
+                  const extraUnits = isObject
+                    ? Number(extraTip.units ?? extraTip.stakeUnits ?? 1)
+                    : null;
+
+                  const hasExtraUnits =
+                    extraUnits !== null && Number.isFinite(extraUnits);
 
                   return (
                     <li
@@ -521,12 +564,20 @@ export default function TipDetailPage() {
                         {extraSelection}
                       </span>
 
-                      {hasValidOdds(extraOdds) && (
-                        <span className="shrink-0 text-sm font-bold leading-6 text-amber-400 tabular-nums">
-                          <span className="sr-only">Odds: </span>
-                          @{formatOdds(extraOdds)}
-                        </span>
-                      )}
+                      <span className="shrink-0 text-right text-sm font-bold leading-6 text-amber-400 tabular-nums">
+                        {hasValidOdds(extraOdds) && (
+                          <span className="block">
+                            <span className="sr-only">Odds: </span>
+                            @{formatOdds(extraOdds)}
+                          </span>
+                        )}
+
+                        {hasExtraUnits && extraUnits > 0 && (
+                          <span className="block text-[11px] font-medium text-slate-400">
+                            {extraUnits} Unit{extraUnits === 1 ? "" : "s"}
+                          </span>
+                        )}
+                      </span>
                     </li>
                   );
                 })}

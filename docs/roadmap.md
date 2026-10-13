@@ -1,18 +1,18 @@
 # The Expertise Wins — V1 Status and Roadmap
 
-> **Production release status (10 October 2026): not yet cleared.** Backend and CLI test suites, frontend lint, and the optimized frontend build pass locally. Production deployment, enabling and verifying Cloudflare bot controls, origin isolation, real-user/database acceptance, data reconciliation, and backup/restore verification are still required. The current Compose setup is for development and publishes PostgreSQL. See [`cloudflare-launch.md`](./cloudflare-launch.md).
+> **Production release status (13 October 2026): under active testing and validation.** V1 feature implementation is complete. Core functionality is being validated across all workflows: authentication, tip publication and settlement, access-token redemption, admin curation, archive and stats accuracy, and frontend-to-API contract. A runtime bug in the admin tips page (five missing `useState` declarations) has been fixed. Production deployment, Cloudflare bot controls, origin isolation, real-user/database acceptance, and backup/restore verification remain the final launch steps. See [`cloudflare-launch.md`](./cloudflare-launch.md).
 
-This document distinguishes the implemented V1 baseline from remaining acceptance work. Review status date: **10 October 2026**. The operational data figures below are a dated 6 October snapshot and are not current live-system totals. Phase checkboxes record implementation milestones; they do not imply production deployment or acceptance of every real-user workflow.
+This document distinguishes the implemented V1 baseline from remaining acceptance work. Review status date: **13 October 2026**. The operational data figures below are a dated 6 October snapshot and are not current live-system totals. Phase checkboxes record implementation milestones; they do not imply production deployment or acceptance of every real-user workflow.
 
-> V1 now has a Dockerized application stack. The current focus is data reconciliation, operational hardening, and real-user acceptance.
+> V1 implementation is complete. The current focus is active testing and validation of all core functionality, data reconciliation, operational hardening, and real-user acceptance. A step closer to live.
 
 ---
 
-## Current status (10 October 2026 review)
+## Current status (13 October 2026 review)
 
 The repository contains the CLI workflow, Express/Prisma REST API, Next.js frontend, and Docker Compose setup. In local development, the API and frontend run in the Docker `app` service; PostgreSQL is a separate container. The published local ports are API `3000`, frontend `3001`, and database `5432`. The frontend and backend settings are held in separate ignored env files. This is not a production topology.
 
-Current code includes public pages, a public historical archive and performance views, token-gated current VIP/MaxBet feeds, account/admin workflows, and daily CLI scrape/settlement/sync. On 10 October, backend and CLI test suites, frontend lint, and an optimized Next.js build completed successfully; frontend checks show an existing profile-page `<img>` optimization warning. On 8 October, local Docker routes and sync dry-run were checked. This is local/code-level evidence, not full browser or real-user acceptance. Cloudflare bot controls have not been applied to a production zone; see [`cloudflare-launch.md`](./cloudflare-launch.md). Login, customer, end-to-end admin, live database, backup, and recovery workflows still require acceptance. The 4 October browser check and 6 October data checkpoint remain historical evidence.
+Current code includes public pages, a public historical archive and performance views, token-gated current VIP/MaxBet feeds, account/admin workflows, and daily CLI scrape/settlement/sync. On 10 October, backend and CLI test suites, frontend lint, and an optimized Next.js build completed successfully; frontend checks show an existing profile-page `<img>` optimization warning. On 13 October, a critical runtime bug in the admin tips page was fixed (five missing `useState` declarations for `loading`, `selectedDay`, `searchTerm`, `statusFilter`, and `selectedTipIds`), the API health message was updated to reflect testing status, and the full frontend-to-API contract was reviewed and confirmed consistent. This is local/code-level evidence, not full browser or real-user acceptance. Cloudflare bot controls have not been applied to a production zone; see [`cloudflare-launch.md`](./cloudflare-launch.md). Login, customer, end-to-end admin, live database, backup, and recovery workflows still require acceptance.
 
 ### V1 capabilities in the repository
 
@@ -219,6 +219,7 @@ V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They 
 * [ ] Add UI-to-API acceptance coverage
 * [ ] Verify backup and restore procedures
 * [x] Align page metadata, sitemap, robots, and structured data to `NEXT_PUBLIC_SITE_URL`
+* [x] Fix admin tips page runtime crash: five missing `useState` declarations added (`loading`, `selectedDay`, `searchTerm`, `statusFilter`, `selectedTipIds`)
 * [ ] Complete a production configuration and security review, including Cloudflare bot/rate-limit rollout and origin isolation
 
 V2 automation, developer API services, commercial installation packaging, deeper sport analytics, richer tipping and personal workflows, and a historical-tips calculator are ideation topics in [`v2-ideation.md`](./v2-ideation.md), not Phase 11 commitments.
@@ -238,7 +239,7 @@ V2 automation, developer API services, commercial installation packaging, deeper
 | **Phase 5.5** | Settlement Engine | ✅ Completed |
 | **Phase 6** | Performance Analytics & ROI Engine | ✅ Aggregate metrics and sport/market breakdowns are implemented; current settlement totals need reconciliation |
 | **Phase 7** | Prisma ORM, Docker PostgreSQL & Historical Seed | ✅ Local Compose initialization/seed workflow exists; 6 October snapshot had eight outcome differences which still require reconciliation |
-| **Phase 8** | Express REST API, Archive & JWT Auth | ✅ Public tips API is read-only; admin curation is active-admin-only, token revoke/delete and mocked-persistence service tests are in place; V1 acceptance is operator real-user/database testing |
-| **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | 🟡 10 October local optimized build and lint pass; full browser acceptance and end-to-end coverage remain |
+| **Phase 8** | Express REST API, Archive & JWT Auth | ✅ Public tips API is read-only; admin curation is active-admin-only, token revoke/delete and mocked-persistence service tests are in place; frontend-to-API contract reviewed and consistent on 13 October |
+| **Phase 9** | Next.js 14 Frontend, Archive, SEO & Blog | 🟡 Admin tips page runtime crash fixed 13 October (5 missing state declarations); 10 October local optimized build and lint pass; full browser acceptance and end-to-end coverage remain |
 | **Phase 10** | CLI ↔ Database Sync | ✅ Sync command is available and idempotent; 8 October dry-run validated 417 tips in 14 files; daily scrape, review, settlement, and sync remain operator-driven |
-| **Phase 11** | V1 Hardening & Acceptance | 🟡 Data reconciliation, real-user acceptance, UI/API coverage, recovery procedures, and deployment review remain |
+| **Phase 11** | V1 Hardening & Acceptance | 🟡 **Active testing and validation** — code-level review complete, admin bug fixed; data reconciliation, real-user acceptance, UI/API coverage, recovery procedures, and deployment review remain |
