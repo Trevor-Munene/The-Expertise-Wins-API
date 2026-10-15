@@ -20,8 +20,8 @@ const testJsonPath = path.join(previousDayResultsDir, `freetips-${TEST_FORMATTED
 const win = (selection, market, units) => ({ selection, market, odds: 1.90, units, outcome: null });
 const lose = (selection, market, units) => ({ selection, market, odds: 1.90, units, outcome: null });
 
-// Paid tips settle explicitly by their markers, or default to lose if unmarked.
-// Free tips settle explicitly by markers, or default to win if unmarked.
+// Free tips settle explicitly by markers, or default to lose if unmarked.
+// Paid (VIP/MaxBet) tips settle explicitly by markers, or default to win if unmarked.
 const buildFixtureTips = () => ([
     {
         source: "freetips",
@@ -80,7 +80,7 @@ const buildFixtureTips = () => ([
         status: "pending",
         outcome: null,
     },
-    // Free tip whose fixture is NOT present in the results text -> default win.
+    // Free tip whose fixture is NOT present in the results text -> default lose.
     {
         source: "freetips",
         sport: "Football",
@@ -100,7 +100,7 @@ const buildFixtureTips = () => ([
         status: "pending",
         outcome: null,
     },
-    // Paid non-football tip without a marker defaults to loss.
+    // Paid non-football tip without a marker defaults to win.
     {
         source: "freetips",
         sport: "Basketball",
@@ -250,16 +250,16 @@ const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt
         assert.strictEqual(byHome("Juventus").outcome, "win", "Free tip main selection should settle as a win");
         assert.strictEqual(byHome("Juventus").tips[1].outcome, "lose", "Free tip secondary selection should settle as a lose");
 
-        // Free football absent from settlement text defaults to win.
+        // Free football absent from settlement text defaults to loss.
         const ajax = byHome("Ajax");
-        assert.strictEqual(ajax.outcome, "win", "A free tip missing from results text must default to win");
+        assert.strictEqual(ajax.outcome, "lose", "A free tip missing from results text must default to loss");
         assert.strictEqual(ajax.status, "settled", "Defaulted free tip should still be marked settled");
-        assert.strictEqual(ajax.tips[0].outcome, "win", "Nested tips of a defaulted free tip should be win");
+        assert.strictEqual(ajax.tips[0].outcome, "lose", "Nested tips of a defaulted free tip should be loss");
 
-        // Paid tip absent from settlement text defaults to loss.
+        // Paid tip absent from settlement text defaults to win.
         const olympiacos = byHome("Olympiacos");
-        assert.strictEqual(olympiacos.outcome, "lose", "An unmarked paid tip must default to lose");
-        assert.strictEqual(olympiacos.tips[0].outcome, "lose", "Nested paid tips should default to lose");
+        assert.strictEqual(olympiacos.outcome, "win", "An unmarked paid tip must default to win");
+        assert.strictEqual(olympiacos.tips[0].outcome, "win", "Nested paid tips should default to win");
 
         // Non-football premium tip: explicit lose marker.
         const basketball = byHome("Real Madrid");
@@ -271,9 +271,9 @@ const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt
         assert.strictEqual(persistedBesiktas.outcome, "win", "Settled outcomes must be written back to the JSON dump");
 
         const persistedAjax = persisted.find((tip) => tip.homeTeam === "Ajax");
-        assert.strictEqual(persistedAjax.outcome, "win", "Defaulted free wins must be written back to the JSON dump");
+        assert.strictEqual(persistedAjax.outcome, "lose", "Defaulted free losses must be written back to the JSON dump");
         const persistedOlympiacos = persisted.find((tip) => tip.homeTeam === "Olympiacos");
-        assert.strictEqual(persistedOlympiacos.outcome, "lose", "Defaulted paid losses must be written back to the JSON dump");
+        assert.strictEqual(persistedOlympiacos.outcome, "win", "Defaulted paid wins must be written back to the JSON dump");
 
         // -------------------------------------------------------------------
         // 5. The settled dump renders through the tips client, and the settlement

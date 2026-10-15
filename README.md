@@ -151,7 +151,7 @@ The current release scope and remaining acceptance work are in [`docs/roadmap.md
 ### Operational Notes
 
 - **Settlement flows to the database.** `npm run settlement` records results in the dump (defaulting to yesterday's file, or an explicit `--date`); `docker compose run --rm app npm run sync` publishes them, so win rate and ROI update automatically. Review the generated settlement before syncing.
-- **Settlement defaults are channel-aware.** An unmarked free-channel pick settles as a win; an unmarked paid-group pick settles as a loss. Explicit `✅✅` / `❎❎` markers always override the default.
+- **Settlement defaults are channel-aware.** An unmarked free-channel pick settles as a **loss**; an unmarked paid-group (VIP/MaxBet) pick settles as a **win**. Explicit `✅✅` / `❎❎` markers always override the default.
 - **Live tips are day-scoped.** Daily tips are intended to show the current Nairobi day across tiers; historical tips belong in the archive. Admin tip management defaults to today and provides today/yesterday filters for daily review and settlement.
 - **Admins see every tier.** The tips page loads Free, VIP, and MaxBet for an admin account; the public tips list intentionally exposes only the public (Free) product.
 - **Single-tip settlement supports every selection.** From Admin → Tips, choose Settle, set the overall outcome, then set each selection's outcome (or apply the overall outcome to all) and save once.

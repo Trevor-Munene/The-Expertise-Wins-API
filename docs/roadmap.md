@@ -120,7 +120,7 @@ V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They 
 
 * [x] Build the settlement evaluator (`cli/settlement/settlement.js`)
 * [x] Match fixture selections against pasted text using `✅✅` and `❎❎` markers
-* [x] Apply channel-aware defaults: unmarked free-channel picks settle as wins, unmarked paid-group picks settle as losses
+* [x] Apply channel-aware defaults: unmarked free-channel picks settle as losses, unmarked paid-group picks settle as wins
 * [x] Write annotated outcomes back to the exact dated dump
 * [x] Print formatted reports through the local CLI consumer
 * [ ] Integrate live scores or automatic result verification

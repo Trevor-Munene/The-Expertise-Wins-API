@@ -12,20 +12,6 @@ const createError = (message, statusCode = 400) => {
   return error;
 };
 
-// Get the date a number of days ago
-const getPeriodStart = (days) => {
-  const start = new Date();
-  start.setDate(start.getDate() - days);
-  return start;
-};
-
-// Get midnight at the start of today
-const getStartOfToday = () => {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  return start;
-};
-
 // Get midnight in Nairobi for today (offset 0) or another calendar day.
 const getNairobiDayStart = (dayOffset = 0) => {
   const nairobiNow = new Date(Date.now() + NAIROBI_UTC_OFFSET_MS);
@@ -40,12 +26,30 @@ const getNairobiYearStart = () => {
   return new Date(start.getTime() - NAIROBI_UTC_OFFSET_MS);
 };
 
-// Get midnight on January 1 of the current year
-const getStartOfYear = () => {
-  const start = new Date();
-  start.setMonth(0, 1);
-  start.setHours(0, 0, 0, 0);
-  return start;
+// Tips belong to the day they were scraped. Records without a scrape timestamp
+// fall back to publication time, then creation. This mirrors the archive and
+// admin services so every surface buckets a tip into the same day.
+const buildTipDayFilter = (range) => ({
+  OR: [
+    { scrapedAt: range },
+    { scrapedAt: null, publishedAt: range },
+    { scrapedAt: null, publishedAt: null, createdAt: range },
+  ],
+});
+
+// Normalise an outcome to the canonical set every stats surface counts on.
+// Grouped panels, metric cards and reports all share this helper so a win is a
+// win everywhere and a stale bulk-settlement parent outcome cannot slip through.
+const normalizeOutcome = (outcome) => {
+  const normalized = String(outcome || "PENDING").trim().toUpperCase();
+  if (["WIN", "WON"].includes(normalized)) return "WON";
+  if (["LOSE", "LOSS", "LOST"].includes(normalized)) return "LOST";
+  if (["HALF WIN", "HALF-WIN", "HALF_WON"].includes(normalized)) return "HALF_WON";
+  if (["HALF LOSS", "HALF-LOSS", "HALF_LOST"].includes(normalized)) return "HALF_LOST";
+  if (["VOID", "PUSH", "CANCELLED", "CANCELED"].includes(normalized)) {
+    return normalized === "CANCELED" ? "CANCELLED" : normalized;
+  }
+  return "PENDING";
 };
 
 // Calculate outcome counts, win rate, profit and ROI for matching tips
@@ -77,18 +81,6 @@ const getTipStats = async (where = {}) => {
   // Collect every usable odds value so the average can be reported
   let oddsTotal = 0;
   let oddsCount = 0;
-
-  const normalizeOutcome = (outcome) => {
-    const normalized = String(outcome || "PENDING").trim().toUpperCase();
-    if (["WIN", "WON"].includes(normalized)) return "WON";
-    if (["LOSE", "LOSS", "LOST"].includes(normalized)) return "LOST";
-    if (["HALF WIN", "HALF-WIN", "HALF_WON"].includes(normalized)) return "HALF_WON";
-    if (["HALF LOSS", "HALF-LOSS", "HALF_LOST"].includes(normalized)) return "HALF_LOST";
-    if (["VOID", "PUSH", "CANCELLED", "CANCELED"].includes(normalized)) {
-      return normalized === "CANCELED" ? "CANCELLED" : normalized;
-    }
-    return "PENDING";
-  };
 
   for (const tip of tips) {
     // Scraped product groups can contain several actual selections. The nested
@@ -214,11 +206,11 @@ const getProductStats = async (slug, where = {}) => {
   });
 };
 
-// Calculate stats for tips created since a date
-const getTimeStats = async (startDate) => {
-  return getTipStats({
-    createdAt: { gte: startDate },
-  });
+// Calculate stats for tips belonging to a period. The period id is resolved
+// through the same business-day logic as the summary, so every period endpoint
+// reports one consistent window.
+const getTimeStats = async (periodId) => {
+  return getTipStats(resolvePeriodWhere(periodId));
 };
 
 // Summarise usage events from the last 30 days
@@ -262,26 +254,28 @@ const getUsageStats = async () => {
   return { periodDays: 30, totalEvents, uniqueUsers: uniqueUsers.length, topPaths, daily };
 };
 
-// Get headline counts and overall performance
+// Get headline counts and overall performance. Row-level counts (total,
+// published) come from the parent row, but win/loss counts and every derived
+// metric come from getTipStats so they always describe the same selections.
+// Counting parent outcomes separately would let a tip whose parent says WON but
+// whose nested selections still say LOST be reported as a win in the count and
+// a loss in the win rate and ROI.
 const getOverview = async () => {
-  const [totalTips, publishedTips, settledTips, pendingTips, wins, losses] = await Promise.all([
+  const [totalTips, publishedTips, settledTips, pendingTips, performance] = await Promise.all([
     prisma.tip.count(),
     prisma.tip.count({ where: { status: "PUBLISHED" } }),
     prisma.tip.count({ where: { outcome: { in: settledOutcomes } } }),
     prisma.tip.count({ where: { outcome: "PENDING" } }),
-    prisma.tip.count({ where: { outcome: "WON" } }),
-    prisma.tip.count({ where: { outcome: "LOST" } }),
+    getTipStats(),
   ]);
-
-  const performance = await getTipStats();
 
   return {
     totalTips,
     publishedTips,
     settledTips,
     pendingTips,
-    wins,
-    losses,
+    wins: performance.wins,
+    losses: performance.losses,
     winRate: performance.winRate,
     roi: performance.roi,
     profit: performance.profit,
@@ -290,29 +284,30 @@ const getOverview = async () => {
   };
 };
 
-// Get stats for tips created today
+// Get stats for the completed prior day. The legacy "today" endpoint resolves
+// to the same business-day window used by the Period filter.
 const getTodayStats = async () => {
-  return getTimeStats(getStartOfToday());
+  return getTimeStats("yesterday");
 };
 
 // Get stats for the last 7 days
 const getWeeklyStats = async () => {
-  return getTimeStats(getPeriodStart(7));
+  return getTimeStats("week");
 };
 
 // Get stats for the last 14 days
 const getFourteenDayStats = async () => {
-  return getTimeStats(getPeriodStart(14));
+  return getTimeStats("14-days");
 };
 
 // Get stats for the last 30 days
 const getMonthlyStats = async () => {
-  return getTimeStats(getPeriodStart(30));
+  return getTimeStats("month");
 };
 
 // Get stats since the start of the year
 const getYearlyStats = async () => {
-  return getTimeStats(getStartOfYear());
+  return getTimeStats("year");
 };
 
 // Get stats for all tips
@@ -320,15 +315,13 @@ const getAllTimeStats = async () => {
   return getTipStats();
 };
 
-// Stats are grouped by the date the tips were published/created. This keeps a
-// prior-day product group together even when its results are settled after
-// midnight. Every range ends at Nairobi midnight today, excluding today's tips.
-const resolvePeriodWhere = (periodId, dateField = "createdAt") => {
+// Build the [start, end] instants for one reporting period, using Nairobi
+// (UTC+3) calendar days. Every range ends at Nairobi midnight today so today's
+// in-play tips are excluded from settled performance figures.
+const getPeriodRange = (periodId) => {
   const normalizedPeriod = String(periodId || "all-time");
   const dayOffsets = {
     yesterday: -1,
-    // Keep the old picker id as an alias, but report the completed prior day.
-    today: -1,
     week: -7,
     "14-days": -14,
     month: -30,
@@ -336,24 +329,28 @@ const resolvePeriodWhere = (periodId, dateField = "createdAt") => {
 
   if (Object.hasOwn(dayOffsets, normalizedPeriod)) {
     return {
-      [dateField]: {
-        gte: getNairobiDayStart(dayOffsets[normalizedPeriod]),
-        lt: getNairobiDayStart(0),
-      },
+      gte: getNairobiDayStart(dayOffsets[normalizedPeriod]),
+      lt: getNairobiDayStart(0),
     };
   }
 
   if (normalizedPeriod === "year") {
-    return {
-      [dateField]: {
-        gte: getNairobiYearStart(),
-        lt: getNairobiDayStart(0),
-      },
-    };
+    return { gte: getNairobiYearStart(), lt: getNairobiDayStart(0) };
   }
 
-  if (normalizedPeriod === "all-time") return {};
+  if (normalizedPeriod === "all-time") return null;
   throw createError("Unsupported reporting period.", 400);
+};
+
+// Stats are grouped by the business day a tip belongs to (scrapedAt, then
+// publishedAt, then createdAt), not by the DB insert time. The seed leaves
+// createdAt at the sync moment, so filtering on createdAt alone collapses every
+// historical day into one bucket and hides freshly synced tips from the
+// Yesterday/7/14/30-day windows.
+const resolvePeriodWhere = (periodId) => {
+  const range = getPeriodRange(periodId);
+  if (!range) return {};
+  return buildTipDayFilter({ gte: range.gte, lte: new Date(range.lt.getTime() - 1) });
 };
 
 // Return every id a product filter may be sent as, mapped to a real slug
@@ -378,12 +375,14 @@ const resolveProductSlug = (productId) => {
 // describe the same set of tips.
 const getSummaryStats = async ({ periodId = "all-time", productId = "ALL" } = {}) => {
   const productSlug = resolveProductSlug(productId);
-  const timeWhere = resolvePeriodWhere(periodId, "createdAt");
+  const timeWhere = resolvePeriodWhere(periodId);
 
   const performance = productSlug
     ? await getProductStats(productSlug, timeWhere)
     : await getTipStats(timeWhere);
 
+  // Every average odds figure on the page comes from this one helper, so the
+  // metric card and the performance report always share a denominator.
   const odds = await getOddsStatsFor(
     productSlug
       ? {
@@ -399,10 +398,8 @@ const getSummaryStats = async ({ periodId = "all-time", productId = "ALL" } = {}
     period: String(periodId || "all-time"),
     product: productSlug ?? "ALL",
     ...performance,
-    // getTipStats averages odds over every tip carrying odds; expose it under
-    // both names so the cards and the report read the same number
-    avgOdds: performance.avgOdds,
-    average: performance.avgOdds,
+    avgOdds: odds.average,
+    average: odds.average,
     odds,
   };
 };
@@ -424,32 +421,32 @@ const getMaxbetStats = async () => {
 
 // Get free product stats for the last 7 days
 const getFreeWeeklyStats = async () => {
-  return getProductStats("free", { createdAt: { gte: getPeriodStart(7) } });
+  return getProductStats("free", resolvePeriodWhere("week"));
 };
 
 // Get free product stats for the last 30 days
 const getFreeMonthlyStats = async () => {
-  return getProductStats("free", { createdAt: { gte: getPeriodStart(30) } });
+  return getProductStats("free", resolvePeriodWhere("month"));
 };
 
 // Get public VIP product stats for the last 7 days
 const getVipWeeklyStats = async () => {
-  return getProductStats("vip", { createdAt: { gte: getPeriodStart(7) } });
+  return getProductStats("vip", resolvePeriodWhere("week"));
 };
 
 // Get public VIP product stats for the last 30 days
 const getVipMonthlyStats = async () => {
-  return getProductStats("vip", { createdAt: { gte: getPeriodStart(30) } });
+  return getProductStats("vip", resolvePeriodWhere("month"));
 };
 
 // Get public MaxBet product stats for the last 7 days
 const getMaxbetWeeklyStats = async () => {
-  return getProductStats("maxbet", { createdAt: { gte: getPeriodStart(7) } });
+  return getProductStats("maxbet", resolvePeriodWhere("week"));
 };
 
 // Get public MaxBet product stats for the last 30 days
 const getMaxbetMonthlyStats = async () => {
-  return getProductStats("maxbet", { createdAt: { gte: getPeriodStart(30) } });
+  return getProductStats("maxbet", resolvePeriodWhere("month"));
 };
 
 // Get stats for settled tips
@@ -557,9 +554,16 @@ const getStakeStats = async () => {
   };
 };
 
-// Group tips by a field and calculate win rate per group
-const getGroupedStats = async (field) => {
-  const where = field === "competition" ? { [field]: { not: null } } : {};
+// Group tips by a field and calculate win rate per group for the selected
+// period and product. The nested `tips[]` array is the canonical per-selection
+// result, exactly as getTipStats reads it, so a grouped win rate can never
+// disagree with the headline win rate for the same filter combination. Counting
+// the parent row's outcome would let a stale bulk settlement report a card as a
+// win in the breakdown while the metric cards score its selections as losses.
+const getGroupedStats = async (field, filters = {}) => {
+  const { productSlug, where: periodWhere } = getProductPeriodWhere(filters);
+  const scope = await withProductPublication(periodWhere, productSlug);
+  const where = field === "competition" ? { ...scope, [field]: { not: null } } : scope;
   const tips = await prisma.tip.findMany({
     where,
     select: {
@@ -567,6 +571,7 @@ const getGroupedStats = async (field) => {
       outcome: true,
       odds: true,
       stakeUnits: true,
+      tips: true,
     },
   });
 
@@ -581,53 +586,66 @@ const getGroupedStats = async (field) => {
   const results = {};
 
   for (const [key, group] of Object.entries(groups)) {
-    const wins = group.filter((tip) => tip.outcome === "WON").length;
-    const losses = group.filter((tip) => tip.outcome === "LOST").length;
-    const settled = group.filter((tip) => settledOutcomes.includes(tip.outcome)).length;
+    let wins = 0;
+    let losses = 0;
+    let settled = 0;
+    let oddsTotal = 0;
+    let oddsCount = 0;
 
-    const groupOdds = group
-      .map((tip) => Number(tip.odds))
-      .filter((value) => Number.isFinite(value) && value > 0);
+    for (const tip of group) {
+      const picks = Array.isArray(tip.tips) && tip.tips.length > 0
+        ? tip.tips
+        : [{ odds: tip.odds, units: tip.stakeUnits, outcome: tip.outcome }];
+
+      for (const pick of picks) {
+        const outcome = normalizeOutcome(pick?.outcome);
+
+        if (outcome === "WON") wins += 1;
+        else if (outcome === "HALF_WON") wins += 0.5;
+        else if (outcome === "LOST") losses += 1;
+        else if (outcome === "HALF_LOST") losses += 0.5;
+
+        if (settledOutcomes.includes(outcome)) settled += 1;
+
+        const odds = Number(pick?.odds ?? tip.odds);
+        if (Number.isFinite(odds) && odds > 0) {
+          oddsTotal += odds;
+          oddsCount += 1;
+        }
+      }
+    }
 
     results[key] = {
       totalTips: group.length,
-      wins,
-      losses,
+      wins: Number(wins.toFixed(2)),
+      losses: Number(losses.toFixed(2)),
       settled,
       winRate: settled > 0 ? Number(((wins / settled) * 100).toFixed(2)) : 0,
-      avgOdds:
-        groupOdds.length > 0
-          ? Number(
-              (
-                groupOdds.reduce((sum, value) => sum + value, 0) /
-                groupOdds.length
-              ).toFixed(2)
-            )
-          : 0,
+      avgOdds: oddsCount > 0 ? Number((oddsTotal / oddsCount).toFixed(2)) : 0,
     };
   }
 
   return results;
 };
 
-// Get stats grouped by sport
-const getSportStats = async () => {
-  return getGroupedStats("sport");
+// Get stats grouped by sport for the selected period and product
+const getSportStats = async (filters = {}) => {
+  return getGroupedStats("sport", filters);
 };
 
-// Get stats grouped by market
-const getMarketStats = async () => {
-  return getGroupedStats("market");
+// Get stats grouped by market for the selected period and product
+const getMarketStats = async (filters = {}) => {
+  return getGroupedStats("market", filters);
 };
 
-// Get stats grouped by competition
-const getCompetitionStats = async () => {
-  return getGroupedStats("competition");
+// Get stats grouped by competition for the selected period and product
+const getCompetitionStats = async (filters = {}) => {
+  return getGroupedStats("competition", filters);
 };
 
-// Get stats grouped by source
-const getSourceStats = async () => {
-  return getGroupedStats("source");
+// Get stats grouped by source for the selected period and product
+const getSourceStats = async (filters = {}) => {
+  return getGroupedStats("source", filters);
 };
 
 // Build the same period and product scope used by the stats page. Product
@@ -636,7 +654,7 @@ const getSourceStats = async () => {
 // every product.
 const getProductPeriodWhere = ({ periodId = "all-time", productId = "ALL" } = {}) => {
   const productSlug = resolveProductSlug(productId);
-  const where = resolvePeriodWhere(periodId, "createdAt");
+  const where = resolvePeriodWhere(periodId);
 
   return { productSlug, where };
 };
@@ -654,23 +672,32 @@ const withProductPublication = async (where, productSlug) => {
 };
 
 // Count tips by volume category for the selected period and product.
+// `total` is the number of cards (Tip rows). `selections` is the number of
+// individual picks across those cards' `tips[]` arrays, which is the figure a
+// reader expects when they count "the tips we published". Both are returned so
+// the UI can label the card with explicit units instead of mixing them.
 const getVolumeStats = async (filters = {}) => {
   const { productSlug, where: periodWhere } = getProductPeriodWhere(filters);
   const where = await withProductPublication(periodWhere, productSlug);
-  const [total, pending, settled, cancelled] = await Promise.all([
+  const [total, pending, settled, cancelled, published, cards] = await Promise.all([
     prisma.tip.count({ where }),
     prisma.tip.count({ where: { ...where, outcome: "PENDING" } }),
     prisma.tip.count({ where: { ...where, outcome: { in: settledOutcomes } } }),
     prisma.tip.count({ where: { ...where, status: "CANCELLED" } }),
+    prisma.tip.count({ where: { ...where, status: "PUBLISHED" } }),
+    prisma.tip.findMany({ where, select: { tips: true } }),
   ]);
-  const published = productSlug
-    ? total
-    : await prisma.tip.count({ where: { ...where, status: "PUBLISHED" } });
+
+  const selections = cards.reduce((sum, tip) => {
+    const picks = Array.isArray(tip.tips) && tip.tips.length > 0 ? tip.tips.length : 1;
+    return sum + picks;
+  }, 0);
 
   return {
     period: String(filters.periodId || "all-time"),
     product: productSlug || "ALL",
     total,
+    selections,
     pending,
     settled,
     published,
@@ -751,15 +778,18 @@ const getYearlyReport = async () => {
   return getReportForPeriod("year");
 };
 
-// Build performance stats for tip groups created during a complete period.
+// Build performance stats for tip groups belonging to a complete period. The
+// start/end labels come from the same range the where-clause was built from, so
+// the report and its tip set can never describe different windows.
 const getReportForPeriod = async (periodId) => {
-  const where = resolvePeriodWhere(periodId, "createdAt");
+  const where = resolvePeriodWhere(periodId);
+  const range = getPeriodRange(periodId);
   const performance = await getTipStats(where);
   const oddsStats = await getOddsStatsFor(where);
 
   return {
-    periodStart: where.createdAt?.gte ?? null,
-    periodEnd: where.createdAt?.lt ?? getNairobiDayStart(0),
+    periodStart: range?.gte ?? null,
+    periodEnd: range?.lt ?? getNairobiDayStart(0),
     performance,
     avgOdds: oddsStats.average,
   };

@@ -447,16 +447,43 @@ const settleTip = async (tipId, outcome, result, actorId, selectionOutcomes) => 
   });
 };
 
-// Settle many tips with a validated outcome
+// Settle many tips with a validated outcome. A tip can hold several nested
+// selections, and the nested `tips[].outcome` is what statistics read. Writing
+// only the parent row would leave every selection on its old outcome, so a
+// bulk WON would still be scored as a loss in profit and ROI. Settle the parent
+// and every nested selection together, exactly like the single-tip path.
 const settleTipsBulk = async (ids, outcome, result, actorId) => {
   await requireActiveAdmin(actorId);
   const tipIds = validateTipIds(ids);
   const validOutcomes = ["WON", "LOST", "VOID", "PUSH", "HALF_WON", "HALF_LOST", "CANCELLED"];
   if (!validOutcomes.includes(outcome)) throw createError("Invalid tip outcome.");
-  const updateData = { status: "SETTLED", outcome, settledAt: new Date() };
-  if (result !== undefined) updateData.result = result;
-  const updated = await prisma.tip.updateMany({ where: { id: { in: tipIds } }, data: updateData });
-  return { message: "Tips settled successfully.", updated: updated.count };
+  if (!tipIds.length) return { message: "Tips settled successfully.", updated: 0 };
+
+  const tips = await prisma.tip.findMany({
+    where: { id: { in: tipIds } },
+    select: { id: true, tips: true },
+  });
+
+  const settledAt = new Date();
+  await prisma.$transaction(
+    tips.map((tip) => {
+      const updateData = { status: "SETTLED", outcome, settledAt };
+      if (result !== undefined) updateData.result = result;
+
+      if (Array.isArray(tip.tips) && tip.tips.length > 0) {
+        updateData.tips = tip.tips.map((selection) => {
+          if (!selection || typeof selection !== "object" || Array.isArray(selection)) {
+            return selection;
+          }
+          return { ...selection, outcome };
+        });
+      }
+
+      return prisma.tip.update({ where: { id: tip.id }, data: updateData });
+    })
+  );
+
+  return { message: "Tips settled successfully.", updated: tips.length };
 };
 
 // Cancel a single tip

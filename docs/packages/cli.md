@@ -41,7 +41,7 @@ npm run --prefix cli settlement -- --date=2026-10-01
 Settlement defaults to **yesterday's** dated dump and requires a dump for that exact date; it does not fall back to the newest available dump. Pass `--date=YYYY-MM-DD` to settle another day. The recognized result markers are doubled: `✅✅` for a win and `❎❎` for a loss.
 
 ### Missing marker defaults
-An unmarked **free-channel** selection defaults to a win; an unmarked **paid-group** selection defaults to a loss. Explicit markers override the channel default. This is the operator's manual daily workflow: paste verified outcomes in the settlement file, review the generated report, then sync.
+An unmarked **free-channel** selection defaults to a loss; an unmarked **paid-group** (VIP/MaxBet) selection defaults to a win. Explicit markers override the channel default. This is the operator's manual daily workflow: paste verified outcomes in the settlement file, review the generated report, then sync.
 
 A marker is matched by selection text, falling back to the printed odds and stake on the result line, so a selection that was reworded between the dump and the channel (for example `Over (9/10)` versus `Over Total Goals`) still settles correctly. Fixture lookup also considers every occurrence of the team name, so a fixture that shares a name with an earlier card is matched against the right block.
 
