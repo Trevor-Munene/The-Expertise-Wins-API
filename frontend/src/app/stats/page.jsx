@@ -143,10 +143,10 @@ export default function StatsPage() {
       setReportFetchedAt(null);
 
       /*
-       * The metric cards, the breakdowns, the volume totals and the performance
-       * report each come from one endpoint that already applies the correct
-       * filters server side. Nothing here guesses which endpoint matches which
-       * period or product, so the figures cannot drift apart.
+       * The metric cards, the breakdowns and the volume totals each come from an
+       * endpoint that applies the same period and product filters server side.
+       * Nothing here guesses which endpoint matches which period or product, so
+       * the figures cannot drift apart.
        */
       const requests = [
         {
@@ -157,19 +157,19 @@ export default function StatsPage() {
         {
           key: "sports",
           label: "Sport performance",
-          run: () => statsApi.getSportStats(),
+          run: () => statsApi.getSportStats({ period, product: productFilter }),
           arrayKey: "sport",
         },
         {
           key: "markets",
           label: "Market performance",
-          run: () => statsApi.getMarketStats(),
+          run: () => statsApi.getMarketStats({ period, product: productFilter }),
           arrayKey: "market",
         },
         {
           key: "competitions",
           label: "Competition performance",
-          run: () => statsApi.getCompetitionStats(),
+          run: () => statsApi.getCompetitionStats({ period, product: productFilter }),
           arrayKey: "competition",
         },
         {
@@ -293,8 +293,11 @@ export default function StatsPage() {
   const averageOdds = summary?.avgOdds ?? null;
 
   // Volume and scraped counts use the same period and product filters as the
-  // headline performance metrics.
+  // headline performance metrics. `total` is the number of cards (fixtures) and
+  // `selections` is the number of picks across those cards, so the two are not
+  // interchangeable and are labelled explicitly on the card.
   const totalVolume = getFiniteNumber(data.volume?.total);
+  const selectionCount = getFiniteNumber(data.volume?.selections);
   const publishedCount = getFiniteNumber(data.volume?.published);
   const scrapedCount = getFiniteNumber(data.scraped?.scrapedTips);
 
@@ -370,9 +373,9 @@ export default function StatsPage() {
 
         <div className="space-y-2 text-xs leading-5 text-slate-400">
           <p>
-            Period and product controls apply to the headline metrics and tip
-            volume. Breakdown panels show overall statistics. Reports use their
-            own period controls.
+            Period and product controls apply to the headline metrics, tip
+            volume and the sport, market and competition breakdowns. Reports
+            use their own period controls.
           </p>
 
           <p role="status" aria-live="polite" aria-atomic="true">
@@ -400,6 +403,21 @@ export default function StatsPage() {
             Use Refresh Metrics to try again.
           </p>
 
+          {/* A rejected filter (HTTP 400) used to be hidden behind the generic
+              message above. Show the API reason so an invalid period or product
+              is visible instead of looking like a temporary outage. */}
+          <ul className="mt-3 space-y-1 text-xs leading-5 text-amber-200/80">
+            {failedRequests.map((request) =>
+              request.message ? (
+                <li key={request.key}>
+                  <span className="font-semibold text-amber-300">
+                    {request.label}:
+                  </span>{" "}
+                  {request.message}
+                </li>
+              ) : null
+            )}
+          </ul>
         </div>
       )}
 
@@ -439,9 +457,13 @@ export default function StatsPage() {
           subtitle={
             loading
               ? "Loading selected volume…"
-              : `${scopeLabel} · Scraped: ${formatCount(
-                  scrapedCount
-                )} · Published: ${formatCount(publishedCount)}`
+              : `${scopeLabel} · Cards: ${formatCount(
+                  totalVolume
+                )} · Selections: ${formatCount(
+                  selectionCount
+                )} · Published: ${formatCount(
+                  publishedCount
+                )} · Scraped: ${formatCount(scrapedCount)}`
           }
           color="blue"
           icon={Layers}
@@ -459,6 +481,7 @@ export default function StatsPage() {
           icon={PieChart}
           items={data.sports ?? []}
           field="sport"
+          scope={scopeLabel}
           loading={loading}
           failed={hasFailed("sports")}
           accent="cyan"
@@ -469,6 +492,7 @@ export default function StatsPage() {
           icon={BarChart3}
           items={data.markets ?? []}
           field="market"
+          scope={scopeLabel}
           loading={loading}
           failed={hasFailed("markets")}
           accent="indigo"
@@ -479,6 +503,7 @@ export default function StatsPage() {
           icon={Award}
           items={data.competitions ?? []}
           field="competition"
+          scope={scopeLabel}
           loading={loading}
           failed={hasFailed("competitions")}
           accent="amber"
@@ -656,6 +681,7 @@ function BreakdownPanel({
   icon: Icon,
   items,
   field,
+  scope,
   loading,
   failed,
   accent,
@@ -672,7 +698,9 @@ function BreakdownPanel({
           />
           {title}
         </h2>
-        <p className="mt-2 text-xs text-slate-400">Overall statistics</p>
+        <p className="mt-2 text-xs text-slate-400">
+          {loading ? "Loading selected scope…" : scope}
+        </p>
       </div>
 
       {loading ? (

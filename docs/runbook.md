@@ -285,8 +285,8 @@ In the printed report:
 |---|---|
 | A tip's line shows `✅✅` | **win** |
 | A tip's line shows `❎❎` | **lose** |
-| An unmarked **free-channel** selection | **win** (the default when no marker is present) |
-| An unmarked **paid-group** selection (featured or non-football) | **loss** (the default when no marker is present) |
+| An unmarked **free-channel** selection | **loss** (the default when no marker is present) |
+| An unmarked **paid-group** selection (featured or non-football) | **win** (the default when no marker is present) |
 
 > Settlement defaults to **yesterday's** dated dump. Pass an explicit `--date=YYYY-MM-DD` to settle another day.
 

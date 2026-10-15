@@ -152,9 +152,12 @@ function processSettlement(dateIso, txtFilePath) {
     tips.forEach(tip => {
         const isFreeTip = isFreeFootballTip(tip);
 
-        // No marker means an unmarked free-channel tip is a win; an unmarked
-        // paid-group tip is a loss. Explicit tick/box markers always take priority.
-        const defaultOutcome = isFreeTip ? "win" : "lose";
+        // No marker means an unmarked free-channel tip is a loss; an unmarked
+        // paid-group (VIP/MaxBet) tip is a win. This is the channel's manual
+        // default: free listings only count when a tick confirms them, while
+        // paid-group listings are considered landed unless a cross marks them.
+        // Explicit tick/box markers always take priority.
+        const defaultOutcome = isFreeTip ? "lose" : "win";
 
         const blocks = collectFixtureBlocks(txtContent, txtLower, tip);
 

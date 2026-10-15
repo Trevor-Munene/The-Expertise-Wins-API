@@ -265,40 +265,52 @@ const getStakeStats = async (req, res, next) => {
   }
 };
 
-// Get performance grouped by sport
+// Get performance grouped by sport for the requested period and product
 const getSportStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getSportStats();
+    const stats = await statsService.getSportStats({
+      periodId: req.query.period,
+      productId: req.query.product,
+    });
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
   }
 };
 
-// Get performance grouped by market
+// Get performance grouped by market for the requested period and product
 const getMarketStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getMarketStats();
+    const stats = await statsService.getMarketStats({
+      periodId: req.query.period,
+      productId: req.query.product,
+    });
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
   }
 };
 
-// Get performance grouped by competition
+// Get performance grouped by competition for the requested period and product
 const getCompetitionStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getCompetitionStats();
+    const stats = await statsService.getCompetitionStats({
+      periodId: req.query.period,
+      productId: req.query.product,
+    });
     res.status(200).json({ stats });
   } catch (error) {
     next(error);
   }
 };
 
-// Get performance grouped by source
+// Get performance grouped by source for the requested period and product
 const getSourceStats = async (req, res, next) => {
   try {
-    const stats = await statsService.getSourceStats();
+    const stats = await statsService.getSourceStats({
+      periodId: req.query.period,
+      productId: req.query.product,
+    });
     res.status(200).json({ stats });
   } catch (error) {
     next(error);

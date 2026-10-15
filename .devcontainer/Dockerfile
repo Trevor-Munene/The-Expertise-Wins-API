@@ -28,8 +28,12 @@ RUN cd backend && npm install && npx prisma generate
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 RUN cd frontend && npm ci
 
+# Strip any CRLF line endings so the /bin/sh shebang stays valid when this
+# repo is checked out on Windows; a stray \r makes exec fail with
+# "No such file or directory" while the container still appears to run.
 COPY .devcontainer/entrypoint.sh /usr/local/bin/tekw-entrypoint
-RUN chmod +x /usr/local/bin/tekw-entrypoint
+RUN sed -i 's/\r$//' /usr/local/bin/tekw-entrypoint \
+    && chmod +x /usr/local/bin/tekw-entrypoint
 
 ENTRYPOINT ["/usr/local/bin/tekw-entrypoint"]
 CMD ["sleep", "infinity"]

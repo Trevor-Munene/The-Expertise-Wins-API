@@ -161,27 +161,35 @@ export const statsApi = {
     return data;
   },
 
-  // Get performance grouped by sport
-  async getSportStats() {
-    const { data } = await apiClient.get("/stats/sports");
+  // Get performance grouped by sport for a period and optional product
+  async getSportStats({ period, product } = {}) {
+    const { data } = await apiClient.get("/stats/sports", {
+      params: { period, product },
+    });
     return data;
   },
 
-  // Get performance grouped by market
-  async getMarketStats() {
-    const { data } = await apiClient.get("/stats/markets");
+  // Get performance grouped by market for a period and optional product
+  async getMarketStats({ period, product } = {}) {
+    const { data } = await apiClient.get("/stats/markets", {
+      params: { period, product },
+    });
     return data;
   },
 
-  // Get performance grouped by competition
-  async getCompetitionStats() {
-    const { data } = await apiClient.get("/stats/competitions");
+  // Get performance grouped by competition for a period and optional product
+  async getCompetitionStats({ period, product } = {}) {
+    const { data } = await apiClient.get("/stats/competitions", {
+      params: { period, product },
+    });
     return data;
   },
 
   // Get performance grouped by source for admins
-  async getSourceStats() {
-    const { data } = await apiClient.get("/stats/sources");
+  async getSourceStats({ period, product } = {}) {
+    const { data } = await apiClient.get("/stats/sources", {
+      params: { period, product },
+    });
     return data;
   },
 

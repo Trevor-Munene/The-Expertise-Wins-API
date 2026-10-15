@@ -87,7 +87,7 @@ On 10 October, frontend lint and the optimized Next.js build completed; both rep
 - Historical archive tiers and VIP/MaxBet performance summaries remain public to support transparent historical results. Deployment Cloudflare controls are intended to make automated scraping harder without restricting normal visitors; they must be enabled and checked on the production zone. See [`../cloudflare-launch.md`](../cloudflare-launch.md).
 - The product, tips, home, and about pages list scraper-supported sports. The free channel remains football-focused; availability of an individual premium sport or market can vary by day.
 - The profile access history reads all tokens assigned to the account, including redeemed tokens. Avatar uploads are stored under the backend uploads directory and served from `/uploads`.
-- Settlement defaults: an unmarked **free-channel** pick settles as a win and an unmarked **paid-group** pick settles as a loss; explicit markers always override the default.
+- Settlement defaults: an unmarked **free-channel** pick settles as a loss and an unmarked **paid-group** (VIP/MaxBet) pick settles as a win; explicit markers always override the default.
 
 ### Access tokens
 
