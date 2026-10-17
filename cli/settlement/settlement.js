@@ -142,6 +142,18 @@ function processSettlement(dateIso, txtFilePath) {
     }
 
     const tips = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+
+    // An empty dated dump means no tips were exported for that day (for example a
+    // day the scraper did not run). There is nothing to settle, and reporting a
+    // cheerful "Settled 0 tips" here is misleading — it looks like the settlement
+    // ran but found no markers. Fail loudly so the operator notices the gap
+    // instead of publishing a day with no results.
+    if (!Array.isArray(tips) || tips.length === 0) {
+        console.error(`Error: JSON dump for date ${dateIso} is empty (no tips to settle) at ${jsonPath}`);
+        console.error("   Run `npm run expertise` to scrape and export that day's tips before settling.");
+        process.exit(1);
+    }
+
     const txtContent = fs.readFileSync(txtFilePath, "utf8");
     const txtLower = txtContent.toLowerCase();
 

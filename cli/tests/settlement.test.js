@@ -218,6 +218,38 @@ assert.strictEqual(
 );
 
 // ---------------------------------------------------------------------------
+// 3b. Empty dated dump must fail loudly instead of reporting a false success
+//     (processSettlement calls process.exit, so run it in a child process).
+// ---------------------------------------------------------------------------
+const emptyDumpDate = "1998-12-31";
+const emptyDumpPath = path.join(previousDayResultsDir, `freetips-${getFormattedDate(emptyDumpDate)}.json`);
+const emptyResultsPath = path.join(os.tmpdir(), `settlement-empty-results-${Date.now()}.txt`);
+fs.mkdirSync(previousDayResultsDir, { recursive: true });
+fs.writeFileSync(emptyDumpPath, "[]", "utf8");
+fs.writeFileSync(emptyResultsPath, RESULTS_TXT, "utf8");
+
+try {
+    const { spawnSync } = require("child_process");
+    const emptyRun = spawnSync(
+        process.execPath,
+        [path.resolve(__dirname, "..", "settlement", "app.js"), `--date=${emptyDumpDate}`, emptyResultsPath],
+        { encoding: "utf8" }
+    );
+    assert.strictEqual(emptyRun.status, 1, "An empty dated dump must exit non-zero, not report success");
+    assert.ok(
+        /is empty \(no tips to settle\)/.test(emptyRun.stderr || ""),
+        "The empty-dump failure must explain that there are no tips to settle"
+    );
+    assert.ok(
+        !/Settled 0 tips/.test(emptyRun.stdout || ""),
+        "The empty-dump failure must not print the misleading 'Settled 0 tips' success line"
+    );
+} finally {
+    fs.rmSync(emptyDumpPath, { force: true });
+    fs.rmSync(emptyResultsPath, { force: true });
+}
+
+// ---------------------------------------------------------------------------
 // 4. processSettlement end-to-end (writes + reads a real throwaway dump)
 // ---------------------------------------------------------------------------
 const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt`);
@@ -308,6 +340,25 @@ const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt
             saveTestResults("freetips", [{ homeTeam: "Different", awayTeam: "Team", selection: "X", market: "M", scrapedAt: `${TEST_DATE}T12:00:00Z` }], { date: TEST_DATE });
             const dumpAfter = fs.readFileSync(testJsonPath, "utf8");
             assert.strictEqual(dumpAfter, dumpBefore, "saveTestResults must not mutate an existing dump awaiting sync");
+
+            // An EMPTY placeholder dump protects nothing, so the orchestrator must
+            // fill it with the day's tips instead of skipping it — otherwise a day
+            // whose tips were not exported stays permanently empty in the archive.
+            const emptyPlaceholderDate = "1999-02-02";
+            const emptyPlaceholderPath = path.join(previousDayResultsDir, `freetips-${getFormattedDate(emptyPlaceholderDate)}.json`);
+            fs.writeFileSync(emptyPlaceholderPath, "[]", "utf8");
+            try {
+                saveTestResults(
+                    "freetips",
+                    [{ homeTeam: "Fill", awayTeam: "Me", selection: "Yes", market: "Test", scrapedAt: `${emptyPlaceholderDate}T09:00:00Z` }],
+                    { date: emptyPlaceholderDate }
+                );
+                const filled = JSON.parse(fs.readFileSync(emptyPlaceholderPath, "utf8"));
+                assert.ok(Array.isArray(filled) && filled.length === 1, "An empty placeholder dump must be filled with the day's tips");
+                assert.strictEqual(filled[0].homeTeam, "Fill", "The filled dump must contain the exported tip");
+            } finally {
+                fs.rmSync(emptyPlaceholderPath, { force: true });
+            }
         } finally {
             if (workingBefore !== null) {
                 fs.writeFileSync(freetipsWorkingPath, workingBefore, "utf8");

@@ -73,18 +73,18 @@ docker compose up -d --build app
 
 The frontend and backend share the Docker app service; configure both env files and initialize PostgreSQL before using API-backed pages.
 
-## Current Readiness (13 October 2026)
+## Current Readiness
 
-The project is under **active testing and validation**. On 13 October, a critical runtime crash in the Admin Tips page was fixed: five required state variables (`loading`, `selectedDay`, `searchTerm`, `statusFilter`, `selectedTipIds`) were missing their `useState` declarations — the component would throw immediately on render. These have been added. The full frontend-to-API contract was also reviewed: every API call in the six frontend API modules was confirmed to match a corresponding backend route with no missing or mismatched endpoints.
+The project is under **active testing and validation**. The Admin Tips page renders without runtime errors and all five required state variables are in place. The full frontend-to-API contract has been reviewed: every API call in the six frontend API modules matches a corresponding backend route, with no missing or mismatched endpoints. Frontend lint and the optimized Next.js production build both pass; the only outstanding warning is the existing profile-page `<img>` optimization notice.
 
-On 10 October, frontend lint and the optimized Next.js build completed; both report the existing profile-page `img` optimization warning. Backend and CLI test suites also passed. The 8 October local Docker HTTP route check remains the latest recorded container reachability check. These checks do not constitute end-to-end acceptance of login, redemption, avatar upload, all admin actions, settlement against the current database, Cloudflare bot settings, or production deployment; real-user workflow acceptance remains open.
+These checks verify a local build and code-level review only; they do not constitute end-to-end acceptance of login, redemption, avatar upload, all admin actions, settlement against the current database, edge bot settings, or production deployment. Real-user workflow acceptance remains open.
 
 ### Known Data Behavior
 
 - `/tips` is scoped to the current Nairobi day across all tiers; older selections belong in `/archive`. The admin tips list defaults to today and can be switched between today and yesterday for review and settlement.
 - Settlement results reach PostgreSQL after local `npm run settlement` and `docker compose run --rm app npm run sync`; current dump and database outcomes still need reconciliation.
 - Premium feeds require the matching product entitlement. A signed-in user who lacks that tier sees an access-options prompt without a sign-in prompt. A plain `/tips` visit selects VIP first when the account has both premium entitlements, otherwise MaxBet, otherwise Free. The public tips list exposes public (Free) tips.
-- Historical archive tiers and VIP/MaxBet performance summaries remain public to support transparent historical results. Deployment Cloudflare controls are intended to make automated scraping harder without restricting normal visitors; they must be enabled and checked on the production zone. See [`../cloudflare-launch.md`](../cloudflare-launch.md).
+- Historical archive tiers and VIP/MaxBet performance summaries remain public to support transparent historical results. Deployment edge controls are intended to make automated scraping harder without restricting normal visitors; they must be enabled and checked on the production zone.
 - The product, tips, home, and about pages list scraper-supported sports. The free channel remains football-focused; availability of an individual premium sport or market can vary by day.
 - The profile access history reads all tokens assigned to the account, including redeemed tokens. Avatar uploads are stored under the backend uploads directory and served from `/uploads`.
 - Settlement defaults: an unmarked **free-channel** pick settles as a loss and an unmarked **paid-group** (VIP/MaxBet) pick settles as a win; explicit markers always override the default.

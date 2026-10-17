@@ -91,13 +91,30 @@ function saveTestResults(source, tips, opts = {}) {
     // Save current day's tips directly to test-results/freetips.json
     fs.writeFileSync(targetFile, JSON.stringify(mergedTips, null, 2), "utf8");
 
-    // Export the dump to the previous day results dir (settlement layer)
-    // Only write if the dump file does not already exist. Once created, only
-    // the settlement command is allowed to mutate the json awaiting the sync command.
+    // Export the dump to the previous day results dir (settlement layer) so a
+    // dated JSON copy of the day's tips always exists, even if the database
+    // later fails — the dumps are the manual record we can reconstruct from.
+    //
+    // Write the dump when it does not exist yet. Once a dump holds tips, only the
+    // settlement command may mutate it (it writes outcomes back awaiting sync).
+    // An EMPTY dump (`[]`) is the one exception: it protects nothing, so it is a
+    // placeholder — a day whose tips were not exported (a scrape that returned
+    // nothing, or a hand-committed stub). We fill it with the real tips so a
+    // later run on the same day cannot leave that day's record permanently empty.
     fs.mkdirSync(previousDayResultsRoot, { recursive: true });
     const formattedDate = getFormattedDate(dateIso);
     const exportFile = path.join(previousDayResultsRoot, `${source}-${formattedDate}.json`);
-    if (!fs.existsSync(exportFile)) {
+    let shouldWriteDump = !fs.existsSync(exportFile);
+    if (!shouldWriteDump && mergedTips.length > 0) {
+        try {
+            const existingDump = JSON.parse(fs.readFileSync(exportFile, "utf8"));
+            shouldWriteDump = !Array.isArray(existingDump) || existingDump.length === 0;
+        } catch {
+            // A malformed/unreadable dump protects nothing either; fill it.
+            shouldWriteDump = true;
+        }
+    }
+    if (shouldWriteDump) {
         fs.writeFileSync(exportFile, JSON.stringify(mergedTips, null, 2), "utf8");
     }
 }

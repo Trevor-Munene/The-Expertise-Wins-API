@@ -23,5 +23,8 @@
     "concurrently": "^8.2.2"
   },
   "author": "John Walter Munene Njeru",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^18.0.8"
+  }
 }
