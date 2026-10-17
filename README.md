@@ -17,7 +17,6 @@ All documentation lives in [`docs/`](./docs):
 | Document | What it covers |
 |---|---|
 | [`docs/runbook.md`](./docs/runbook.md) | Docker-first setup, database initialization, syncing, and local CLI operations |
-| [`docs/cloudflare-launch.md`](./docs/cloudflare-launch.md) | Deployment-time Cloudflare bot controls, rate limits, Tunnel/origin setup, and verification |
 | [`docs/roadmap.md`](./docs/roadmap.md) | Development phases, current status, and open work |
 | [`docs/v2-ideation.md`](./docs/v2-ideation.md) | Open, non-committal V2 ideas for discussion |
 | [`docs/packages/backend.md`](./docs/packages/backend.md) | Express API, Prisma schema, route map, database setup |
@@ -66,7 +65,7 @@ docker compose down
 
 `docker compose down --volumes` also erases PostgreSQL data and dependency caches. That is destructive and resets the environment.
 
-For local development, the API, frontend, and PostgreSQL use host ports `3000`, `3001`, and `5432`. Frontend settings live in `frontend/.env`; API/database and admin settings live in `backend/.env`. The API container connects to PostgreSQL at `db:5432`; host-run CLI sync uses `localhost:5432`. Dependency and database data live in Docker volumes, so `docker compose down` keeps them. These ports and development servers are not a production deployment; keep the database private and use the [Cloudflare deployment checklist](./docs/cloudflare-launch.md) when publishing the site.
+For local development, the API, frontend, and PostgreSQL use host ports `3000`, `3001`, and `5432`. Frontend settings live in `frontend/.env`; API/database and admin settings live in `backend/.env`. The API container connects to PostgreSQL at `db:5432`; host-run CLI sync uses `localhost:5432`. Dependency and database data live in Docker volumes, so `docker compose down` keeps them. These ports and development servers are not a production deployment; keep the database private and configure production access controls before publishing the site.
 
 ## Daily Workflow
 
@@ -114,30 +113,24 @@ Tokens are issued **only by an admin** and **only for a specific registered, act
 - Revoke disables a token while retaining its record; `DELETE /api/admin/subscription-tokens/:id` permanently deletes it.
 - Run backend service-logic checks in Docker with `docker compose run --rm --no-deps app npm run --prefix backend test`; they use mocked persistence and do not require PostgreSQL.
 
-## V1 Status (13 October 2026)
+## V1 Status
 
-V1 feature work is complete. The codebase now includes the daily scrape → review → sync workflow; public Free tips; access-controlled VIP and MaxBet feeds; archives and transparent performance statistics; accounts, admin curation, access-token redemption, and a content/blog area. The API, frontend, and PostgreSQL run through Docker Compose.
+V1 feature work is complete. The codebase includes the daily scrape → review → sync workflow; public Free tips; access-controlled VIP and MaxBet feeds; archives and transparent performance statistics; accounts, admin curation, access-token redemption, and a content/blog area. The API, frontend, and PostgreSQL run through Docker Compose.
 
-The project is currently **under active testing and validation** across all core functionality: authentication and account flows, tip publication and settlement, access-token redemption, admin curation, archive and stats accuracy, and frontend-to-API acceptance. A bug where five required state variables (`loading`, `selectedDay`, `searchTerm`, `statusFilter`, `selectedTipIds`) were missing from the admin tips page has been fixed.
+The project is **under active testing and validation** across all core functionality: authentication and account flows, tip publication and settlement, access-token redemption, admin curation, archive and stats accuracy, and frontend-to-API acceptance. Backend service tests, CLI scraper/contract/settlement tests, and the frontend lint and optimized production build all pass; the only outstanding warning is the existing profile-page `<img>` optimization notice.
 
-Production deployment, enabling and verifying Cloudflare bot controls, origin isolation, backup/restore, and final real-user acceptance remain the final launch steps. This is a step closer to live.
+Production deployment, origin isolation, backup/restore, and final real-user acceptance remain the final launch steps. This is a step closer to live.
 
-### Verification recorded 13 October 2026
+### Current verification
 
-- Admin tips page runtime crash fixed: five missing `useState` declarations (`loading`, `selectedDay`, `searchTerm`, `statusFilter`, `selectedTipIds`) have been added.
-- API health endpoint updated to reflect current testing and validation status.
-- All routes, frontend-to-API contract, and access control logic reviewed and consistent.
-- Frontend API layer (auth, tips, stats, subscriptions, products, admin) verified against backend route map — all endpoints match.
+- All routes, the frontend-to-API contract, and access-control logic are reviewed and consistent.
+- The frontend API layer (auth, tips, stats, subscriptions, products, admin) matches the backend route map — all endpoints align.
 - Docker Compose reports the application container running and PostgreSQL healthy.
-- Backend service tests, CLI scraper/contract/settlement tests pass; frontend lint passes with one existing `img` optimization warning in the profile page.
+- Backend service tests, CLI scraper/contract/settlement tests pass; frontend lint and the optimized production build pass with one existing `img` optimization warning in the profile page.
 - SEO uses `NEXT_PUBLIC_SITE_URL` for canonical URLs, social metadata, sitemap, and robots.
 - Admins can settle a single tip and assign an outcome to every selection in that tip in one save.
 
-### Review run 10 October 2026
-
-- Backend service tests and CLI scraper/contract/settlement tests pass; frontend lint and optimized production build complete. Lint/build report the existing profile-page `<img>` optimization warning.
-- Production JWT configuration now fails closed when `JWT_SECRET` is missing or shorter than 32 characters. Registration, login, and password-change routes now apply their Joi request validation. Unhandled server errors return a generic response.
-- These checks do not exercise a production database, browser account flows, Cloudflare configuration, origin firewall, or database recovery. Public historical archive and tier performance routes remain available to website visitors. Deployment bot controls are intended to deter automated extraction without introducing a content paywall; see [`docs/cloudflare-launch.md`](./docs/cloudflare-launch.md).
+These checks verify code-level tests and a local build only; they do not exercise a production database, browser account flows, edge configuration, origin firewall, or database recovery. Public historical archive and tier performance routes remain available to website visitors. Deployment bot controls are intended to deter automated extraction without introducing a content paywall.
 
 | Area | Implemented in V1 | Still needs work or validation |
 |---|---|---|

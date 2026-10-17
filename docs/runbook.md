@@ -2,7 +2,7 @@
 
 This is the **operator's runbook** for the whole workspace. Package-specific detail lives in [`packages/cli.md`](./packages/cli.md), [`packages/backend.md`](./packages/backend.md), and [`packages/frontend.md`](./packages/frontend.md).
 
-> **Where this fits:** the root [`README.md`](../README.md) explains what the project is and why it exists. [`roadmap.md`](./roadmap.md) explains current status and remaining work. **This file explains how to run local development and the operator workflow.** Production deployment and Cloudflare bot controls are not activated by these local commands; use [`cloudflare-launch.md`](./cloudflare-launch.md) at deployment.
+> **Where this fits:** the root [`README.md`](../README.md) explains what the project is and why it exists. [`roadmap.md`](./roadmap.md) explains current status and remaining work. **This file explains how to run local development and the operator workflow.** Production deployment and edge bot controls are not activated by these local commands; configure them at deployment.
 
 ---
 
@@ -53,7 +53,7 @@ The first `docker compose run app` builds the shared development image, includin
 docker compose run --rm app npm run --prefix backend seed
 ```
 
-The **6 October 2026 historical checkpoint** had 12 dated dumps and 356 tip records; the Docker database also had 356 tips, with eight outcomes differing between those records. On 8 October, the Docker sync dry-run validated 417 tips from 14 dump files without writing to the database. These counts are time-specific; reconcile the current database and dump results before treating performance as authoritative. The seed creates missing Free/VIP/MaxBet products and assigns each tip to a published tier based on the CLI classification rules. Current-day Free tips are public; current-day VIP and MaxBet feeds require access. The historical archive and tier performance summaries are public to visitors. The seed preserves valid outcomes already settled in the database. It promotes an existing `ADMIN_EMAIL` account without changing its password, or creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. Database data remains in the named `postgres_data` volume when containers stop.
+The **dated dumps currently hold 572 tip records across 21 files** (419 wins, 37 losses, 116 pending); the 14th and 15th October dumps are empty placeholders. These counts are time-specific; reconcile the current database and dump results before treating performance as authoritative. The seed creates missing Free/VIP/MaxBet products and assigns each tip to a published tier based on the CLI classification rules. Current-day Free tips are public; current-day VIP and MaxBet feeds require access. The historical archive and tier performance summaries are public to visitors. The seed preserves valid outcomes already settled in the database. It promotes an existing `ADMIN_EMAIL` account without changing its password, or creates an active admin using `ADMIN_PASSWORD`. Sign in through `POST /api/auth/login` to obtain a JWT for protected routes. Database data remains in the named `postgres_data` volume when containers stop.
 
 > Prefer the Docker sync command over calling the seed directly — see [Syncing the CLI dumps to a database](#syncing-the-cli-dumps-to-a-database).
 
@@ -359,7 +359,7 @@ npm run --prefix cli test
 | Cards look empty | The snapshot is empty or was reset for a new day. Run `npm run expertise`. |
 | Every web page returns 500 / loads with no data | Check that both `backend/.env` and `frontend/.env` exist, then run `docker compose logs app`. Confirm the frontend API URL is `http://localhost:3000/api` and the backend database URL is `db:5432` inside Docker. |
 | `/tips` or `/archive` shows no records | `/tips` only shows the current Nairobi day; an empty page means today's tips are not published yet. `/archive` is for previous dates and defaults to yesterday. Inspect the selected day and dated dumps if no records appear. |
-| Win rate and ROI do not match the CLI data | The 6 October figures below are a historical checkpoint, not current totals. Reconcile the latest settlement dump with the database after syncing before relying on performance totals. |
+| Win rate and ROI do not match the CLI data | The figures in these docs are a dated development snapshot, not current totals. Reconcile the latest settlement dump with the database after syncing before relying on performance totals. |
 
 ---
 

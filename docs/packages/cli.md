@@ -108,6 +108,6 @@ docker compose run --rm app npm run sync
 
 ## Current Data State
 
-The figures below are a **historical 2026-10-06 checkpoint**, not current totals. At that point, 12 dated dumps contained 356 tip records; the dump outcomes and synced database outcomes differed by eight results. Later local scrape/settlement files may exist. Review and reconcile the current dated dump and database after each sync before relying on combined performance totals.
+The dated dumps under `settlement/previous-day-results/` currently hold **572 tip records across 21 files: 419 wins, 37 losses, and 116 pending**. The 14th and 15th October dumps are empty placeholders (`[]`) because no tips were exported for those days; the 13th October dump is the most recent populated one with 24 tips. Reconcile the dumps against the database after each sync before relying on combined performance totals.
 
 Review settlement output before syncing it into Docker PostgreSQL. The live `/api/tips` feeds are restricted to the current Nairobi day and do not fall back to older tips; the archive is used for previous days.

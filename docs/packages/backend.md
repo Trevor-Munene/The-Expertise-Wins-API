@@ -33,15 +33,15 @@ The `backend` directory contains the Express API, Prisma schema, and historical-
 
 Single-tip settlement is `POST /api/admin/tips/:id/settle` with `{ "outcome": "WON", "result": "2-1", "selectionOutcomes": ["WON", "VOID"] }`. `selectionOutcomes` is optional for older callers; when provided it must include one valid result per selection. Supported outcomes are `WON`, `HALF_WON`, `LOST`, `HALF_LOST`, `VOID`, `PUSH`, and `CANCELLED`. The admin UI lets the operator set each selection separately or copy the overall result to all selections before saving.
 
-## Verification Status (13 October 2026)
+## Verification Status
 
-The project is under **active testing and validation**. On 13 October, the full frontend-to-API contract was reviewed: every frontend API call in `auth.api.js`, `tips.api.js`, `stats.api.js`, `subscriptions.api.js`, `products.api.js`, and `admin.api.js` was confirmed to match a corresponding backend route. No missing or mismatched endpoints were found. On 10 October, backend and CLI test suites passed, frontend lint and an optimized Next.js production build completed, and changed backend files passed Node syntax checks. Frontend lint/build retain one existing profile-page image optimization warning. On 8 October, local Docker routes and a database sync dry run were checked. These results verify code-level tests and a local frontend build only; this review did not run browser account flows, current database settlement acceptance, Cloudflare, or production-origin checks. A broader browser/API review recorded on 4 October remains historical.
+The project is under **active testing and validation**. The full frontend-to-API contract has been reviewed: every frontend API call in `auth.api.js`, `tips.api.js`, `stats.api.js`, `subscriptions.api.js`, `products.api.js`, and `admin.api.js` matches a corresponding backend route. No missing or mismatched endpoints were found. Backend and CLI test suites pass, frontend lint and the optimized Next.js production build pass, and changed backend files pass Node syntax checks. Frontend lint/build retain one existing profile-page image optimization warning. These results verify code-level tests and a local frontend build only; this review did not run browser account flows, current database settlement acceptance, edge controls, or production-origin checks.
 
 ### Known Data State
 
-After the verified local sync on **2026-10-06**, the stats API reports **356 tips: 304 wins, 5 losses, and 47 pending**, with a 98.38% win rate, 119.67% ROI, and average odds of 2.64. The repository's 12 dated dumps total 356 records but report 301 wins and 55 pending. Eight outcomes differ and still need reconciliation. Metrics change as records are settled and synced; see [`../roadmap.md`](../roadmap.md) for the dated project status.
+The dated CLI dumps under `cli/settlement/previous-day-results/` currently hold **572 tip records across 21 files: 419 wins, 37 losses, and 116 pending**. Dump and database outcomes still need reconciliation; metrics change as records are settled and synced. See [`../roadmap.md`](../roadmap.md) for the project status.
 
-The outcome totals above are a historical 6 October checkpoint only. Later scrapes and settlements can change both the local dumps and database; reconcile their outcomes before treating either record as authoritative.
+The outcome totals above are a dated development snapshot only. Later scrapes and settlements change both the local dumps and database; reconcile their outcomes before treating either record as authoritative.
 
 ## Access Token Rules
 
@@ -57,7 +57,7 @@ Because redemption is account-bound, the anonymous redemption path described in 
 
 ## Tip and Archive Day Selection
 
-`/api/tips` and its tier variants are pinned to the current Nairobi business day. If today's scrape has not been published, the live list is empty; it does not silently substitute an earlier day. Historical records are served through the public `/api/tips/archive`, which includes published tips across active tiers, excludes today and future dates, and defaults to the previous Nairobi day when no date range is supplied. Responses include the served `day` value. Cloudflare bot controls at deployment should deter automated extraction while leaving these routes available to website visitors.
+`/api/tips` and its tier variants are pinned to the current Nairobi business day. If today's scrape has not been published, the live list is empty; it does not silently substitute an earlier day. Historical records are served through the public `/api/tips/archive`, which includes published tips across active tiers, excludes today and future dates, and defaults to the previous Nairobi day when no date range is supplied. Responses include the served `day` value. Edge bot controls at deployment should deter automated extraction while leaving these routes available to website visitors.
 
 Admins can read every live tier through `/api/tips/vip` and `/api/tips/maxbet`. The public `/api/tips` list intentionally exposes only public (Free) products. Product performance endpoints for VIP and MaxBet are also public to support transparent results. API requests and responses are routed through the existing protected admin endpoint for single-tip settlement.
 
@@ -115,7 +115,7 @@ Tip ids are derived from the dump filename and the tip's position within it, so 
 
 > Prefer `docker compose run --rm app npm run sync` over calling the seed directly: it validates the dumps first and checks the database credentials before writing.
 
-> Historical 6 October checkpoint: 12 dated dumps with 356 tip records. The 8 October Docker sync dry-run validated 417 tips from 14 files without writing to PostgreSQL. Counts change as dumps are added or updated; run `seed:check` or `sync:dry` against the current data before writing.
+> The current dumps hold 572 tip records across 21 files (419 wins, 37 losses, 116 pending). Counts change as dumps are added or updated; run `seed:check` or `sync:dry` against the current data before writing.
 
 ## Syncing the Database
 
