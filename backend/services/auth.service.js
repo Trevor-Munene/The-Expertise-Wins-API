@@ -13,7 +13,12 @@ const createError = (message, statusCode = 400) => {
 
 // Register a new user after checking required and unique fields
 const registerUser = async (userData = {}) => {
-  const { email, username, password, firstName, lastName } = userData;
+  const { username, password, firstName, lastName } = userData;
+  // Normalise the email so uniqueness and later login lookups match
+  const email =
+    typeof userData.email === "string"
+      ? userData.email.trim().toLowerCase()
+      : userData.email;
   if (!email || !username || !password) {
     throw createError("Email, username and password are required.");
   }

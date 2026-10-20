@@ -9,7 +9,8 @@ The `backend` directory contains the Express API, Prisma schema, and historical-
 - **Performance & Analytics Engine**: Calculates real-time win rates, estimated ROI, average odds, sport breakdowns, market performance, time-based reports, and admin-only application usage summaries for the last 30 days.
 - **Products & Access**: Manages products and access-token issuance/redemption. Access is represented by tokens; there is no separate `Subscription` database model.
 - **Access token issuance**: Tokens are created only through admin routes and are always assigned to one registered, active user. A missing, unknown, or suspended user is rejected, redemption requires signing in as that user, and a token's owner cannot be changed after creation.
-- **Admin Management API**: Endpoints for tip publication/settlement, access tokens, user roles, and products. Routes require an authenticated admin account.
+- **Admin Management API**: Endpoints for tip publication/settlement, access tokens, user roles/status, user deletion, and products. Routes require an authenticated admin account.
+- **Account deletion (admin)**: `DELETE /api/admin/users/:id` permanently removes an account. Access tokens issued to the user, their usage events, and tips they authored or published are detached first inside one transaction, so the delete cannot fail on a foreign-key constraint; the token, usage, and tip records themselves are retained. An admin cannot delete their own account. Suspension (`PATCH /api/admin/users/:id/status`) remains the reversible alternative.
 - **Settlement**: An admin can settle one tip with an overall result and per-selection outcomes in one request. Every outcome must be valid and the submitted selection outcome count must match the tip's selections; all changes are saved in one database update.
 - **Source privacy**: Public tip responses strip source identifiers, source URLs, provider labels, and source-only metadata; source analytics endpoints are admin-only.
 - **Usage tracking**: Finished `/api` requests record a `UsageEvent` row (path, user, status code) for the admin usage dashboard. Repeated GET requests from the same browser to the same route within a short development-mode window are counted once; write requests remain individually recorded. Usage writes are best-effort and cannot fail a real API response. The dashboard's daily series is grouped by Nairobi calendar day.
@@ -24,12 +25,12 @@ The `backend` directory contains the Express API, Prisma schema, and historical-
 
 ## 📡 API Route Architecture
 
-- `/api/auth`: User registration, login, logout, profile read/update (`GET/PATCH /me`), password updates, and avatar upload.
+- `/api/auth`: User registration, login, logout, profile read/update (`GET/PATCH /me`), password updates, and avatar upload. Emails are trimmed and lowercased on both registration and login, so casing and surrounding whitespace never affect uniqueness or sign-in.
 - `/api/tips`: Public Free reads (`/`, `/free`), entitlement-gated current VIP/MaxBet reads, a public historical archive across tiers, and tip details. This router is read-only; routine tip curation and settlement start from CLI dumps.
 - `/api/stats`: Comprehensive analytics, win rates, ROI, sport/market breakdowns, and time period statistics.
 - `/api/products`: Public and authenticated product tier information.
 - `/api/subscriptions`: Active subscriptions, token redemption (`/redeem`, requires the assigned user to sign in), token verification, and subscription history.
-- `/api/admin`: Active-admin-only user, tip curation/publication, access-token, and product management. Tokens can be revoked (retain audit record) or permanently deleted. Routine daily tip settlement remains CLI dump → review → sync.
+- `/api/admin`: Active-admin-only user, tip curation/publication, access-token, and product management. Admin user management supports role/status changes and permanent deletion (`DELETE /users/:id`). Tokens can be revoked (retain audit record) or permanently deleted. Routine daily tip settlement remains CLI dump → review → sync.
 
 Single-tip settlement is `POST /api/admin/tips/:id/settle` with `{ "outcome": "WON", "result": "2-1", "selectionOutcomes": ["WON", "VOID"] }`. `selectionOutcomes` is optional for older callers; when provided it must include one valid result per selection. Supported outcomes are `WON`, `HALF_WON`, `LOST`, `HALF_LOST`, `VOID`, `PUSH`, and `CANCELLED`. The admin UI lets the operator set each selection separately or copy the overall result to all selections before saving.
 
@@ -61,6 +62,19 @@ Because redemption is account-bound, the anonymous redemption path described in 
 
 Admins can read every live tier through `/api/tips/vip` and `/api/tips/maxbet`. The public `/api/tips` list intentionally exposes only public (Free) products. Product performance endpoints for VIP and MaxBet are also public to support transparent results. API requests and responses are routed through the existing protected admin endpoint for single-tip settlement.
 
+## Account validation rules
+
+Registration, login, and profile updates share one set of rules in `backend/middleware/validation.js`. Registration and login payloads are validated by Joi before the controller runs; failures return `400` with a `details` array of per-field messages.
+
+| Field | Rule |
+|---|---|
+| `email` | Must be a valid email address. Trimmed and lowercased before the uniqueness check and before storage, so `User@Example.com` and `user@example.com` are the same account. |
+| `username` | Required, trimmed, 3–30 characters. Letters, numbers, dots, hyphens, and underscores are accepted. |
+| `password` | Required, at least 8 characters. Stored as a bcrypt hash; never returned by the API. |
+| `firstName`, `lastName` | Optional, trimmed, up to 50 characters. Empty strings are accepted and stored as provided. |
+
+The username rule previously rejected any non-alphanumeric character, which made names such as `expert_tipster` fail even though the registration form suggests that format. The rule now matches what the form offers. A duplicate email or username returns `409`; an invalid payload returns `400`.
+
 ## Mutation and authorization rules
 - The public `/api/tips` router is read-only. Tip mutations are available only under `/api/admin/tips` and require an active admin JWT; AdminService independently verifies the actor before each mutation. The routine source-of-truth workflow is CLI dump → review → sync.
 - Every `/api/admin` route is protected by JWT authentication and the active-admin guard. AdminService mutation methods also require an actor id and independently verify the actor is an active `ADMIN`, so direct service calls cannot bypass the route guard.
@@ -68,6 +82,7 @@ Admins can read every live tier through `/api/tips/vip` and `/api/tips/maxbet`. 
 - Public and protected read visibility continues to be enforced by publication and product entitlements. Paid tips require a current user entitlement (admins may inspect them).
 - Tip/source-of-truth operating workflow: edit/scrape/settle CLI dump files, review output, then sync into Docker PostgreSQL. The frontend admin page also includes protected tip curation controls; access-token and product controls remain active-admin-only.
 - Token revoke preserves history. `DELETE /api/admin/subscription-tokens/:id` permanently removes a token and is deliberately distinct from revoke.
+- User deletion is permanent and distinct from suspension. `DELETE /api/admin/users/:id` requires an active admin, returns `404` for an unknown id, and returns `400` for the actor's own account. Before deleting, the service detaches the user's access tokens (`assignedUserId` set to null), usage events (`userId` set to null), and tips they created or published, all inside one transaction, so FK constraints cannot block the delete. Token, usage, and tip records are retained.
 
 ## Backend logic tests
 Run the backend service-logic checks in Docker with `docker compose run --rm --no-deps app npm run --prefix backend test`. These tests exercise service validation and decisions with mocked Prisma persistence; they do not require PostgreSQL and do not test Prisma itself. They cover active-admin authorization, tip mutation and settlement invariants, token ownership/hash behavior, revocation versus permanent deletion, and invalid/missing inputs. They are an MVP logic baseline, not full HTTP/database integration coverage.

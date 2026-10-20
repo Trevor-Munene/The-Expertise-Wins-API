@@ -1,5 +1,5 @@
 const path = require("path");
-const { processSettlement } = require("./settlement");
+const { processSettlement, resetSettlement } = require("./settlement");
 const { TipsConsumptionClient } = require("../services/tips.client");
 
 // The settlement layer marks paid (VIP) winning tips with a fire emoji after the
@@ -32,11 +32,24 @@ function parseArgs(argv) {
     return { dateArg, txtArg };
 }
 
+// Without --date, settle yesterday's dump; an explicit date still targets
+// exactly the requested previous-day-results file.
+function resolveSettlementDate(dateArg) {
+    return dateArg || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+// Put a day's dump back to pending so it can be settled again. Used when a
+// fixture the channel pushed forward has now played and is ready to settle.
+async function runReset(argv = process.argv.slice(2)) {
+    const { dateArg } = parseArgs(argv);
+    const settlementDate = resolveSettlementDate(dateArg);
+    resetSettlement(settlementDate);
+    console.log(`🔄 Re-run \`npm run sync\` to republish ${settlementDate} as pending, then settle it again.`);
+}
+
 async function run(argv = process.argv.slice(2)) {
     const { dateArg, txtArg } = parseArgs(argv);
-    // Without --date, settle yesterday's dump; an explicit date still targets
-    // exactly the requested previous-day-results file.
-    const settlementDate = dateArg || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const settlementDate = resolveSettlementDate(dateArg);
     const tips = processSettlement(settlementDate, txtArg);
 
     const result = await new TipsConsumptionClient().loadFromData(tips);
@@ -69,6 +82,18 @@ async function run(argv = process.argv.slice(2)) {
         if (index < result.freeCards.length - 1) console.log("");
     });
 
+    // Fixtures the channel pushed forward stay unsettled and are listed here so
+    // the operator can see they were carried, not silently counted as losses.
+    const carriedForward = tips.filter(tip => tip.postponed && !tip.outcome);
+    if (carriedForward.length > 0) {
+        console.log("\n♻️  CARRIED FORWARD (pushed forward, still pending)");
+        console.log("----------------------------------------");
+        carriedForward.forEach(tip => {
+            const fixture = tip.homeTeam ? `${tip.homeTeam} vs ${tip.awayTeam}` : tip.selection;
+            console.log(`• ${fixture}`);
+        });
+    }
+
     console.log("\n========================================");
     console.log("             SUMMARY");
     console.log("==========================================");
@@ -77,11 +102,15 @@ async function run(argv = process.argv.slice(2)) {
     console.log(`Free tips:        ${result.freeCards.length}`);
     console.log("----------------------------------------");
     console.log(`Total tips:       ${freeTips.length + premiumTips.length}`);
+    if (carriedForward.length > 0) {
+        console.log(`Carried forward:  ${carriedForward.length}`);
+    }
     console.log("========================================\n");
 }
 
 if (require.main === module) {
-    run();
+    if (process.argv[2] === "reset") runReset(process.argv.slice(3));
+    else run();
 }
 
-module.exports = { withHeat, run, parseArgs };
+module.exports = { withHeat, run, runReset, parseArgs };

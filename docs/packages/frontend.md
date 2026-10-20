@@ -17,7 +17,7 @@ The `frontend` directory contains the Next.js 14 Web Application (App Router, Ja
 - **Isolated Admin Dashboard Module (`/admin`)**:
   - Client-side role checks for navigation; the backend must enforce authorization independently
   - Admin Overview (`/admin`)
-  - User Accounts & Roles (`/admin/users`)
+  - User Accounts & Roles (`/admin/users`) — search, role editing, suspend/activate, and permanent account deletion
   - Tips & Curation Engine (`/admin/tips`) with bulk publish/settle options
   - VIP Access Tokens (`/admin/tokens`) with single and bulk code generation, each issued to a registered user
   - Products & Tiers (`/admin/products`)
@@ -88,6 +88,27 @@ These checks verify a local build and code-level review only; they do not consti
 - The product, tips, home, and about pages list scraper-supported sports. The free channel remains football-focused; availability of an individual premium sport or market can vary by day.
 - The profile access history reads all tokens assigned to the account, including redeemed tokens. Avatar uploads are stored under the backend uploads directory and served from `/uploads`.
 - Settlement defaults: an unmarked **free-channel** pick settles as a loss and an unmarked **paid-group** (VIP/MaxBet) pick settles as a win; explicit markers always override the default.
+
+### Registration form validation
+
+`/register` validates the form in the browser before sending a request, using the same rules as the backend `validation.js`, so ordinary mistakes never reach the API:
+
+| Field | Client-side behaviour |
+|---|---|
+| Username | Required, 3–30 characters, letters/numbers/dots/hyphens/underscores |
+| Email | Required and must look like a valid address |
+| Password | Required, at least 8 characters |
+| First/last name | Optional, up to 50 characters |
+
+Failures render an inline red message under the field and switch that input to an error border; the message clears as soon as the field is edited. Successful submission redirects to `/login`. If the API still rejects a request, the form surfaces the real reason — the `details` array for `400` validation errors, the conflict message for `409` — instead of a single generic "already taken" notice.
+
+### Admin user management
+
+`/admin/users` lists accounts with search over username, email, and name, and offers three actions per row:
+
+- **Edit Role** — opens the role modal (USER, TIPSTER, EDITOR, ADMIN).
+- **Suspend / Activate** — toggles the account status between `SUSPENDED` and `ACTIVE`. This is reversible.
+- **Delete** — the trash-icon button permanently removes the account after an explicit confirmation. Deletion is irreversible, so suspension is the right choice when access only needs to be paused. The backend refuses to delete the signed-in admin's own account and detaches the user's tokens, usage events, and tip authorship before removing the row.
 
 ### Access tokens
 

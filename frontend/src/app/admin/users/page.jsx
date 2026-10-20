@@ -3,8 +3,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  Loader2,
   Search,
   Shield,
+  Trash2,
   UserCheck,
   UserX,
   Users,
@@ -63,6 +65,7 @@ export default function AdminUsersPage() {
   const [roleInput, setRoleInput] = useState("USER");
   const [savingRole, setSavingRole] = useState(false);
   const [updatingStatusId, setUpdatingStatusId] = useState(null);
+  const [deletingUserId, setDeletingUserId] = useState(null);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -82,6 +85,33 @@ export default function AdminUsersPage() {
   useEffect(() => {
     loadUsers();
   }, []);
+
+  const handleDeleteUser = async (user) => {
+    const label = user.username || user.email;
+
+    const confirmed = window.confirm(
+      `Permanently delete ${label}? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setDeletingUserId(user.id);
+
+    try {
+      await adminApi.deleteUser(user.id);
+
+      toast.success(`${label} deleted`);
+
+      await loadUsers();
+    } catch (error) {
+      console.error("Failed deleting user", error);
+      toast.error(
+        error.response?.data?.message || "Failed to delete user"
+      );
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
 
   const handleToggleStatus = async (user) => {
     const newStatus =
@@ -314,6 +344,8 @@ export default function AdminUsersPage() {
                     user.email ||
                     "Unknown User";
 
+                  const isDeletingUser = deletingUserId === user.id;
+
                   const initial =
                     displayName.charAt(0).toUpperCase();
 
@@ -418,6 +450,31 @@ export default function AdminUsersPage() {
                               : isSuspended
                               ? "Activate"
                               : "Suspend"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDeleteUser(user)
+                            }
+                            disabled={isDeletingUser}
+                            aria-label={`Delete ${
+                              user.username || user.email
+                            }`}
+                            title="Delete user"
+                            className="rounded-lg border border-rose-500/20 bg-rose-500/10 px-2 py-1.5 text-rose-400 transition-colors hover:bg-rose-500/20 focus:outline-none focus:ring-1 focus:ring-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {isDeletingUser ? (
+                              <Loader2
+                                className="h-4 w-4 animate-spin"
+                                aria-hidden="true"
+                              />
+                            ) : (
+                              <Trash2
+                                className="h-4 w-4"
+                                aria-hidden="true"
+                              />
+                            )}
                           </button>
                         </div>
                       </td>

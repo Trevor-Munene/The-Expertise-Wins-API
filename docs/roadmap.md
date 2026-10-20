@@ -18,8 +18,8 @@ Current code includes public pages, a public historical archive and performance 
 
 - **CLI:** scrape and normalize FreeTips records, write dated JSON, format channel-ready cards, settle a chosen day's dump from manually pasted markers, and sync dumps to PostgreSQL. Scrape and settlement can run locally; the API, frontend, database, and standard sync workflow are Dockerized.
 - **Backend:** Express REST API with JWT accounts, public Free and access-gated current VIP/MaxBet reads, public historical archive and tier performance, tip details, aggregate stats, products, token redemption, user/admin routes, and active-admin tip curation. Admin curation is protected under `/api/admin/tips`; the public tips router is read-only. There is no developer API key product or live channel-publishing integration.
-- **Frontend:** public site and blog, tips and archive pages, stats, products, login/registration, user profile, and admin pages for users, tips, access tokens, and products. Client-side role checks are for presentation; the API enforces protected operations.
-- **Access and data handling:** tokens are assigned to registered users, can be revoked or deleted, and source identifiers are removed from public tip responses. Edge bot mitigation is intended to deter bots/scrapers at deployment while leaving visitor access to public site content intact; zone-level settings are not configured by this repository. Settlement is manual; live result verification is not implemented.
+- **Frontend:** public site and blog, tips and archive pages, stats, products, login/registration, user profile, and admin pages for users, tips, access tokens, and products. The registration form validates username, email, and password in the browser before submitting and shows real API error detail on failure. Admin user management covers role changes, suspend/activate, and permanent deletion. Client-side role checks are for presentation; the API enforces protected operations.
+- **Access and data handling:** tokens are assigned to registered users, can be revoked or deleted, and source identifiers are removed from public tip responses. User accounts can be suspended (reversible) or permanently deleted by an admin; deletion detaches the user's tokens, usage events, and tip authorship in one transaction. Edge bot mitigation is intended to deter bots/scrapers at deployment while leaving visitor access to public site content intact; zone-level settings are not configured by this repository. Settlement is manual; live result verification is not implemented.
 
 ### Data snapshot
 
@@ -171,7 +171,7 @@ V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They 
 * [x] `/api/stats`: Overview, time-based analytics, ROI, sport/market breakdowns
 * [x] `/api/products`: Available product tier details
 * [x] `/api/subscriptions`: Active access check, token redemption, subscription history
-* [x] `/api/admin`: User roles, bulk publish/settle, single/bulk access token generation
+* [x] `/api/admin`: User roles and status, user deletion, bulk publish/settle, single/bulk access token generation
 * [x] Settle one tip and all of its selection outcomes atomically through one admin action
 
 ---
@@ -214,6 +214,8 @@ V2 ideas are collected separately in [`v2-ideation.md`](./v2-ideation.md). They 
 * [x] Keep the public tips router read-only and protect admin curation and token management with active-admin authorization
 * [x] Add backend service-logic tests with mocked persistence
 * [x] Reject missing/short JWT signing secrets, apply Joi validation to registration/login/password changes, and avoid returning internal 5xx details
+* [x] Align the username validation rule with what the registration form offers (letters, numbers, dots, hyphens, underscores) and normalise emails to lowercase on register and login, with the same rules mirrored client-side in the register form
+* [x] Add admin user deletion (`DELETE /api/admin/users/:id`) alongside role changes and suspend/activate, detaching tokens, usage events, and tip authorship in one transaction and blocking self-deletion
 * [ ] Reconcile dump and database outcomes and document which state is authoritative
 * [ ] Complete operator real-user and fresh-database acceptance of V1
 * [ ] Add UI-to-API acceptance coverage

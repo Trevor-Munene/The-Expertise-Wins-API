@@ -17,15 +17,15 @@ function validate(schema) {
 }
 
 const registrationSchema = Joi.object({
-  email: Joi.string().email().required(),
-  username: Joi.string().alphanum().min(3).max(30).required(),
+  email: Joi.string().trim().lowercase().email().required(),
+  username: Joi.string().trim().min(3).max(30).required(),
   password: Joi.string().min(8).required(),
-  firstName: Joi.string().max(50).allow("", null).optional(),
-  lastName: Joi.string().max(50).allow("", null).optional(),
+  firstName: Joi.string().trim().max(50).allow("", null).optional(),
+  lastName: Joi.string().trim().max(50).allow("", null).optional(),
 });
 
 const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
+  email: Joi.string().trim().lowercase().email().required(),
   password: Joi.string().required(),
 });
 
@@ -35,7 +35,7 @@ const updatePasswordSchema = Joi.object({
 });
 
 const updateProfileSchema = Joi.object({
-  username: Joi.string().trim().alphanum().min(3).max(30).required(),
+  username: Joi.string().trim().min(3).max(30).required(),
   firstName: Joi.string().trim().max(50).allow(""),
   lastName: Joi.string().trim().max(50).allow(""),
 });

@@ -25,6 +25,12 @@ export const adminApi = {
     return data;
   },
 
+  // Permanently delete a user
+  async deleteUser(id) {
+    const { data } = await apiClient.delete(`/admin/users/${id}`);
+    return data;
+  },
+
   // Create a tip
   async createTip(payload) {
     const { data } = await apiClient.post("/admin/tips", payload);

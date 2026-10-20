@@ -106,6 +106,24 @@ docker compose run --rm app npm run sync
 
 `npm run expertise:sync` and `npm run settlement:sync` are optional host-only convenience scripts. They require the local database at `localhost:5432` and both CLI and backend dependencies installed; the Docker sync workflow above is the standard path.
 
+### Settlement rules
+
+Settlement only decides what the pasted channel text actually addresses. A fixture the channel pushed forward is never counted as a loss:
+
+- `✅✅` settles the selection as a win, `❎❎` as a loss.
+- A `Plays today...♻️♻️` note (or any `postponed` / `rearranged` wording) means the fixture was moved, so the tip stays **pending** and is flagged `postponed`. It is listed under **CARRIED FORWARD** in the settlement report.
+- A fixture the pasted text does not mention at all (no line, or no card) is also carried forward and stays pending rather than defaulting to a loss.
+- The unmarked default (free = lose, paid = win) now only applies to the individual selections of a fixture that provably played because at least one of its selections was marked.
+
+Re-running settlement for the same day is idempotent: settled tips keep their outcomes and carried-forward tips stay pending. When a pushed-forward fixture has finally played, reset that day and settle it again with the newer results pasted in:
+
+```powershell
+npm run --prefix cli settlement:reset -- --date=2026-10-19
+npm run settlement
+```
+
+The reset clears every outcome and postponed flag for that dump and leaves the tips pending; follow it with a normal sync.
+
 ## Current Data State
 
 The dated dumps under `settlement/previous-day-results/` currently hold **572 tip records across 21 files: 419 wins, 37 losses, and 116 pending**. The 14th and 15th October dumps are empty placeholders (`[]`) because no tips were exported for those days; the 13th October dump is the most recent populated one with 24 tips. Reconcile the dumps against the database after each sync before relying on combined performance totals.

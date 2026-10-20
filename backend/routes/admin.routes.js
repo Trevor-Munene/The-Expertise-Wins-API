@@ -14,6 +14,7 @@ adminRouter.get("/users", adminController.getUsers);
 adminRouter.get("/users/:id", adminController.getUserById);
 adminRouter.patch("/users/:id", adminController.updateUser);
 adminRouter.patch("/users/:id/status", adminController.updateUserStatus);
+adminRouter.delete("/users/:id", adminController.deleteUser);
 
 // Admin curation endpoints. These require the active-admin middleware above;
 // normal daily publication and settlement should still use the CLI dump workflow.
