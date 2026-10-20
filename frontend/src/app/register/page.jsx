@@ -24,13 +24,60 @@ const initialFormData = {
   lastName: "",
 };
 
+// Mirror the server-side rules in backend/middleware/validation.js so mistakes
+// are caught before the request instead of surfacing as a generic API error.
+const USERNAME_PATTERN = /^[A-Za-z0-9._-]+$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_MIN_LENGTH = 8;
+
+const validateForm = (values) => {
+  const errors = {};
+
+  const username = values.username.trim();
+  if (!username) {
+    errors.username = "Username is required.";
+  } else if (username.length < 3 || username.length > 30) {
+    errors.username = "Username must be between 3 and 30 characters.";
+  } else if (!USERNAME_PATTERN.test(username)) {
+    errors.username =
+      "Username may only contain letters, numbers, dots, hyphens and underscores.";
+  }
+
+  const email = values.email.trim();
+  if (!email) {
+    errors.email = "Email address is required.";
+  } else if (!EMAIL_PATTERN.test(email)) {
+    errors.email = "Enter a valid email address.";
+  }
+
+  if (!values.password) {
+    errors.password = "Password is required.";
+  } else if (values.password.length < PASSWORD_MIN_LENGTH) {
+    errors.password = `Password must be at least ${PASSWORD_MIN_LENGTH} characters long.`;
+  }
+
+  if (values.firstName.trim().length > 50) {
+    errors.firstName = "First name must be 50 characters or fewer.";
+  }
+
+  if (values.lastName.trim().length > 50) {
+    errors.lastName = "Last name must be 50 characters or fewer.";
+  }
+
+  return errors;
+};
+
 const inputClassName =
   "w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-colors";
+
+const errorInputClassName =
+  "w-full px-4 py-2.5 bg-slate-950 border border-red-500/70 rounded-xl text-slate-100 text-sm placeholder:text-slate-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/30 transition-colors";
 
 export default function RegisterPage() {
   const router = useRouter();
 
   const [formData, setFormData] = useState(initialFormData);
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const updateField = (field, value) => {
@@ -38,6 +85,14 @@ export default function RegisterPage() {
       ...current,
       [field]: value,
     }));
+
+    // Clear a field's error as soon as the user edits it again
+    setErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
   };
 
   const handleSubmit = async (event) => {
@@ -45,14 +100,18 @@ export default function RegisterPage() {
 
     if (loading) return;
 
+    const fieldErrors = validateForm(formData);
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors);
+      toast.error("Please fix the highlighted fields.");
+      return;
+    }
+
+    setErrors({});
+
     const email = formData.email.trim();
     const username = formData.username.trim();
     const password = formData.password;
-
-    if (!email || !username || !password) {
-      toast.error("Email, username, and password are required.");
-      return;
-    }
 
     setLoading(true);
 
@@ -76,10 +135,38 @@ export default function RegisterPage() {
 
       router.push("/login");
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          "Registration failed. Username or email may already be taken."
-      );
+      // The API returns field-level detail for validation failures, so show
+      // that when present instead of the generic conflict message.
+      const responseData = err.response?.data;
+      const details = responseData?.details;
+
+      if (err.response?.status === 400 && Array.isArray(details) && details.length > 0) {
+        // Attach server-side validation details to the field they refer to so
+        // the message appears inline as well as in the toast.
+        const serverErrors = {};
+        for (const detail of details) {
+          const field = ["email", "username", "password", "firstName", "lastName"].find(
+            (key) => detail.toLowerCase().startsWith(key.toLowerCase())
+          );
+          if (field) {
+            serverErrors[field] = detail;
+          }
+        }
+        if (Object.keys(serverErrors).length > 0) {
+          setErrors(serverErrors);
+        }
+        toast.error(details.join(" "));
+      } else if (err.response?.status === 409) {
+        toast.error(
+          responseData?.message ||
+            "Email or username already in use."
+        );
+      } else {
+        toast.error(
+          responseData?.message ||
+            "Registration failed. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -139,8 +226,11 @@ export default function RegisterPage() {
                   updateField("firstName", event.target.value)
                 }
                 placeholder="John"
-                className={inputClassName}
+                className={errors.firstName ? errorInputClassName : inputClassName}
               />
+              {errors.firstName && (
+                <p className="mt-1 text-[11px] text-red-400">{errors.firstName}</p>
+              )}
             </div>
 
             <div>
@@ -161,8 +251,11 @@ export default function RegisterPage() {
                   updateField("lastName", event.target.value)
                 }
                 placeholder="Doe"
-                className={inputClassName}
+                className={errors.lastName ? errorInputClassName : inputClassName}
               />
+              {errors.lastName && (
+                <p className="mt-1 text-[11px] text-red-400">{errors.lastName}</p>
+              )}
             </div>
           </div>
 
@@ -187,7 +280,7 @@ export default function RegisterPage() {
                   updateField("username", event.target.value)
                 }
                 placeholder="expert_tipster"
-                className={`${inputClassName} pl-10`}
+                className={`${errors.username ? errorInputClassName : inputClassName} pl-10`}
               />
 
               <User
@@ -195,6 +288,9 @@ export default function RegisterPage() {
                 aria-hidden="true"
               />
             </div>
+            {errors.username && (
+              <p className="mt-1 text-[11px] text-red-400">{errors.username}</p>
+            )}
           </div>
 
           {/* Email */}
@@ -218,7 +314,7 @@ export default function RegisterPage() {
                   updateField("email", event.target.value)
                 }
                 placeholder="user@example.com"
-                className={`${inputClassName} pl-10`}
+                className={`${errors.email ? errorInputClassName : inputClassName} pl-10`}
               />
 
               <Mail
@@ -226,6 +322,9 @@ export default function RegisterPage() {
                 aria-hidden="true"
               />
             </div>
+            {errors.email && (
+              <p className="mt-1 text-[11px] text-red-400">{errors.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -249,7 +348,7 @@ export default function RegisterPage() {
                   updateField("password", event.target.value)
                 }
                 placeholder="••••••••"
-                className={`${inputClassName} pl-10`}
+                className={`${errors.password ? errorInputClassName : inputClassName} pl-10`}
               />
 
               <Lock
@@ -257,6 +356,9 @@ export default function RegisterPage() {
                 aria-hidden="true"
               />
             </div>
+            {errors.password && (
+              <p className="mt-1 text-[11px] text-red-400">{errors.password}</p>
+            )}
           </div>
 
           {/* Submit */}

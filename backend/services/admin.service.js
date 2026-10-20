@@ -208,6 +208,49 @@ const updateUserStatus = async (userId, status, actorId) => {
   return user;
 };
 
+// Permanently delete a user account. Suspension is the reversible option; this
+// removes the account for good. Access tokens owned by the user and usage
+// events referencing them are detached first so the delete cannot trip a
+// foreign-key constraint. Admins cannot delete their own account.
+const deleteUser = async (userId, actorId) => {
+  await requireActiveAdmin(actorId);
+
+  if (userId === actorId) {
+    throw createError("You cannot delete your own account.", 400);
+  }
+
+  const existing = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true },
+  });
+  if (!existing) throw createError("User not found.", 404);
+
+  await prisma.$transaction([
+    // Tokens are issued to one owner; keep the audit record but release the link.
+    prisma.accessToken.updateMany({
+      where: { assignedUserId: userId },
+      data: { assignedUserId: null },
+    }),
+    // Usage events are analytics history and should survive the account.
+    prisma.usageEvent.updateMany({
+      where: { userId },
+      data: { userId: null },
+    }),
+    // Tips authored or published by the user keep their history, just unsigned.
+    prisma.tip.updateMany({
+      where: { createdById: userId },
+      data: { createdById: null },
+    }),
+    prisma.tip.updateMany({
+      where: { publishedById: userId },
+      data: { publishedById: null },
+    }),
+    prisma.user.delete({ where: { id: userId } }),
+  ]);
+
+  return { message: "User deleted successfully.", id: userId };
+};
+
 // Create a tip from allowed fields and check required fields
 const createTip = async (tipData = {}, userId, actorId = userId) => {
   await requireActiveAdmin(actorId);
@@ -768,6 +811,7 @@ module.exports = {
   getUserById,
   updateUser,
   updateUserStatus,
+  deleteUser,
   createTip,
   getTips,
   getTipById,

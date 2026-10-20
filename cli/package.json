@@ -10,6 +10,8 @@
     "test:settlement": "node tests/settlement.test.js",
     "expertise": "node orchestrator/run-freetips.js --skip-settlement-tests && node services/app.js",
     "settlement": "node settlement/app.js",
+    "settlement:reset": "node settlement/app.js reset",
+    "settlement:reset:sync": "node settlement/app.js reset && node sync.js --target=local",
     "sync": "node sync.js --target=local",
     "sync:prod": "node sync.js --target=production",
     "sync:dry": "node sync.js --target=local --dry-run"

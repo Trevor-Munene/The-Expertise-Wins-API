@@ -46,6 +46,17 @@ const updateUserStatus = async (req, res, next) => {
   }
 };
 
+// Permanently delete a user
+const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await adminService.deleteUser(id, req.user?.id);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Create a tip as the current admin
 const createTip = async (req, res, next) => {
   try {
@@ -380,6 +391,7 @@ module.exports = {
   getUserById,
   updateUser,
   updateUserStatus,
+  deleteUser,
   createTip,
   getTips,
   getTipById,

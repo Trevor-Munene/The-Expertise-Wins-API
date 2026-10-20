@@ -95,11 +95,11 @@ Use `docker compose run --rm app npm run sync` to run the local sync against the
 
 | Area | Current purpose |
 |---|---|
-| Authentication | Registration, login, profiles, password changes, and avatar upload |
+| Authentication | Registration, login, profiles, password changes, and avatar upload. Emails are trimmed and lowercased for both registration and login; usernames may contain letters, numbers, dots, hyphens, and underscores (3–30 characters), and passwords require at least 8 characters. |
 | Tips | Public Free tips, entitlement-gated current VIP/MaxBet feeds, a public historical archive across tiers, and admin curation under `/api/admin/tips`. Routine daily production and settlement use CLI dump → review → sync. |
 | Statistics | Win rate, ROI, odds, sport/market/competition breakdowns, time-filtered analytics, and admin-only application usage |
 | Products and access | Product tiers plus access tokens, which are **always issued by an admin to a registered user** |
-| Administration | User, access-token, and product management; admin routes and mutation services enforce an active `ADMIN` role. Daily tip production/settlement remains CLI dump → review → sync. |
+| Administration | User, access-token, and product management; admin routes and mutation services enforce an active `ADMIN` role. Admins can change a user's role, suspend or reactivate an account, or permanently delete it. Daily tip production/settlement remains CLI dump → review → sync. |
 
 Subscription-style access is represented by access tokens; the Prisma schema has no separate `Subscription` model.
 
@@ -112,6 +112,14 @@ Tokens are issued **only by an admin** and **only for a specific registered, act
 - A token's owner cannot be changed after creation, so access cannot be transferred.
 - Revoke disables a token while retaining its record; `DELETE /api/admin/subscription-tokens/:id` permanently deletes it.
 - Run backend service-logic checks in Docker with `docker compose run --rm --no-deps app npm run --prefix backend test`; they use mocked persistence and do not require PostgreSQL.
+
+### User accounts
+
+Admins manage accounts from `/admin/users`:
+
+- **Role** changes take effect on the account's next request; the API re-reads the user on every JWT-authenticated call.
+- **Suspend / Activate** toggles the account between `SUSPENDED` and `ACTIVE` and is reversible.
+- **Delete** (`DELETE /api/admin/users/:id`) permanently removes the account. Its access tokens are unassigned, and its usage events and tip authorship references are cleared, inside a single transaction so the delete cannot fail on a foreign-key constraint; those records are retained. An admin cannot delete their own account.
 
 ## V1 Status
 
