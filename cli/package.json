@@ -4,7 +4,7 @@
   "description": "CLI app for The Expertise Wins: scrape, normalize, orchestrate, settle and print daily sports tips.",
   "main": "app.js",
   "scripts": {
-    "test": "node tests/freetips.test.js && node tests/tips.contract.test.js && node tests/settlement.test.js",
+    "test": "node tests/freetips.test.js && node tests/tips.contract.test.js && node tests/settlement.test.js && node tests/sync.test.js",
     "start": "node services/app.js",
     "test:premium-source": "node tests/premium.service.test.js",
     "test:settlement": "node tests/settlement.test.js",
@@ -12,6 +12,8 @@
     "settlement": "node settlement/app.js",
     "settlement:reset": "node settlement/app.js reset",
     "settlement:reset:sync": "node settlement/app.js reset && node sync.js --target=local",
+    "settlement:next": "node settlement/app.js next",
+    "settlement:next:sync": "node settlement/app.js next && node sync.js --target=local",
     "sync": "node sync.js --target=local",
     "sync:prod": "node sync.js --target=production",
     "sync:dry": "node sync.js --target=local --dry-run"

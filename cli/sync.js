@@ -16,6 +16,7 @@
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const { businessDayKey, parseDumpDay } = require("./lib/dump-day");
 
 const repoRoot = path.resolve(__dirname, "..");
 const seedScript = path.join(repoRoot, "backend", "scripts", "seed.js");
@@ -98,7 +99,7 @@ function findMissingDate(target) {
   console.log(`   Newest dump: ${latest}`);
 
   // Warn when today has no dump, because the web pages default to today.
-  const today = new Date().toISOString().slice(0, 10);
+  const today = businessDayKey();
   const day = new Date().getDate();
   const suffix = ["th", "st", "nd", "rd"][day % 10 > 3 ? 0 : (day % 100 - day % 10 !== 10) * day % 10];
   const month = new Date().toLocaleString("en-GB", { month: "short" });
@@ -107,6 +108,18 @@ function findMissingDate(target) {
   if (expected !== latest) {
     console.log(
       `   Note: there is no dump for today (${today}). /tips and /archive default to today, so they may look empty until you scrape.`
+    );
+  }
+
+  // A dump dated after today is filed in the future, where no page can ever
+  // show it: the live list is pinned to today and the archive refuses future
+  // days. That is almost always a scrape that ran with the wrong system clock.
+  const future = formatted.filter((file) => (parseDumpDay(file) || "") > today);
+  if (future.length > 0) {
+    return (
+      `These dumps are dated after today (${today}) and would be filed in the future:\n` +
+      future.map((file) => `     ${file}`).join("\n") +
+      "\n   Fix the file name or the system clock, then re-run."
     );
   }
 

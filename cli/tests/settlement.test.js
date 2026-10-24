@@ -7,8 +7,13 @@ const {
     processSettlement,
     resetSettlement,
     resolveJsonPath,
+    findCarriedForwardDate,
+    isCarriedForwardDay,
+    parseDumpDate,
     getFormattedDate,
     isPostponedLine,
+    isRefundedLine,
+    determineOutcome,
 } = require("../settlement/settlement");
 const { withHeat, parseArgs } = require("../settlement/app");
 const { TipsConsumptionClient } = require("../services/tips.client");
@@ -26,10 +31,10 @@ const testJsonPath = path.join(previousDayResultsDir, `freetips-${TEST_FORMATTED
 const win = (selection, market, units) => ({ selection, market, odds: 1.90, units, outcome: null });
 const lose = (selection, market, units) => ({ selection, market, odds: 1.90, units, outcome: null });
 
-// Tips settle by tick/cross markers. A fixture the channel did not address at
-// all (pushed forward, or absent from the pasted text) stays pending instead of
-// defaulting to a loss. The unmarked default only applies to the individual
-// selections of a fixture that provably played.
+// Tips settle by tick/cross markers, a refund voids them, and a "Plays today"
+// note settles the fixture as a win for the day it was published, flagged as
+// carried forward. A fixture the channel did not address at all (absent from the
+// pasted text) still uses the unmarked default: free = lose, paid = win.
 const buildFixtureTips = () => ([
     {
         source: "freetips",
@@ -88,8 +93,8 @@ const buildFixtureTips = () => ([
         status: "pending",
         outcome: null,
     },
-    // Free tip whose fixture is NOT present in the results text -> carried
-    // forward (pending), never silently settled as a loss.
+    // Free tip whose fixture is NOT present in the results text -> the channel
+    // did not address it, so the free unmarked default applies (a loss).
     {
         source: "freetips",
         sport: "Football",
@@ -149,7 +154,8 @@ const buildFixtureTips = () => ([
         status: "pending",
         outcome: null,
     },
-    // Fixture explicitly pushed forward by the channel note line.
+    // Fixture explicitly pushed forward by the channel note line: it still
+    // belongs to this day's card, so it settles as a win and is carried forward.
     {
         source: "freetips",
         sport: "Football",
@@ -165,6 +171,47 @@ const buildFixtureTips = () => ([
         previewTitle: "Tottenham vs Coventry",
         verdict: "Goals expected.",
         tips: [win("BTTS & Over 2.5 Goals", "BTTS & Over 2.5 Goals", 2)],
+        extraTips: [],
+        status: "pending",
+        outcome: null,
+    },
+    // Card immediately after a refund: distinct markers, so a refund note must
+    // never leak onto a neighbouring card.
+    {
+        source: "freetips",
+        sport: "Basketball",
+        competition: "Basketball",
+        league: "Basketball",
+        homeTeam: "Aris",
+        awayTeam: "Peristeri",
+        kickoff: "19:00",
+        market: "Asian Handicap",
+        selection: "Aris -4.5",
+        odds: 1.85,
+        stakeUnits: 2,
+        previewTitle: "Aris vs Peristeri",
+        verdict: "Hosts cover.",
+        tips: [win("Aris -4.5", "Asian Handicap", 2)],
+        extraTips: [win("Under 160.5", "Total Points", 2)],
+        status: "pending",
+        outcome: null,
+    },
+    // Refunded card: the channel cancels the bets and returns the stakes.
+    {
+        source: "freetips",
+        sport: "Tennis",
+        competition: "Tennis",
+        league: "Tennis",
+        homeTeam: "Lorenzo Musetti",
+        awayTeam: "Jack Draper",
+        kickoff: "16:00",
+        market: "Match Winner",
+        selection: "Musetti Win",
+        odds: 1.90,
+        stakeUnits: 2,
+        previewTitle: "Lorenzo Musetti vs Jack Draper",
+        verdict: "Musetti is the pick.",
+        tips: [win("Musetti Win", "Match Winner", 2), { ...lose("Over 21.5", "Total Games", 2), odds: 1.50 }],
         extraTips: [],
         status: "pending",
         outcome: null,
@@ -206,6 +253,24 @@ const RESULTS_TXT = [
     "[01/01/1999 09:30] ᴛʜᴇ ᴇxᴘᴇʀᴛɪsᴇ ᴡɪɴs!!! in reply to ᴛʜᴇ ᴇxᴘᴇʀᴛɪsᴇ ᴡɪɴs!!!:",
     "> Tottenham vs Coventry",
     "Plays today...♻️♻️",
+    "",
+    // The channel refunded this card: no tick or cross, just the refund note.
+    "[01/01/1999 09:31] ᴛʜᴇ ᴇxᴘᴇʀᴛɪsᴇ ᴡɪɴs!!!: Tennis",
+    "🎾 || Lorenzo Musetti v Jack Draper",
+    "Bet: Musetti Win",
+    "Stake: 2 Units",
+    "",
+    "Musetti Win @1.90 - 2 Units",
+    "Over 21.5 Total Games @1.50 - 2 Units",
+    "",
+    "Refunded ♻️♻️",
+    "[01/01/1999 09:40] ᴛʜᴇ ᴇxᴘᴇʀᴛɪsᴇ ᴡɪɴs!!!: Basketball",
+    "🏀 || Aris v Peristeri",
+    "Bet: Aris -4.5",
+    "Stake: 2 Units",
+    "",
+    "Aris -4.5 @1.85 - 2 Units ✅✅",
+    "Under 160.5 @1.90 - 2 Units ✅✅",
 ].join("\n");
 
 // ---------------------------------------------------------------------------
@@ -223,12 +288,22 @@ assert.strictEqual(getFormattedDate("2026-09-22"), "22nd Sept 2026", "22 should 
 assert.strictEqual(getFormattedDate("2026-09-23"), "23rd Sept 2026", "23 should use rd");
 
 // Pushed-forward detection: the channel's "Plays today...♻️♻️" note is not a
-// result, so it must never be read as a tick or a cross.
+// result marker, so it must never be read as a tick or a cross.
 assert.ok(isPostponedLine("Plays today...♻️♻️"), "'Plays today...♻️♻️' must be recognised as pushed forward");
 assert.ok(isPostponedLine("Plays today ✓"), "'Plays today' wording must be recognised");
 assert.ok(isPostponedLine("Match postponed"), "'postponed' must be recognised");
 assert.ok(!isPostponedLine("Bet @1.90 - 2 Units ✅✅"), "A win marker is not a pushed-forward note");
 assert.ok(!isPostponedLine("Bet @1.90 - 2 Units ❎❎"), "A lose marker is not a pushed-forward note");
+
+// Refunded detection: a refund shares the ♻️ emoji but is a void, never a push.
+assert.ok(isRefundedLine("Refunded ♻️♻️"), "'Refunded ♻️♻️' must be recognised as a refund");
+assert.ok(isRefundedLine("Refunds issued"), "'Refunds issued' must be recognised as a refund");
+assert.ok(!isPostponedLine("Refunded ♻️♻️"), "A refund line must not be read as pushed forward");
+assert.strictEqual(determineOutcome("Refunded ♻️♻️"), "void", "A refund must settle as void");
+assert.strictEqual(determineOutcome("Bet @1.90 - 2 Units ✅✅"), "win", "A tick still settles as a win");
+assert.strictEqual(determineOutcome("Bet @1.90 - 2 Units ❎❎"), "lose", "A cross still settles as a lose");
+assert.ok(isCarriedForwardDay([{ status: "settled", outcome: "win", postponed: true }]), "A carried day is detected");
+assert.ok(!isCarriedForwardDay([{ status: "pending", outcome: null }]), "A pending day is not carried");
 
 // ---------------------------------------------------------------------------
 // 2. CLI arg parsing (settlement/app.js)
@@ -306,7 +381,7 @@ const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt
 
         const settled = processSettlement(TEST_DATE, tempTxtPath);
         assert.ok(Array.isArray(settled), "processSettlement should return the settled tips array");
-        assert.strictEqual(settled.length, 7, "All tips should be returned");
+        assert.strictEqual(settled.length, 9, "All tips should be returned");
 
         const byHome = (name) => settled.find((tip) => tip.homeTeam === name);
 
@@ -323,25 +398,36 @@ const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt
         assert.strictEqual(byHome("Juventus").outcome, "win", "Free tip main selection should settle as a win");
         assert.strictEqual(byHome("Juventus").tips[1].outcome, "lose", "Free tip secondary selection should settle as a lose");
 
-        // Free football absent from the settlement text is pushed forward, NOT lost.
+        // Free football the channel never addressed uses the free unmarked default.
         const ajax = byHome("Ajax");
-        assert.strictEqual(ajax.outcome, null, "A free tip missing from results text must not be settled as a loss");
-        assert.strictEqual(ajax.status, "pending", "A pushed-forward free tip must stay pending");
-        assert.strictEqual(ajax.postponed, true, "A pushed-forward free tip must be flagged postponed");
-        assert.strictEqual(ajax.tips[0].outcome, null, "Nested tips of a pushed-forward free tip stay pending");
+        assert.strictEqual(ajax.outcome, "lose", "An unaddressed free tip uses the free unmarked default");
+        assert.strictEqual(ajax.status, "settled", "An unaddressed free tip settles");
+        assert.ok(!ajax.postponed, "An unaddressed free tip is not carried forward");
 
-        // Paid tip absent from the settlement text is also pushed forward.
+        // Paid tip the channel never addressed uses the paid unmarked default.
         const olympiacos = byHome("Olympiacos");
-        assert.strictEqual(olympiacos.outcome, null, "An unmarked paid tip must not be guessed");
-        assert.strictEqual(olympiacos.status, "pending", "An unmarked paid tip must stay pending");
-        assert.strictEqual(olympiacos.tips[0].outcome, null, "Nested paid tips stay pending");
+        assert.strictEqual(olympiacos.outcome, "win", "An unaddressed paid tip uses the paid unmarked default");
+        assert.ok(!olympiacos.postponed, "An unaddressed paid tip is not carried forward");
 
-        // Explicit "Plays today...♻️♻️" note: pushed forward, never a loss.
+        // Explicit "Plays today...♻️♻️" note: the fixture still belongs to this
+        // day, so it settles as a win here and is flagged as carried forward.
         const tottenham = byHome("Tottenham");
-        assert.strictEqual(tottenham.outcome, null, "A 'Plays today' fixture must not settle");
-        assert.strictEqual(tottenham.status, "pending", "A 'Plays today' fixture must stay pending");
-        assert.strictEqual(tottenham.postponed, true, "A 'Plays today' fixture must be flagged postponed");
-        assert.strictEqual(tottenham.tips[0].outcome, null, "Nested selections of a carried fixture stay pending");
+        assert.strictEqual(tottenham.outcome, "win", "A 'Plays today' fixture settles as a win for this day");
+        assert.strictEqual(tottenham.status, "settled", "A 'Plays today' fixture is settled");
+        assert.strictEqual(tottenham.postponed, true, "A 'Plays today' fixture is flagged as carried forward");
+        assert.strictEqual(tottenham.tips[0].outcome, "win", "Nested selections of a carried fixture settle as wins");
+
+        // A card next to a refund settles from its own markers.
+        const aris = byHome("Aris");
+        assert.strictEqual(aris.outcome, "win", "A refunded neighbouring card must not be voided");
+        assert.strictEqual(aris.extraTips[0].outcome, "win", "A neighbouring card's extra tips keep their markers");
+
+        // A refunded card settles as void, never by the unmarked default.
+        const musetti = byHome("Lorenzo Musetti");
+        assert.strictEqual(musetti.outcome, "void", "A refunded tip settles as void");
+        assert.strictEqual(musetti.status, "settled", "A refunded tip is settled");
+        assert.strictEqual(musetti.tips[1].outcome, "void", "Every selection on a refunded card is voided");
+        assert.ok(!musetti.postponed, "A refunded tip is not carried forward");
 
         // Non-football premium tip: explicit lose marker.
         const basketball = byHome("Real Madrid");
@@ -354,39 +440,21 @@ const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt
         assert.strictEqual(persistedBesiktas.outcome, "win", "Settled outcomes must be written back to the JSON dump");
 
         const persistedAjax = persisted.find((tip) => tip.homeTeam === "Ajax");
-        assert.strictEqual(persistedAjax.outcome, null, "A carried-forward fixture must not be written back as a loss");
-        assert.strictEqual(persistedAjax.postponed, true, "Carried-forward flags must be written back to the JSON dump");
-        const persistedOlympiacos = persisted.find((tip) => tip.homeTeam === "Olympiacos");
-        assert.strictEqual(persistedOlympiacos.outcome, null, "A carried-forward paid tip must not be written back as a win");
+        assert.strictEqual(persistedAjax.outcome, "lose", "The unmarked default is written back to the JSON dump");
+        const persistedTottenham = persisted.find((tip) => tip.homeTeam === "Tottenham");
+        assert.strictEqual(persistedTottenham.postponed, true, "Carried-forward flags must be written back to the JSON dump");
+        assert.strictEqual(persistedTottenham.outcome, "win", "A carried-forward win must be written back to the JSON dump");
 
         // Re-running settlement for the same day is idempotent: carried tips stay
         // carried and already-settled tips keep their outcomes.
         const reSettled = processSettlement(TEST_DATE, tempTxtPath);
         assert.strictEqual(reSettled.find((t) => t.homeTeam === "Besiktas").outcome, "win", "A settled tip keeps its outcome on re-run");
-        assert.strictEqual(reSettled.find((t) => t.homeTeam === "Ajax").outcome, null, "A carried tip stays pending on re-run");
+        assert.strictEqual(reSettled.find((t) => t.homeTeam === "Tottenham").outcome, "win", "A carried tip keeps its outcome on re-run");
+        assert.strictEqual(reSettled.find((t) => t.homeTeam === "Tottenham").postponed, true, "A carried tip keeps its flag on re-run");
 
-        // resetSettlement puts the whole day back to pending so a pushed-forward
-        // fixture can be re-settled once it has actually played.
-        const reset = resetSettlement(TEST_DATE);
-        assert.ok(reset.every((t) => t.status === "pending" && t.outcome === null), "Reset must clear every outcome");
-        assert.ok(reset.every((t) => !t.postponed), "Reset must drop the postponed flag");
-        assert.strictEqual(reset.find((t) => t.homeTeam === "Besiktas").tips[1].outcome, null, "Reset must clear nested outcomes");
-
-        // A pushed-forward fixture that has now played settles on the next pass:
-        // its loser is no longer a loss, and a later tick in the pasted text settles it.
-        const replayTxtPath = path.join(os.tmpdir(), `settlement-replay-${Date.now()}.txt`);
-        fs.writeFileSync(
-            replayTxtPath,
-            RESULTS_TXT + `\n[02/01/1999 09:30] ᴛʜᴇ ᴇxᴘᴇʀᴛɪsᴇ ᴡɪɴs!!!:\n> Ajax vs Feyenoord\nBTTS Yes @1.80 - 2 Units ✅✅`,
-            "utf8"
-        );
-        try {
-            const replayed = processSettlement(TEST_DATE, replayTxtPath);
-            assert.strictEqual(replayed.find((t) => t.homeTeam === "Ajax").outcome, "win", "A carried tip settles once its result is pasted later");
-            assert.ok(!replayed.find((t) => t.homeTeam === "Ajax").postponed, "A finally-settled tip must drop its postponed flag");
-        } finally {
-            fs.rmSync(replayTxtPath, { force: true });
-        }
+        // The carried day is discovered so `settlement next` can settle the day
+        // that actually holds its real result (the next day's dump).
+        assert.strictEqual(isCarriedForwardDay(reSettled), true, "The settled day reports itself as carried forward");
 
         // The settled dump renders through the tips client, and the settlement
         // layer's heat decorates only the paid (winning) lines.
@@ -442,6 +510,34 @@ const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt
             if (workingBefore !== null) {
                 fs.writeFileSync(freetipsWorkingPath, workingBefore, "utf8");
             }
+        }
+
+        // resetSettlement puts the whole day back to pending so it can be settled
+        // again from scratch (for example when the pasted text was wrong).
+        const reset = resetSettlement(TEST_DATE);
+        assert.ok(reset.every((t) => t.status === "pending" && t.outcome === null), "Reset must clear every outcome");
+        assert.ok(reset.every((t) => !t.postponed), "Reset must drop the carried-forward flag");
+        assert.strictEqual(reset.find((t) => t.homeTeam === "Besiktas").tips[1].outcome, null, "Reset must clear nested outcomes");
+
+        // A day rebuilt from a fresh scrape can reuse a tip's position, and so its
+        // dump id, for a different fixture, so the sync must be able to name the
+        // day a dump belongs to when it reports the collision.
+        assert.strictEqual(parseDumpDate(`freetips-${getFormattedDate(TEST_DATE)}.json`), TEST_DATE, "Dump file names round-trip their date");
+
+        // `next` finds the youngest day before the settlement date whose tips are
+        // all decided and at least one carried forward.
+        const carriedDate = "1999-01-05";
+        const carriedPath = path.join(previousDayResultsDir, `freetips-${getFormattedDate(carriedDate)}.json`);
+        fs.writeFileSync(
+            carriedPath,
+            JSON.stringify([{ homeTeam: "Carried", status: "settled", outcome: "win", postponed: true }], null, 2),
+            "utf8"
+        );
+        try {
+            assert.strictEqual(findCarriedForwardDate("1999-02-01"), carriedDate, "`next` picks the youngest carried-forward day");
+            assert.strictEqual(findCarriedForwardDate("1999-01-05"), null, "`next` only looks at days before the settlement date");
+        } finally {
+            fs.rmSync(carriedPath, { force: true });
         }
 
         console.log(`✅ Settled ${settled.length} fixture tips, wrote back to the previous-day dump, and verified the fire emoji rules.`);

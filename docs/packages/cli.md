@@ -108,21 +108,30 @@ docker compose run --rm app npm run sync
 
 ### Settlement rules
 
-Settlement only decides what the pasted channel text actually addresses. A fixture the channel pushed forward is never counted as a loss:
+Settlement decides what the pasted channel text says about each card:
 
-- `✅✅` settles the selection as a win, `❎❎` as a loss.
-- A `Plays today...♻️♻️` note (or any `postponed` / `rearranged` wording) means the fixture was moved, so the tip stays **pending** and is flagged `postponed`. It is listed under **CARRIED FORWARD** in the settlement report.
-- A fixture the pasted text does not mention at all (no line, or no card) is also carried forward and stays pending rather than defaulting to a loss.
-- The unmarked default (free = lose, paid = win) now only applies to the individual selections of a fixture that provably played because at least one of its selections was marked.
+- `✅✅` settles the selection as a **win**, `❎❎` as a **loss**.
+- A `Refunded ♻️♻️` note (or any `refunded` / `money back` wording) on a card settles every selection on that card as **void**. The stake is returned, so a refund is never a win, a loss, or an unmarked default.
+- A `Plays today...♻️♻️` note (or any `postponed` / `rearranged` wording) means the fixture was pushed forward. It still belongs to the day it was published, so that day's settlement records it as a **win** and flags it `postponed` (**CARRIED FORWARD** in the report).
+- A fixture the pasted text does not mention at all uses the channel-aware unmarked default: **free = lose, paid (VIP/MaxBet) = win**.
+- Matching is per card. A refund or push note only applies to the fixture whose card it closes, and a selection that is one word must match whole words, so a note or a neighbouring card can never flip another tip.
 
-Re-running settlement for the same day is idempotent: settled tips keep their outcomes and carried-forward tips stay pending. When a pushed-forward fixture has finally played, reset that day and settle it again with the newer results pasted in:
+The operator scrapes again the next day, so a carried fixture appears on the next day's card with its real tick or cross. Settle that day to record it:
+
+```powershell
+npm run --prefix cli settlement next
+```
+
+`settlement next` finds the youngest earlier day whose tips are all settled with some flagged carried forward, and settles that day's dump (defaults to yesterday). Pass `--date=` a later date to look further back. Re-running settlement for a day is idempotent: settled tips, including carried-forward wins, keep their outcomes.
+
+To rebuild a day from scratch (for example after pasting the wrong text), reset it and settle it again:
 
 ```powershell
 npm run --prefix cli settlement:reset -- --date=2026-10-19
-npm run settlement
+npm run settlement -- --date=2026-10-19
 ```
 
-The reset clears every outcome and postponed flag for that dump and leaves the tips pending; follow it with a normal sync.
+The reset clears every outcome and carried-forward flag for that dump and leaves the tips pending; follow it with a normal sync.
 
 ## Current Data State
 
