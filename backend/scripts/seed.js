@@ -1,6 +1,13 @@
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const {
+  parseDumpDay,
+  businessDayKey,
+  BUSINESS_UTC_OFFSET_MS,
+  DAY_MS,
+  SCRAPE_DAY_BOUNDARY_UTC_HOUR,
+} = require("../../cli/lib/dump-day");
 const defaultProducts = [
   {
     name: "Free",
@@ -160,6 +167,70 @@ const getTipId = (fileName, index) =>
     .digest("hex")
     .slice(0, 32)}`;
 
+// The business day a dump represents. The file name is authoritative because it
+// is what the operator and the archive use; a tip's own `scrapedAt` can be off
+// by a day when a scrape near midnight was stamped in UTC.
+const getDumpDay = (fileName, tips) => {
+  const named = parseDumpDay(fileName);
+  if (named) return named;
+
+  const scraped = tips.find((tip) => tip && tip.scrapedAt != null)?.scrapedAt;
+  const date = scraped == null ? null : new Date(scraped);
+  if (date && !Number.isNaN(date.getTime())) {
+    return new Date(date.getTime() + BUSINESS_UTC_OFFSET_MS).toISOString().slice(0, 10);
+  }
+
+  // Last resort: the file's modification time, so a record is never left without
+  // the UI filters tips by that column).
+  try {
+    const stat = fs.statSync(path.join(dumpDirectory, fileName));
+    return new Date(stat.mtime.getTime() + BUSINESS_UTC_OFFSET_MS).toISOString().slice(0, 10);
+  } catch {
+    return null;
+  }
+};
+
+// The instant a tip should carry so the API files it under its dump day. The
+// observed `scrapedAt` is kept when it already falls inside that day; otherwise
+// the tip's own time of day is re-anchored to the day it belongs to.
+const NAIROBI_MIDDAY_UTC = 9; // 12:00 in Nairobi == 09:00 UTC
+
+const alignScrapedAt = (fileName, dayKey, tips, scrapedAt) => {
+  if (!dayKey) {
+    const fallback = scrapedAt == null ? null : new Date(scrapedAt);
+    return fallback && !Number.isNaN(fallback.getTime()) ? fallback : null;
+  }
+
+  // The business day decides where a tip is served, so compare against it
+  // rather than the UTC date: a 05:35 Nairobi scrape still carries yesterday's
+  // UTC date, which is exactly how tips ended up filed one day early.
+  const observed = scrapedAt == null ? null : new Date(scrapedAt);
+  if (observed && !Number.isNaN(observed.getTime()) && businessDayKey(observed) === dayKey) {
+    return observed;
+  }
+
+  console.warn(
+    `   ${fileName}: scrapedAt ${observed ? observed.toISOString() : "missing"} falls outside the dump day ` +
+    `(${dayKey}); filing its ${tips.length} tip(s) under ${dayKey} instead.`
+  );
+
+  if (!observed || Number.isNaN(observed.getTime())) {
+    return new Date(`${dayKey}T0${NAIROBI_MIDDAY_UTC}:00:00.000Z`);
+  }
+
+  // Keep the tip's own time of day when it is safe, so ordering stays natural.
+  // Hours below 21 UTC are midnight-23:59 Nairobi; anything else would spill
+  // into the next day and is replaced with midday.
+  const hour = observed.getUTCHours();
+  const candidate = hour < 21
+    ? new Date(`${dayKey}T${String(hour).padStart(2, "0")}:${String(observed.getUTCMinutes()).padStart(2, "0")}:${String(observed.getUTCSeconds()).padStart(2, "0")}.000Z`)
+    : null;
+
+  if (candidate && businessDayKey(candidate) === dayKey) return candidate;
+
+  return new Date(`${dayKey}T0${NAIROBI_MIDDAY_UTC}:00:00.000Z`);
+};
+
 const loadSeedRecords = () => {
   const files = fs
     .readdirSync(dumpDirectory)
@@ -179,12 +250,19 @@ const loadSeedRecords = () => {
     }
 
     // Key on the file+position id so each dump record maps to one stable row.
+        const dayKey = getDumpDay(fileName, tips);
+        const dayScrapedAt = alignScrapedAt(fileName, dayKey, tips, tips[0]?.scrapedAt);
         tips.forEach((tip, index) => {
           if (!tip || typeof tip !== "object" || Array.isArray(tip)) {
             throw new Error(`${fileName}[${index}]: expected a tip object.`);
           }
 
-          records.push({ id: getTipId(fileName, index), data: toTipData(tip, fileName, index) });
+          records.push({
+            id: getTipId(fileName, index),
+            fileName,
+            dayKey,
+            data: { ...toTipData(tip, fileName, index), scrapedAt: dayScrapedAt },
+          });
         });
   }
 
@@ -236,6 +314,16 @@ const main = async () => {
   const { files, records } = loadSeedRecords();
   console.log(`Loaded ${records.length} tips from ${files.length} dump files.`);
 
+  // Report every dump day with its row count so an operator can compare the
+  // JSON against the database before anything is written.
+  const countsByDay = new Map();
+  for (const record of records) {
+    countsByDay.set(record.dayKey || "unknown", (countsByDay.get(record.dayKey || "unknown") || 0) + 1);
+  }
+  for (const [day, count] of [...countsByDay].sort()) {
+    console.log(`   ${day}: ${count} tip(s)`);
+  }
+
   if (process.argv.includes("--dry-run")) {
     console.log("Dry run complete; the database was not changed.");
     return;
@@ -253,12 +341,78 @@ const main = async () => {
   try {
   const productsBySlug = await seedProducts(prisma);
   await bootstrapAdmin(prisma, bcrypt);
+
+  // An id is derived from the dump file and the tip's position in it. A day
+  // scraped again after a carried fixture played can therefore hand the same id
+  // to a different tip, and two records sharing an id cannot be written in one
+  // transaction. Keep the newest dump's record for a colliding id and log the
+  // older one, which is already in the database from an earlier sync.
+  const recordsById = new Map();
+  for (const record of records) {
+    const previous = recordsById.get(record.id);
+    if (previous) {
+      console.warn(
+        `Skipping ${previous.data.homeTeam || previous.data.selection}: its id is reused by a newer dump record.`
+      );
+    }
+    recordsById.set(record.id, record);
+  }
+  const uniqueRecords = Array.from(recordsById.values());
+
+  // The product a tip belongs to is decided here, so a tip is never created
+  // without the publication that makes it visible in the API.
+  const desiredPublication = new Map(uniqueRecords.map(({ id, data }) => {
+    const slug = getProductSlug(data);
+    const product = productsBySlug.get(slug);
+    if (!product) throw new Error(`Missing product for slug "${slug}"; cannot publish ${id}.`);
+    return [id, { productId: product.id, slug }];
+  }));
+
+  const publicationIds = uniqueRecords.map(({ id }) => id);
   const existingTips = await prisma.tip.findMany({
-    where: { id: { in: records.map(({ id }) => id) } },
-    select: { id: true, status: true, outcome: true, result: true, settledAt: true },
+    where: { id: { in: publicationIds } },
+    select: { id: true, status: true, outcome: true, result: true, settledAt: true, publishedAt: true },
   });
   const existingTipsById = new Map(existingTips.map((tip) => [tip.id, tip]));
-  await prisma.$transaction(records.map(({ id, data }) => {
+
+  // Publications are reconciled in the same pass as the tip rows. Writing them
+  // separately is what let a tip exist in the database with no product: the
+  // batch insert silently skipped records and nothing ever filled the gap.
+  const currentPublications = await prisma.tipPublication.findMany({
+    where: { tipId: { in: publicationIds } },
+    select: { id: true, tipId: true, productId: true, status: true },
+  });
+  const publicationsByTip = new Map();
+  for (const publication of currentPublications) {
+    if (!publicationsByTip.has(publication.tipId)) publicationsByTip.set(publication.tipId, []);
+    publicationsByTip.get(publication.tipId).push(publication);
+  }
+
+  // Count the work up front so the log is accurate even though the writes all
+  // go out as one batch below.
+  let createdPublications = 0;
+  let restoredPublications = 0;
+  let retiredPublications = 0;
+  for (const { id } of uniqueRecords) {
+    const desired = desiredPublication.get(id);
+    const current = publicationsByTip.get(id) || [];
+    const forProduct = current.find((publication) => publication.productId === desired.productId);
+
+    if (!forProduct) createdPublications++;
+    else if (forProduct.status !== "PUBLISHED") restoredPublications++;
+
+    for (const publication of current) {
+      if (publication.productId === desired.productId) continue;
+      if (publication.status === "UNPUBLISHED") continue;
+      retiredPublications++;
+    }
+  }
+
+  // One transaction for the whole dump set, so a sync either publishes every
+  // tip it seeded or changes nothing. Each tip is written together with the
+  // publications that make it visible.
+  const operations = [];
+  for (const { id, data } of uniqueRecords) {
     const existingTip = existingTipsById.get(id);
     const update = { ...data };
 
@@ -287,55 +441,101 @@ const main = async () => {
       update.settledAt = null;
     }
 
-    // Publish/re-publish this record on the sync day. Keep scrapedAt as the
-    // historical scrape date; publishedAt is the day the frontend serves it.
-    const publishedAt = new Date();
+    // Anchor publishedAt to the dump's own day instead of the sync wall clock.
+    // Backfilling an old dump used to stamp it with today's date, and every
+    // re-sync moved that old day forward again. `data.scrapedAt` is already
+    // aligned to the dump day by loadSeedRecords.
+    const publishedAt = data.scrapedAt instanceof Date ? data.scrapedAt : new Date();
     update.publishedAt = publishedAt;
 
-    const result = {
-      ...data,
-      status: settledOutcomes.has(data.outcome) ? "SETTLED" : "PUBLISHED",
-      publishedAt,
-    };
-
-    return prisma.tip.upsert({
+    operations.push(prisma.tip.upsert({
       where: { id },
-      create: { id, ...result },
+      create: {
+        ...data,
+        id,
+        status: settledOutcomes.has(data.outcome) ? "SETTLED" : "PUBLISHED",
+        publishedAt,
+      },
       update,
-    });
-  }));
-  const publicationIds = records.map(({ id }) => id);
-  const publications = records.map(({ id, data }) => ({
-    tipId: id,
-    productId: productsBySlug.get(getProductSlug(data)).id,
-    status: "PUBLISHED",
-    publishedAt: new Date(),
-  }));
-  const publicationResult = await prisma.tipPublication.createMany({
-    data: publications,
-    skipDuplicates: true,
-  });
-  await prisma.tipPublication.updateMany({
-    where: { tipId: { in: publicationIds }, status: "PUBLISHED" },
-    data: { publishedAt: new Date() },
-  });
-  console.log(`Created ${publicationResult.count} missing product publications.`);
+    }));
 
-  // Keep the tip row consistent with its publications. Statistics count
-  // published tips via Tip.status and Tip.publishedAt, so leaving these unset
-  // makes the admin dashboard report zero published tips even when every tip
-  // is live. A settled tip keeps its SETTLED status but still needs publishedAt.
-  await prisma.tip.updateMany({
-    where: { id: { in: records.map(({ id }) => id) }, publishedAt: null },
-    data: { publishedAt: new Date() },
+    // Reconcile this tip's publications: add the tier it belongs to now,
+    // restore it if a previous run unpublished it, and retire any tier left
+    // over from an older classification so the tip appears in exactly one.
+    const desired = desiredPublication.get(id);
+    const current = publicationsByTip.get(id) || [];
+    const forProduct = current.find((publication) => publication.productId === desired.productId);
+
+    if (!forProduct) {
+      operations.push(prisma.tipPublication.create({
+        data: { tipId: id, productId: desired.productId, status: "PUBLISHED", publishedAt },
+      }));
+    } else if (forProduct.status !== "PUBLISHED") {
+      operations.push(prisma.tipPublication.update({
+        where: { id: forProduct.id },
+        data: { status: "PUBLISHED", unpublishedAt: null },
+      }));
+    }
+
+    for (const publication of current) {
+      if (publication.productId === desired.productId) continue;
+      if (publication.status === "UNPUBLISHED") continue;
+      operations.push(prisma.tipPublication.update({
+        where: { id: publication.id },
+        data: { status: "UNPUBLISHED", unpublishedAt: new Date() },
+      }));
+    }
+  }
+
+  await prisma.$transaction(operations);
+
+  console.log(
+    `Publications: ${createdPublications} created, ${restoredPublications} restored, ` +
+    `${retiredPublications} retired.`
+  );
+
+
+  // The upsert above already writes publishedAt for every row. The only rows
+  // still missing it are ones an older sync created; backfill them from their
+  // own dump day rather than "now", so a backfill cannot move a day.
+  const recordsMissingPublishedAt = uniqueRecords.filter(({ id }) => {
+    const existing = existingTipsById.get(id);
+    return !existing || existing.publishedAt == null;
   });
 
+  if (recordsMissingPublishedAt.length > 0) {
+    await prisma.$transaction(recordsMissingPublishedAt.map(({ id, data }) => prisma.tip.update({
+      where: { id },
+      data: { publishedAt: data.scrapedAt instanceof Date ? data.scrapedAt : new Date() },
+    })));
+  }
+
+  // Statistics count published tips via Tip.status, so a pending row that now
+  // has a publication must be flipped or the dashboard under-reports.
   await prisma.tip.updateMany({
-    where: { id: { in: records.map(({ id }) => id) }, status: { in: ["PENDING"] } },
+    where: { id: { in: publicationIds }, status: "PENDING" },
     data: { status: "PUBLISHED" },
   });
 
-  console.log(`Seeded ${records.length} tips. Re-running this command is safe.`);
+
+  // Prove the sync actually published everything it seeded. A tip with no
+  // PUBLISHED row is invisible to every API list, which is exactly how a
+  // scraped tip goes missing from the UI.
+  const visible = await prisma.tip.count({
+    where: {
+      id: { in: publicationIds },
+      publications: { some: { status: "PUBLISHED" } },
+    },
+  });
+  const hidden = publicationIds.length - visible;
+  if (hidden > 0) {
+    throw new Error(
+      `${hidden} of ${publicationIds.length} tips have no PUBLISHED product publication ` +
+      "and would be invisible in the UI."
+    );
+  }
+
+  console.log(`Seeded ${uniqueRecords.length} tips from ${new Set(uniqueRecords.map(({ dayKey }) => dayKey)).size} day(s). Re-running this command is safe.`);
   } finally {
     await prisma.$disconnect();
   }
@@ -353,6 +553,9 @@ module.exports = {
   settledOutcomes,
   toTipData,
   getProductSlug,
+  getTipId,
+  getDumpDay,
+  alignScrapedAt,
 };
 
 if (require.main === module) {

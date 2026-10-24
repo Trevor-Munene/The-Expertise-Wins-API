@@ -1,0 +1,1191 @@
+[
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Bet of the Day",
+    "league": "Bet of the Day",
+    "country": null,
+    "homeTeam": "Ajax",
+    "awayTeam": "Atalanta",
+    "kickoff": "20:00",
+    "market": "BTTS",
+    "selection": "BTTS Yes",
+    "odds": 1.55,
+    "stakeUnits": 5,
+    "previewTitle": "Ajax vs Atalanta Predictions & Betting Tips - High Scoring Game Expected in the Conference League",
+    "preview": "Ajax are the favourites here but Atalanta have a superior squad and are capable of scoring goals in Amsterdam. I am avoiding the win markets here and turning to goals.",
+    "verdict": "Ajax are the favourites here but Atalanta have a superior squad and are capable of scoring goals in Amsterdam. I am avoiding the win markets here and turning to goals.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS Yes",
+        "market": "BTTS",
+        "odds": 1.55,
+        "units": 5,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS Yes & Over 2.5",
+        "market": "BTTS & Total Goals",
+        "odds": 1.9,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS Yes & Over 3.5",
+        "market": "BTTS & Total Goals",
+        "odds": 2.7,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/uefa-europa-conference-league/ajax-vs-atalanta-predictions-tips-20261021-0010/",
+    "status": "settled",
+    "result": null,
+    "outcome": "lose",
+    "extraTips": [
+      {
+        "selection": "BTTS Yes & Over 2.5",
+        "market": "BTTS & Total Goals",
+        "odds": 1.9,
+        "stakeUnits": 3,
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "selection": "BTTS Yes & Over 3.5",
+        "market": "BTTS & Total Goals",
+        "odds": 2.7,
+        "stakeUnits": 2,
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Cricket",
+    "competition": "Cricket",
+    "league": "Cricket",
+    "country": null,
+    "homeTeam": "New Zealand",
+    "awayTeam": "India 1st T20",
+    "kickoff": "4h 32m",
+    "market": "Result",
+    "selection": "India Win",
+    "odds": 1.49,
+    "stakeUnits": 5,
+    "previewTitle": "New Zealand vs India 1st T20I Betting Tips - India set to continue T20 domination over Black Caps",
+    "preview": "We are backing India to win the opening match of the series at Hagley Oval. Sanju Samson offers value in the run scoring markets for the visitors while Tim Seifert is backed for the Black Caps.",
+    "verdict": "We are backing India to win the opening match of the series at Hagley Oval. Sanju Samson offers value in the run scoring markets for the visitors while Tim Seifert is backed for the Black Caps.",
+    "tips": [
+      {
+        "bookmaker": "Bc.Game Sport",
+        "selection": "India Win",
+        "market": "Result",
+        "odds": 1.49,
+        "units": 5,
+        "betUrl": "https://www.freetips.com/link/f56557260105173714/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Sanju Samon",
+        "market": "Best India Batsman",
+        "odds": 5,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/f4936465260924081208/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "10bet",
+        "selection": "Tim Seifert",
+        "market": "Best NZ Batsman",
+        "odds": 4,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/a82c3234190213122144/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/cricket/new-zealand-vs-india-1st-t20i-betting-tips-20261021-0004/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Sanju Samon",
+        "market": "Best India Batsman",
+        "odds": 5,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Tim Seifert",
+        "market": "Best NZ Batsman",
+        "odds": 4,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Tennis",
+    "competition": "Ningbo Open",
+    "league": "Ningbo Open",
+    "country": null,
+    "homeTeam": "Alexandra Eala",
+    "awayTeam": "Diana Shnaider",
+    "kickoff": "5h 32m",
+    "market": "Handicap Games",
+    "selection": "Shnaider -2.5",
+    "odds": 1.91,
+    "stakeUnits": 2,
+    "previewTitle": "Alexandra Eala vs Diana Shnaider Betting Tips & Live Stream – Shnaider to Advance at the Ningbo Open",
+    "preview": "Eala has enjoyed an outstanding rise this season, but her tour-level results in Asia have been less impressive. Shnaider, meanwhile, has a strong record in Ningbo and arrives with momentum from Wuhan, giving her the edge to progress.",
+    "verdict": "Eala has enjoyed an outstanding rise this season, but her tour-level results in Asia have been less impressive. Shnaider, meanwhile, has a strong record in Ningbo and arrives with momentum from Wuhan, giving her the edge to progress.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Shnaider -2.5",
+        "market": "Handicap Games",
+        "odds": 1.91,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Diana Shnaider",
+        "market": "Match Winner",
+        "odds": 1.65,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/tennis/alexandra-eala-vs-diana-shnaider-betting-tips-20261022-0001/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Diana Shnaider",
+        "market": "Match Winner",
+        "odds": 1.65,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Esports",
+    "competition": "PARI Universe",
+    "league": "PARI Universe",
+    "country": null,
+    "homeTeam": "Team Yandex",
+    "awayTeam": "GamerLegion",
+    "kickoff": "6h 32m",
+    "market": "Map Handicap",
+    "selection": "Team Yandex -1.5 Maps",
+    "odds": 1.33,
+    "stakeUnits": 3,
+    "previewTitle": "Team Yandex vs GamerLegion Betting Tips – GamerLegion with a Huge Mountain to Climb at PARI Universe",
+    "preview": "Team Yandex have established themselves as the world’s hottest team and will be expected to make a run for a trophy at PARI Universe – their third consecutive. GamerLegion, on the other side, have looked very shaky in their recent tournament endeavours, struggling against stronger opponents.Given GamerLegion’s record when faced with Tier-1 teams, it is easy to see why they are expected to lose on Thursday. They’ve gotten blown out of the server by weaker teams than Yandex, so Thursday’s game is looking increasingly more like an impossible task.",
+    "verdict": "Team Yandex have established themselves as the world’s hottest team and will be expected to make a run for a trophy at PARI Universe – their third consecutive. GamerLegion, on the other side, have looked very shaky in their recent tournament endeavours, struggling against stronger opponents.Given GamerLegion’s record when faced with Tier-1 teams, it is easy to see why they are expected to lose on Thursday. They’ve gotten blown out of the server by weaker teams than Yandex, so Thursday’s game is looking increasingly more like an impossible task.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Team Yandex -1.5 Maps",
+        "market": "Map Handicap",
+        "odds": 1.33,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/esports/team-yandex-vs-gamerlegion-betting-tips-20261020-0032/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Golf",
+    "competition": "Golf",
+    "league": "Golf",
+    "country": null,
+    "homeTeam": "Bermuda Championship",
+    "awayTeam": "Field",
+    "kickoff": "7h 32m",
+    "market": "Each-Way",
+    "selection": "Ben Kohles",
+    "odds": 31,
+    "stakeUnits": 1,
+    "previewTitle": "Butterfield Bermuda Championship Tips & Betting Preview - PGA Tour picks for victory in Bermuda",
+    "preview": "James will fancy his chances of securing victory at the Port Royal Golf Course following his recent performances.Roy has been showing signs that he is ready to produce a big result on the PGA Tour.Power has the experience to win his second Butterfield Bermuda Championship title this weekend. Kohles has been showing signs that he is ready to win another title and could make the frame in Bermuda come Sunday.",
+    "verdict": "James will fancy his chances of securing victory at the Port Royal Golf Course following his recent performances.Roy has been showing signs that he is ready to produce a big result on the PGA Tour.Power has the experience to win his second Butterfield Bermuda Championship title this weekend. Kohles has been showing signs that he is ready to win another title and could make the frame in Bermuda come Sunday.",
+    "tips": [
+      {
+        "bookmaker": "Shuffle Sport (MAXBONUS) FT",
+        "selection": "Ben Kohles",
+        "market": "Each-Way",
+        "odds": 31,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/10c4684d240703114815/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Seamus Power",
+        "market": "Each-Way",
+        "odds": 29,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "1win (NEWBONUS - default)",
+        "selection": "Kevin Roy",
+        "market": "Each-Way",
+        "odds": 23,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/d7dbb427231220193539/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "1xBet",
+        "selection": "Ben James",
+        "market": "Each-Way",
+        "odds": 11,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/d6a163ef190612112956/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/golf/butterfield-bermuda-championship-tips-20261020-0009/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Seamus Power",
+        "market": "Each-Way",
+        "odds": 29,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Kevin Roy",
+        "market": "Each-Way",
+        "odds": 23,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Ben James",
+        "market": "Each-Way",
+        "odds": 11,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Tennis",
+    "competition": "Ningbo Open",
+    "league": "Ningbo Open",
+    "country": null,
+    "homeTeam": "Elena Rybakina",
+    "awayTeam": "Polina Kudermetova",
+    "kickoff": "8h 32m",
+    "market": "Total Games",
+    "selection": "Under 21.5",
+    "odds": 1.48,
+    "stakeUnits": 2,
+    "previewTitle": "Elena Rybakina vs Polina Kudermetova Betting Tips & Live Stream – Straight-Sets Success for Rybakina at the Ningbo Open",
+    "preview": "Kudermetova arrives with three wins this week, but her inconsistent form leaves her facing a tough challenge against Rybakina. The defending champion is well-positioned to secure a comfortable victory in Ningbo.",
+    "verdict": "Kudermetova arrives with three wins this week, but her inconsistent form leaves her facing a tough challenge against Rybakina. The defending champion is well-positioned to secure a comfortable victory in Ningbo.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 21.5",
+        "market": "Total Games",
+        "odds": 1.48,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Rybakina 2-0",
+        "market": "Correct Score",
+        "odds": 1.46,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/tennis/elena-rybakina-vs-polina-kudermetova-betting-tips-20261022-0002/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Rybakina 2-0",
+        "market": "Correct Score",
+        "odds": 1.46,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Esports",
+    "competition": "Esports",
+    "league": "Esports",
+    "country": null,
+    "homeTeam": "Team Spirit",
+    "awayTeam": "LEGION",
+    "kickoff": "10h 32m",
+    "market": "Map Handicap",
+    "selection": "LEGION +1.5 Maps",
+    "odds": 3.1,
+    "stakeUnits": 2,
+    "previewTitle": "Team Spirit vs LEGION Betting Tips – Spirit Take on LEGION on Day 1 of PARI Universe",
+    "preview": "Team Spirit are expected to dominate. Considering their performances of late, that makes a lot of sense, as they are easily one of the top three teams in the world. That said, LEGION are no pushovers and have the individual talent to match anyone.While it will take a massive blunder for Spirit to lose, LEGION can take a map, especially if Darklord has a good game and takes over the match, like he had in LEGION’s past victories.",
+    "verdict": "Team Spirit are expected to dominate. Considering their performances of late, that makes a lot of sense, as they are easily one of the top three teams in the world. That said, LEGION are no pushovers and have the individual talent to match anyone.While it will take a massive blunder for Spirit to lose, LEGION can take a map, especially if Darklord has a good game and takes over the match, like he had in LEGION’s past victories.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "LEGION +1.5 Maps",
+        "market": "Map Handicap",
+        "odds": 3.1,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/esports/team-spirit-vs-legion-betting-tips-20261020-0033/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Conference League",
+    "league": "Conference League",
+    "country": null,
+    "homeTeam": "Kairat Almaty",
+    "awayTeam": "Panathinaikos",
+    "kickoff": "12h 2m",
+    "market": "Full-Time Result",
+    "selection": "Panathinaikos Win",
+    "odds": 1.7,
+    "stakeUnits": 3,
+    "previewTitle": "Kairat Almaty vs Panathinaikos Tips & Predictions – Dessers to Fire PAO to Victory in the Conference League",
+    "preview": "Panathinaikos earned nine wins in their last ten games across competitions and I will back them to beat Kairat Almaty who struggle on both fronts. Another bet worth considering is Cyriel Dessers to score anytime. He netted two goals in his last two games and is expected to lead the attack on Thursday.",
+    "verdict": "Panathinaikos earned nine wins in their last ten games across competitions and I will back them to beat Kairat Almaty who struggle on both fronts. Another bet worth considering is Cyriel Dessers to score anytime. He netted two goals in his last two games and is expected to lead the attack on Thursday.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Panathinaikos Win",
+        "market": "Full-Time Result",
+        "odds": 1.7,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Cyriel Dessers",
+        "market": "Anytime Goalscorer",
+        "odds": 2.2,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Cyriel Dessers",
+        "market": "First Goalscorer",
+        "odds": 5.5,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/uefa-europa-conference-league/kairat-almaty-vs-panathinaikos-tips-20261020-0022/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Cyriel Dessers",
+        "market": "Anytime Goalscorer",
+        "odds": 2.2,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Cyriel Dessers",
+        "market": "First Goalscorer",
+        "odds": 5.5,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Esports",
+    "competition": "PARI Universe",
+    "league": "PARI Universe",
+    "country": null,
+    "homeTeam": "Team Liquid",
+    "awayTeam": "1w Team",
+    "kickoff": "12h 32m",
+    "market": "Moneyline",
+    "selection": "Team Liquid To Win",
+    "odds": 1.78,
+    "stakeUnits": 3,
+    "previewTitle": "Team Liquid vs 1w Team Betting Tips – Team Liquid to Handle 1w Team at PARI Universe",
+    "preview": "This might appear like a game between two equally matched teams. However, looking at 1w Team’s past results, it is hard to imagine them doing well against a tier-1 team.1w Team have been notoriously ineffective in challenging stronger teams of late, and even though Liquid have a big question mark, fielding a new mid laner, they still appear as a more reliable pick.",
+    "verdict": "This might appear like a game between two equally matched teams. However, looking at 1w Team’s past results, it is hard to imagine them doing well against a tier-1 team.1w Team have been notoriously ineffective in challenging stronger teams of late, and even though Liquid have a big question mark, fielding a new mid laner, they still appear as a more reliable pick.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Team Liquid To Win",
+        "market": "Moneyline",
+        "odds": 1.78,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/esports/team-liquid-vs-1w-team-betting-tips-20261020-0035/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Europa League",
+    "league": "Europa League",
+    "country": null,
+    "homeTeam": "Juventus",
+    "awayTeam": "Rennes",
+    "kickoff": "14h 17m",
+    "market": "Full-Time Result",
+    "selection": "Juventus Win",
+    "odds": 1.66,
+    "stakeUnits": 2,
+    "previewTitle": "Juventus vs Rennes Tips & Predictions – Old Lady to Keep Winning in the Europa League",
+    "preview": "Juventus are under huge pressure after failing to win their last two league games, so I expect them to be motivated here and collect three points. Rennes have enough scoring potential to land a consolation goal though.",
+    "verdict": "Juventus are under huge pressure after failing to win their last two league games, so I expect them to be motivated here and collect three points. Rennes have enough scoring potential to land a consolation goal though.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Juventus Win",
+        "market": "Full-Time Result",
+        "odds": 1.66,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Juventus Win & BTTS",
+        "market": "Result/Both to Score",
+        "odds": 3.3,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/uefa-europa-league/juventus-vs-rennes-tips-20261020-0023/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Juventus Win & BTTS",
+        "market": "Result/Both to Score",
+        "odds": 3.3,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Europa League",
+    "league": "Europa League",
+    "country": null,
+    "homeTeam": "Dinamo Zagreb",
+    "awayTeam": "NEC",
+    "kickoff": "14h 17m",
+    "market": "Both Teams to Score",
+    "selection": "BTTS Yes",
+    "odds": 1.66,
+    "stakeUnits": 3,
+    "previewTitle": "Dinamo Zagreb vs NEC Nijmegen Tips & Predictions – Dion Beljo to Score in the Europa League",
+    "preview": "NEC Nijmegen are terrible defensively but usually create a lot of chances and post high xG across competitions. Dinamo Zagreb netted 23 goals in their nine domestic clashes, so BTTS should be a banker bet on Thursday. Another option worth considering is Dion Beljo to score anytime. Dinamo’s striker has been on fire with eight goals in his last six games for the club, while also scoring for Croatia against Spain in the UNL.",
+    "verdict": "NEC Nijmegen are terrible defensively but usually create a lot of chances and post high xG across competitions. Dinamo Zagreb netted 23 goals in their nine domestic clashes, so BTTS should be a banker bet on Thursday. Another option worth considering is Dion Beljo to score anytime. Dinamo’s striker has been on fire with eight goals in his last six games for the club, while also scoring for Croatia against Spain in the UNL.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS Yes",
+        "market": "Both Teams to Score",
+        "odds": 1.66,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS & Over 2.5",
+        "market": "Both to Score/Total Goals",
+        "odds": 1.95,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Over 3.5 Goals",
+        "market": "Total Goals",
+        "odds": 2.4,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Dion Beljo",
+        "market": "Anytime Goalscorer",
+        "odds": 2.1,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/uefa-europa-league/dinamo-zagreb-vs-nec-nijmegen-tips-20261020-0025/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "BTTS & Over 2.5",
+        "market": "Both to Score/Total Goals",
+        "odds": 1.95,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Over 3.5 Goals",
+        "market": "Total Goals",
+        "odds": 2.4,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Dion Beljo",
+        "market": "Anytime Goalscorer",
+        "odds": 2.1,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Europa League",
+    "league": "Europa League",
+    "country": null,
+    "homeTeam": "SK Sturm Graz",
+    "awayTeam": "Marseille",
+    "kickoff": "14h 17m",
+    "market": "Double Chance",
+    "selection": "Sturm Graz",
+    "odds": 1.85,
+    "stakeUnits": 2,
+    "previewTitle": "Sturm Graz vs Marseille Tips & Predictions – Hosts Underestimated in the Europa League",
+    "preview": "Both of Marseille’s Europa League performances have been poor, so I don’t see them as favorites here. Sturm Graz held Rennes to a draw in the opening round, and I like their chances of picking up at least a point on Thursday as well.",
+    "verdict": "Both of Marseille’s Europa League performances have been poor, so I don’t see them as favorites here. Sturm Graz held Rennes to a draw in the opening round, and I like their chances of picking up at least a point on Thursday as well.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Sturm Graz",
+        "market": "Double Chance",
+        "odds": 1.85,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/uefa-europa-league/sturm-graz-vs-marseille-tips-20261020-0027/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Uefa Europa League",
+    "league": "Uefa Europa League",
+    "country": null,
+    "homeTeam": "Lech Poznan",
+    "awayTeam": "Sunderland",
+    "kickoff": "14h 17m",
+    "market": "BTTS",
+    "selection": "BTTS Yes",
+    "odds": 1.8,
+    "stakeUnits": 3,
+    "previewTitle": "Lech Poznan vs Sunderland Tips & Predictions - Europa League Goals to Flow",
+    "preview": "Lech Poznan and Sunderland are in similar leaky form and neither side looks in good defensive shape. More Europa League goals are anticipated in Poland,",
+    "verdict": "Lech Poznan and Sunderland are in similar leaky form and neither side looks in good defensive shape. More Europa League goals are anticipated in Poland,",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS Yes",
+        "market": "BTTS",
+        "odds": 1.8,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Roobet ",
+        "selection": "Over 2.5 Goals",
+        "market": "Total Goals",
+        "odds": 1.8,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/57a5a0c4260605151656/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Roobet ",
+        "selection": "Over 3.5 Goals",
+        "market": "Total Goals",
+        "odds": 3,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/57a5a0c4260605151656/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/uefa-europa-league/lech-poznan-vs-sunderland-tips-predictions-20261020-0017/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Over 2.5 Goals",
+        "market": "Total Goals",
+        "odds": 1.8,
+        "stakeUnits": 3,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Over 3.5 Goals",
+        "market": "Total Goals",
+        "odds": 3,
+        "stakeUnits": 1,
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Conference League",
+    "league": "Conference League",
+    "country": null,
+    "homeTeam": "Crvena Zvezda",
+    "awayTeam": "FC Copenhagen",
+    "kickoff": "14h 17m",
+    "market": "Both Teams to Score",
+    "selection": "BTTS Yes",
+    "odds": 1.66,
+    "stakeUnits": 3,
+    "previewTitle": "Red Star Belgrade vs FC Copenhagen Tips & Predictions – Both Sides to Score in the Conference League",
+    "preview": "Red Star Belgrade have good scoring potential with veterans Marko Arnautovic and Aleksandar Katai upfront, but their back line is struggling in European competitions. I am backing both sides to find the net on Thursday.",
+    "verdict": "Red Star Belgrade have good scoring potential with veterans Marko Arnautovic and Aleksandar Katai upfront, but their back line is struggling in European competitions. I am backing both sides to find the net on Thursday.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS Yes",
+        "market": "Both Teams to Score",
+        "odds": 1.66,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS & Over 2.5",
+        "market": "Both to Score/Total Goals",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/uefa-europa-conference-league/red-star-belgrade-vs-fc-copenhagen-tips-20261020-0020/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "BTTS & Over 2.5",
+        "market": "Both to Score/Total Goals",
+        "odds": 1.9,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Uefa Europa Conference League",
+    "league": "Uefa Europa Conference League",
+    "country": null,
+    "homeTeam": "Trabzonspor",
+    "awayTeam": "Hearts",
+    "kickoff": "14h 17m",
+    "market": "Result/Total Goals",
+    "selection": "Trabzonspor/Over 2.5",
+    "odds": 1.66,
+    "stakeUnits": 4,
+    "previewTitle": "Trabzonspor vs Hearts Predictions & Tips - Turks to Claim High-Scoring Conference League Win",
+    "preview": "Trabzonspor's recent wins against Galatasaray and Besiktas underline the scale of the task facing Hearts. The hosts have scored at least three goals in three of their last four games and another high-scoring home win is expected.Trabzonspor to win & over 2.5 goals is my best bet, while I also expect Hearts to bring up a BTTS pick.",
+    "verdict": "Trabzonspor's recent wins against Galatasaray and Besiktas underline the scale of the task facing Hearts. The hosts have scored at least three goals in three of their last four games and another high-scoring home win is expected.Trabzonspor to win & over 2.5 goals is my best bet, while I also expect Hearts to bring up a BTTS pick.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Trabzonspor/Over 2.5",
+        "market": "Result/Total Goals",
+        "odds": 1.66,
+        "units": 4,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "BTTS & Over 2.5 Goals",
+        "market": "Both Teams to Score/Total Goals",
+        "odds": 2,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/uefa-europa-conference-league/trabzonspor-vs-hearts-predictions-20261021-0027/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "BTTS & Over 2.5 Goals",
+        "market": "Both Teams to Score/Total Goals",
+        "odds": 2,
+        "stakeUnits": 1,
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Football",
+    "competition": "Conference League",
+    "league": "Conference League",
+    "country": null,
+    "homeTeam": "FK Jablonec",
+    "awayTeam": "Brighton",
+    "kickoff": "14h 17m",
+    "market": "Full Time Result & Total Goals",
+    "selection": "Brighton & Over 2.5",
+    "odds": 1.75,
+    "stakeUnits": 2,
+    "previewTitle": "Jablonec vs Brighton Betting Tips - Seagulls to Maintain Winning Form in the Conference League",
+    "preview": "Jablonec are unconvincing this season and Brighton know how to control matches and score goals. Another high-scoring Seagulls’ win is tipped in the Conference League.",
+    "verdict": "Jablonec are unconvincing this season and Brighton know how to control matches and score goals. Another high-scoring Seagulls’ win is tipped in the Conference League.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Brighton & Over 2.5",
+        "market": "Full Time Result & Total Goals",
+        "odds": 1.75,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "lose",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Roobet ",
+        "selection": "Over 3.5 Goals",
+        "market": "Total Goals",
+        "odds": 2.38,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/57a5a0c4260605151656/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/football/uefa-europa-conference-league/jablonec-vs-brighton-betting-tips-20261021-0007/",
+    "status": "settled",
+    "result": null,
+    "outcome": "lose",
+    "extraTips": [
+      {
+        "selection": "Over 3.5 Goals",
+        "market": "Total Goals",
+        "odds": 2.38,
+        "stakeUnits": 1,
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Ice Hockey",
+    "competition": "Ice Hockey",
+    "league": "Ice Hockey",
+    "country": null,
+    "homeTeam": "Rogle BK",
+    "awayTeam": "Frolunda HC",
+    "kickoff": "14h 32m",
+    "market": "First Period Total",
+    "selection": "Under 1.5",
+    "odds": 1.68,
+    "stakeUnits": 3,
+    "previewTitle": "Rögle vs Frölunda Tips and Predictions - Tight Contest Tipped to Finish Level",
+    "preview": "Under 4.5 goals is my main pick, alongside under 1.5 first-period goals and the draw after regulation. Frölunda have the momentum, Rögle have the home record, and I’m calling this 1–1 after 60 minutes.",
+    "verdict": "Under 4.5 goals is my main pick, alongside under 1.5 first-period goals and the draw after regulation. Frölunda have the momentum, Rögle have the home record, and I’m calling this 1–1 after 60 minutes.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 1.5",
+        "market": "First Period Total",
+        "odds": 1.68,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 4.5",
+        "market": "Game Total",
+        "odds": 2.05,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Draw - Regulation",
+        "market": "Money Line",
+        "odds": 4,
+        "units": 1,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/ice-hockey/rogle-vs-frolunda-tips-and-predictions-20261021-0042/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [
+      {
+        "selection": "Under 4.5",
+        "market": "Game Total",
+        "odds": 2.05,
+        "stakeUnits": 2,
+        "outcome": "win",
+        "status": "settled"
+      },
+      {
+        "selection": "Draw - Regulation",
+        "market": "Money Line",
+        "odds": 4,
+        "stakeUnits": 1,
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Basketball",
+    "competition": "EuroLeague",
+    "league": "EuroLeague",
+    "country": null,
+    "homeTeam": "Anadolu Efes",
+    "awayTeam": "Besiktas",
+    "kickoff": "15h 2m",
+    "market": "Total Points",
+    "selection": "Under 175.5",
+    "odds": 1.85,
+    "stakeUnits": 2,
+    "previewTitle": "Anadolu Efes vs Besiktas Live Stream & Tips – Turkish Derby in the EuroLeague",
+    "preview": "Anadolu Efes have posted the worst offensive numbers in the EuroLeague so far this season and have lost star player Mike James for at least six months. Pablo Laso also prefers to slow the game down when his side are tagged as favorites, so Under 175.5 points is my pick.",
+    "verdict": "Anadolu Efes have posted the worst offensive numbers in the EuroLeague so far this season and have lost star player Mike James for at least six months. Pablo Laso also prefers to slow the game down when his side are tagged as favorites, so Under 175.5 points is my pick.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Under 175.5",
+        "market": "Total Points",
+        "odds": 1.85,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/basketball/anadolu-efes-vs-besiktas-live-stream-20261021-0022/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Basketball",
+    "competition": "EuroLeague",
+    "league": "EuroLeague",
+    "country": null,
+    "homeTeam": "Bayern Munich",
+    "awayTeam": "BC Dubai",
+    "kickoff": "15h 32m",
+    "market": "Asian Handicap",
+    "selection": "Bayern +5.5",
+    "odds": 1.9,
+    "stakeUnits": 2,
+    "previewTitle": "Bayern vs Dubai Live Stream & Tips – Handicap in Play in the EuroLeague",
+    "preview": "Bayern have shown character in their recent clashes against Anadolu Efes and Hapoel Tel Aviv. I am not sure Dubai's roster is ideal for Xavi Pascual's slow-paced basketball approach, so the Bavarians are tipped to win with a +5.5 handicap here.",
+    "verdict": "Bayern have shown character in their recent clashes against Anadolu Efes and Hapoel Tel Aviv. I am not sure Dubai's roster is ideal for Xavi Pascual's slow-paced basketball approach, so the Bavarians are tipped to win with a +5.5 handicap here.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Bayern +5.5",
+        "market": "Asian Handicap",
+        "odds": 1.9,
+        "units": 2,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "lose",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/basketball/bayern-vs-dubai-live-stream-20261021-0043/",
+    "status": "settled",
+    "result": null,
+    "outcome": "lose",
+    "extraTips": [],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  },
+  {
+    "source": "freetips",
+    "externalId": null,
+    "sport": "Esports",
+    "competition": "Pari Universe",
+    "league": "Pari Universe",
+    "country": null,
+    "homeTeam": "PARIVISION",
+    "awayTeam": "Astra Invicta",
+    "kickoff": "15h 32m",
+    "market": "Map Handicap",
+    "selection": "Astra +1.5 Maps",
+    "odds": 2.15,
+    "stakeUnits": 3,
+    "previewTitle": "PARIVISION vs Astra Invicta Betting Tips – Astra Can Trouble PARIVISION at Pari Universe",
+    "preview": "PARIVISION are rightly viewed as favourites for this match, having shown incredible form over the last few months. This is easily one of the world’s top-three teams who will be expected to perform as such on Thursday.However, as good as PARIVISION are, Astra Invicta are not complete pushovers, fielding a very strong and established roster of world-class players. So while PARIVISION should be favoured, Astra Invicta should not be considered as such massive underdogs.",
+    "verdict": "PARIVISION are rightly viewed as favourites for this match, having shown incredible form over the last few months. This is easily one of the world’s top-three teams who will be expected to perform as such on Thursday.However, as good as PARIVISION are, Astra Invicta are not complete pushovers, fielding a very strong and established roster of world-class players. So while PARIVISION should be favoured, Astra Invicta should not be considered as such massive underdogs.",
+    "tips": [
+      {
+        "bookmaker": "Stake.com",
+        "selection": "Astra +1.5 Maps",
+        "market": "Map Handicap",
+        "odds": 2.15,
+        "units": 3,
+        "betUrl": "https://www.freetips.com/link/422d030210308094711/",
+        "outcome": "win",
+        "status": "settled"
+      }
+    ],
+    "analytics": null,
+    "confidenceIndex": null,
+    "predictedScore": null,
+    "detailsUrl": "https://www.freetips.com/esports/parivision-vs-astra-invicta-betting-tips-20261020-0030/",
+    "status": "settled",
+    "result": null,
+    "outcome": "win",
+    "extraTips": [],
+    "scrapedAt": "2026-10-22T02:28:51.487Z"
+  }
+]

@@ -5,6 +5,7 @@ const { execSync } = require("child_process");
 const FreeTipsMaxBetScraper = require("../scrapers/freetips.scraper");
 const FreeTipsNormalizer = require("../normalizers/freetips.normalizer");
 const { saveTestResults } = require("./test-results");
+const { businessDayKey, scrapeStampForDay } = require("../lib/dump-day");
 // minimist is tiny and commonly available; include a fallback parser if missing
 try { require.resolve('minimist'); } catch { /* will still work, but recommend installing minimist for --date support */ }
 
@@ -23,7 +24,10 @@ async function run() {
             else if (a === "-d" && argv[i+1]) { dateArg = argv[i+1]; i++; }
         }
         const now = new Date();
-        const todayIso = (dateArg && /^\d{4}-\d{2}-\d{2}$/.test(dateArg)) ? dateArg : now.toISOString().slice(0, 10);
+        // The dump day is a Nairobi calendar day. `toISOString()` is UTC, so a
+        // scrape at 05:35 Nairobi would resolve to the previous day and file
+        // every tip one day early.
+        const todayIso = (dateArg && /^\d{4}-\d{2}-\d{2}$/.test(dateArg)) ? dateArg : businessDayKey(now);
 
         // Ensure the scraper writes/reads local HTML snapshots under the
         // orchestrator free-tips directory instead of the repo `tests/`.
@@ -45,9 +49,17 @@ async function run() {
         const normalizer = new FreeTipsNormalizer();
         const normalized = normalizer.normalize(Array.isArray(raw) ? raw : []);
 
+        // Stamp every tip with an instant that falls inside the dump day. The
+        // normalizer stamps `new Date()` (UTC), which lands on the previous day
+        // for the early-morning scrapes this pipeline runs.
+        const stamp = scrapeStampForDay(todayIso, now);
+        for (const tip of Array.isArray(normalized) ? normalized : []) {
+            if (tip && typeof tip === "object") tip.scrapedAt = stamp;
+        }
+
         console.log(`Normalized ${Array.isArray(normalized) ? normalized.length : 0} tips.`);
 
-        saveTestResults("freetips", normalized, { date: todayIso });
+        saveTestResults("freetips", normalized, { date: todayIso, scrapedAt: stamp });
         console.log(`Saved freetips test results to orchestrator/test-results/freetips.json`);
 
         // Run the test suite so the orchestrator validates the saved snapshot.

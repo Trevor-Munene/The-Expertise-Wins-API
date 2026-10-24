@@ -56,9 +56,15 @@ function clearDownloadedHtmlFiles() {
  */
 function saveTestResults(source, tips, opts = {}) {
     const dateIso = opts.date; // e.g. YYYY-MM-DD
+    // A caller that knows the day's true instant (the orchestrator) passes it so
+    // a tip cannot be filed under yesterday because the normalizer stamped UTC.
+    const scrapedAt = opts.scrapedAt;
+    const incoming = (Array.isArray(tips) ? tips : []).map((tip) =>
+        scrapedAt && tip && typeof tip === "object" ? { ...tip, scrapedAt } : tip
+    );
     fs.mkdirSync(resultsRoot, { recursive: true });
     const targetFile = resultPath(source);
-    
+
     let existingTips = [];
     if (fs.existsSync(targetFile)) {
         try {
@@ -82,11 +88,20 @@ function saveTestResults(source, tips, opts = {}) {
     // Merge tips based on unique identifiers to update (not overwrite)
     const map = new Map();
     const getKey = (t) => `${t.homeTeam}|${t.awayTeam}|${t.selection}|${t.market}`;
-    
+
     existingTips.forEach(t => map.set(getKey(t), t));
-    tips.forEach(t => map.set(getKey(t), t));
-    
+    incoming.forEach(t => map.set(getKey(t), t));
+
     const mergedTips = Array.from(map.values());
+
+    // A merge must never drop a tip. If it does, the identity key above is too
+    // loose for this input and every later count is suspect, so fail loudly.
+    if (mergedTips.length < incoming.length) {
+        throw new Error(
+            `saveTestResults(${source}): merged ${mergedTips.length} tips from ${incoming.length} incoming ` +
+            `records and ${existingTips.length} existing records. A merge must not drop tips.`
+        );
+    }
 
     // Save current day's tips directly to test-results/freetips.json
     fs.writeFileSync(targetFile, JSON.stringify(mergedTips, null, 2), "utf8");
@@ -117,6 +132,9 @@ function saveTestResults(source, tips, opts = {}) {
     if (shouldWriteDump) {
         fs.writeFileSync(exportFile, JSON.stringify(mergedTips, null, 2), "utf8");
     }
+
+    // Report what was written so a caller can verify the count after the merge.
+    return { targetFile, exportFile, written: shouldWriteDump, count: mergedTips.length, dateIso: dateIso || null };
 }
 
 function loadTestResults(source, opts = {}) {
