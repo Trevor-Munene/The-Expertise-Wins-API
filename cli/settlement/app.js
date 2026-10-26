@@ -6,6 +6,7 @@ const {
     getFormattedDate,
 } = require("./settlement");
 const { TipsConsumptionClient } = require("../services/tips.client");
+const { businessDayKey } = require("../lib/dump-day");
 
 // The settlement layer marks paid (VIP) winning tips with a fire emoji after the
 // ticks so they read differently from the free picks. Losses (❎) never get
@@ -37,10 +38,10 @@ function parseArgs(argv) {
     return { dateArg, txtArg };
 }
 
-// Without --date, settle yesterday's dump; an explicit date still targets
-// exactly the requested previous-day-results file.
+// Without --date, settle yesterday's business day; an explicit date still
+// targets exactly the requested previous-day-results file.
 function resolveSettlementDate(dateArg) {
-    return dateArg || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    return dateArg || businessDayKey(new Date(Date.now() - 24 * 60 * 60 * 1000));
 }
 
 // Put a day's dump back to pending so it can be settled again. Used when a
