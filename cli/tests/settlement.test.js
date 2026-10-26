@@ -475,18 +475,51 @@ const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt
         assert.ok(!freeSection.includes("🔥"), "Free tip cards must never carry the fire emoji");
 
         // -------------------------------------------------------------------
-        // 6. Verify that saveTestResults does NOT mutate the dump once created,
-        //    ensuring settlement is the only command that mutates the json
-        //    awaiting the sync command.
+        // 6. Verify that a re-scrape of the same day updates the dump without
+        //    erasing it. The dump is the only complete record of a day, so a
+        //    later scrape that returns fewer tips (the site paginates, or tips
+        //    roll off the list) must merge into it, and the settled outcomes it
+        //    already carries must survive the write.
         // -------------------------------------------------------------------
         const { saveTestResults } = require("../orchestrator/test-results");
         const freetipsWorkingPath = path.resolve(__dirname, "..", "orchestrator", "test-results", "freetips.json");
         const workingBefore = fs.existsSync(freetipsWorkingPath) ? fs.readFileSync(freetipsWorkingPath, "utf8") : null;
         try {
-            const dumpBefore = fs.readFileSync(testJsonPath, "utf8");
-            saveTestResults("freetips", [{ homeTeam: "Different", awayTeam: "Team", selection: "X", market: "M", scrapedAt: `${TEST_DATE}T12:00:00Z` }], { date: TEST_DATE });
-            const dumpAfter = fs.readFileSync(testJsonPath, "utf8");
-            assert.strictEqual(dumpAfter, dumpBefore, "saveTestResults must not mutate an existing dump awaiting sync");
+            const dumpBefore = JSON.parse(fs.readFileSync(testJsonPath, "utf8"));
+            const settledBefore = dumpBefore.filter((tip) => tip.status === "settled");
+            assert.ok(settledBefore.length > 0, "The fixture dump must carry settled tips to test the merge");
+
+            const result = saveTestResults(
+                "freetips",
+                [{ homeTeam: "Different", awayTeam: "Team", selection: "X", market: "M", scrapedAt: `${TEST_DATE}T12:00:00Z` }],
+                { date: TEST_DATE }
+            );
+            const dumpAfter = JSON.parse(fs.readFileSync(testJsonPath, "utf8"));
+            const keyOf = (tip) => `${tip.homeTeam}|${tip.awayTeam}|${tip.selection}|${tip.market}`;
+
+            // A re-scrape adds the new tip and keeps every tip already dumped.
+            assert.strictEqual(dumpAfter.length, dumpBefore.length + 1, "A re-scrape must merge into the dump, not replace it");
+            assert.ok(dumpAfter.some((tip) => keyOf(tip) === "Different|Team|X|M"), "The newly scraped tip must be in the dump");
+            assert.strictEqual(result.dumpCount, dumpAfter.length, "The reported dump count must match the file");
+            dumpBefore.forEach((tip) => {
+                assert.ok(dumpAfter.some((other) => keyOf(other) === keyOf(tip)), `A re-scrape dropped ${keyOf(tip)} from the dump`);
+            });
+
+            // Settlement history is not the scraper's to erase: a settled tip that
+            // the scrape sees again keeps its outcome and its carried-forward flag.
+            const settledKey = keyOf(settledBefore[0]);
+            const seenAgain = settledBefore[0];
+            saveTestResults(
+                "freetips",
+                [{ homeTeam: seenAgain.homeTeam, awayTeam: seenAgain.awayTeam, selection: seenAgain.selection, market: seenAgain.market, scrapedAt: `${TEST_DATE}T13:00:00Z` }],
+                { date: TEST_DATE }
+            );
+            const resettled = JSON.parse(fs.readFileSync(testJsonPath, "utf8")).find((tip) => keyOf(tip) === settledKey);
+            assert.strictEqual(resettled.status, "settled", "A re-scrape must not clear a settled tip");
+            assert.strictEqual(resettled.outcome, seenAgain.outcome, "A re-scrape must not clear a settled outcome");
+            if (seenAgain.postponed) {
+                assert.strictEqual(resettled.postponed, true, "A re-scrape must not clear a carried-forward flag");
+            }
 
             // An EMPTY placeholder dump protects nothing, so the orchestrator must
             // fill it with the day's tips instead of skipping it — otherwise a day
@@ -511,7 +544,6 @@ const tempTxtPath = path.join(os.tmpdir(), `settlement-results-${Date.now()}.txt
                 fs.writeFileSync(freetipsWorkingPath, workingBefore, "utf8");
             }
         }
-
         // resetSettlement puts the whole day back to pending so it can be settled
         // again from scratch (for example when the pasted text was wrong).
         const reset = resetSettlement(TEST_DATE);

@@ -62,6 +62,26 @@ npm run --prefix cli test:settlement
 - `settlement/previous-day-results/` contains dated JSON dumps that settlement reads and updates.
 - `settlement/settlement-template.txt` is the manual result-input template.
 
+A day can be scraped more than once. Every scrape **merges into that day's dump**:
+
+- A game the site has pushed off its list (settled, or rolled off the card) stays in the dump with its result.
+- A game seen again is **updated in place**, not duplicated: fresh odds and detail replace the stored copy.
+- A scrape never settles, unsettles or reopens a game, and never erases detail the site stopped printing (preview, verdict, nested tips). Settlement is the only thing that decides outcomes.
+
+A tip is keyed by its day plus its fixture, market and selection, so the database row follows the tip when the site reorders its card instead of being re-created.
+
+`sync` treats the dumps as the source of truth for the days they cover:
+
+1. **Refuses a dump that contradicts itself.** The same fixture, market and selection listed twice in one dump would collapse onto one row, so the sync stops and names it.
+2. **Reconciles every row on a dumped day** before writing. A live row with no matching dump record that is provably an older copy of a dumped tip (a row scraped under the previous position-based id) is removed, together with its publications. Settled rows, rows an admin authored, and rows describing a different bet are kept.
+3. **Re-dates a dumped row** whose `scrapedAt` falls outside its dump day, because that is what decides where the API shows it.
+4. **Names a live row with no `PUBLISHED` publication**, which no API list can show.
+5. **Applies the dumps**, keeping a settlement and keeping any detail the site stopped printing.
+
+A day holds well under 100 tips, so the check reads a few hundred rows. `sync:dry` runs the same check and reports it without writing.
+
+`CLI_DUMP_DIR` points the dumps and the working snapshot at another directory; the tests use it so a run never rewrites the real dumps.
+
 The CLI scrape and settlement commands operate independently of the backend database. Sync local dumps into Docker PostgreSQL with `docker compose run --rm app npm run sync`.
 
 ## Syncing with the Database

@@ -1,8 +1,19 @@
 const fs = require("fs");
 const path = require("path");
-const { parseDumpDay } = require("../lib/dump-day");
+const { parseDumpDay, businessDayKey, DAY_MS } = require("../lib/dump-day");
 
 function getFormattedDate(dateIso) {
+    // An ISO day key names a calendar day, not an instant. Build the parts
+    // explicitly so the dump's name can never slip to the previous day in a
+    // timezone west of UTC.
+    const dayKey = typeof dateIso === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateIso) ? dateIso : null;
+    if (dayKey) {
+        const [year, month, day] = dayKey.split("-").map(Number);
+        const suffix = ["th", "st", "nd", "rd"][day % 10 > 3 ? 0 : (day % 100 - day % 10 !== 10) * day % 10];
+        const monthName = new Date(Date.UTC(year, month - 1, day)).toLocaleString("en-GB", { month: "short", timeZone: "UTC" });
+        return `${day}${suffix} ${monthName} ${year}`;
+    }
+
     const d = dateIso ? new Date(dateIso) : new Date();
     const day = d.getDate();
     const suffix = ["th", "st", "nd", "rd"][day % 10 > 3 ? 0 : (day % 100 - day % 10 !== 10) * day % 10];
@@ -303,7 +314,10 @@ function parseDumpDate(fileName) {
 }
 
 function resolveJsonPath(dateIso) {
-    const settlementDate = dateIso || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    // Default to the previous business day, not the previous UTC day: a run at
+    // 00:30 Nairobi is still the same UTC date, so subtracting 24h would settle
+    // the dump before the one that was just scraped and synced.
+    const settlementDate = dateIso || businessDayKey(new Date(Date.now() - DAY_MS));
     const formattedDate = getFormattedDate(settlementDate);
     const dated = path.join(dumpDirectory, `freetips-${formattedDate}.json`);
 

@@ -157,15 +157,42 @@ const getProductSlug = (tip) => {
   return "vip";
 };
 
-// Derive a stable id from the dump file and the tip's position in it. One dump
-// file represents one day, so a re-seed of the same file always produces the
-// same ids and simply updates the existing rows.
-const getTipId = (fileName, index) =>
-  `seed_${crypto
+// Derive a stable id from the day and the tip itself. A dump file is rewritten
+// every time the same day is scraped again and a merge keeps earlier tips
+// wherever they were, so the old file+position id changed whenever the site
+// reordered its card. The id of a tip that was scraped in the morning and is
+// still listed in the evening must be the same, or the database gets a second
+// copy of one bet. Keying on the day plus the tip's identity keeps it on one row.
+//
+// The day stays part of the key because the same tip is legitimately listed on
+// several dumps (a fixture pushed forward is scraped again the next day), and
+// each day serves its own copy.
+//
+// `externalId` identifies a tip whose identity is not its two team names (an
+// outright, a future, a bet builder). The selection is part of the key because
+// one fixture is often listed twice, free and paid, with a different bet each.
+const getTipId = (fileName, index, tip = null) => {
+  const day = parseDumpDay(fileName);
+  // Without a fixture (an outright, a field bet) or without a day in the file
+  // name there is nothing stable to key on, so the position stays the last
+  // resort. Every real freetips dump is named by its day and lists fixtures.
+  const fixture = tip && (tip.homeTeam || tip.awayTeam) ? `${tip.homeTeam || ""} v ${tip.awayTeam || ""}` : "";
+  const identity = day && fixture ? `${day}::${fixture}` : `${fileName}#${index}`;
+
+  const parts = [
+    identity,
+    tip && tip.externalId != null ? `external:${tip.externalId}` : "",
+  ];
+  if (!tip || tip.externalId == null) {
+    parts.push(`${tip ? tip.sport || "" : ""}|${tip ? tip.market || "" : ""}|${tip ? tip.selection || "" : ""}`);
+  }
+
+  return `seed_${crypto
     .createHash("sha256")
-    .update(`${fileName}:${index}`)
+    .update(parts.join("::"))
     .digest("hex")
     .slice(0, 32)}`;
+};
 
 // The business day a dump represents. The file name is authoritative because it
 // is what the operator and the archive use; a tip's own `scrapedAt` can be off
@@ -194,7 +221,19 @@ const getDumpDay = (fileName, tips) => {
 // observed `scrapedAt` is kept when it already falls inside that day; otherwise
 // the tip's own time of day is re-anchored to the day it belongs to.
 const NAIROBI_MIDDAY_UTC = 9; // 12:00 in Nairobi == 09:00 UTC
+// The instant a freshly published tip carries so the API files it under its
+// dump day. It keeps the dump's own time of day, so "published at" still reads
+// naturally, and only re-anchors the calendar day.
+const publishStampForDay = (dayKey, scrapedAt) => {
+  if (!dayKey) return scrapedAt instanceof Date ? scrapedAt : new Date();
+  if (scrapedAt instanceof Date && businessDayKey(scrapedAt) === dayKey) return scrapedAt;
 
+  // Hours at or below midday are already inside the day in UTC too; anything
+  // later is clamped so the stamp cannot spill into the next business day.
+  const hour = scrapedAt instanceof Date ? Math.min(scrapedAt.getUTCHours(), NAIROBI_MIDDAY_UTC) : NAIROBI_MIDDAY_UTC;
+  return new Date(`${dayKey}T${String(hour).padStart(2, "0")}:00:00.000Z`);
+};
+const NAIROBI_MIDDAY_MS = (NAIROBI_MIDDAY_UTC + 3) * 60 * 60 * 1000; // 09:00 UTC + UTC+3
 const alignScrapedAt = (fileName, dayKey, tips, scrapedAt) => {
   if (!dayKey) {
     const fallback = scrapedAt == null ? null : new Date(scrapedAt);
@@ -249,7 +288,8 @@ const loadSeedRecords = () => {
       throw new Error(`${fileName}: expected a JSON array.`);
     }
 
-    // Key on the file+position id so each dump record maps to one stable row.
+    // One id per tip per day. loadSeedRecords keys on the day and the tip's
+    // own identity, so each dump record maps to one stable row.
         const dayKey = getDumpDay(fileName, tips);
         const dayScrapedAt = alignScrapedAt(fileName, dayKey, tips, tips[0]?.scrapedAt);
         tips.forEach((tip, index) => {
@@ -258,7 +298,7 @@ const loadSeedRecords = () => {
           }
 
           records.push({
-            id: getTipId(fileName, index),
+            id: getTipId(fileName, index, tip),
             fileName,
             dayKey,
             data: { ...toTipData(tip, fileName, index), scrapedAt: dayScrapedAt },
@@ -267,6 +307,169 @@ const loadSeedRecords = () => {
   }
 
   return { files, records };
+};
+
+// ---------------------------------------------------------------------------
+// Dump reconciliation
+//
+// The dumps are the source of truth: what a dump says about a day is what the
+// database must say about that day. A plain upsert cannot promise that on its
+// own, because every row it does not touch is a row that disagrees with the
+// dumps — a row scraped under an older id scheme, a duplicate of a tip the
+// dump already carries, or a day the dumps no longer contain at all.
+//
+// The reconcile is scoped to the days the dumps cover and is cheap by nature:
+// a day holds well under 100 tips, so the whole check is a couple of indexed
+// reads of a few hundred rows.
+//
+//  - remove: a live row for a dump day that no dump record matches, when it can
+//            be proved to be an older copy of a tip the dump now serves under
+//            another id. Rows an admin authored stay, and so does any row that
+//            carries an outcome: that is settled history, not a stale scrape.
+//  - repair: a live row whose scrapedAt falls outside its dump day. It is put
+//            back on its day, because that is what decides where the API shows
+//            it (a stray stamp is how a tip vanishes from today).
+//  - report: a live row with no PUBLISHED publication is invisible in the API
+//            (published before its product existed, or unpublished by hand);
+//            and any publication the seed is about to retire is listed.
+//
+// Nothing is removed or rewritten here that the upsert would not itself have
+// overwritten: the seed applies the dumps, this makes sure no row escapes that.
+const sameText = (left, right) => String(left ?? "").trim() === String(right ?? "").trim();
+const sameDecimals = (left, right) => (left == null && right == null) || Number(left) === Number(right);
+const sameJson = (left, right) => JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+
+// True when a stored row and a dump record describe the same bet: the same
+// fixture, bet and market. Home and away team are required, so an outright
+// ("Field", a tournament winner) is never matched against an unrelated one.
+const looksLikeSameBet = (tip, data) => {
+  if (!tip.homeTeam || !tip.awayTeam) return false;
+  return sameText(tip.homeTeam, data.homeTeam) &&
+    sameText(tip.awayTeam, data.awayTeam) &&
+    sameText(tip.selection, data.selection) &&
+    sameText(tip.market, data.market);
+};
+
+// The details a re-scrape refreshes. A row that differs on any of them is not
+// a second copy of a dumped tip: it is a different card, so it is left alone.
+const DETAIL_TEXT_FIELDS = ["sport", "competition", "kickoff", "predictedScore"];
+const DETAIL_DECIMAL_FIELDS = ["odds", "stakeUnits", "confidenceIndex"];
+const DETAIL_JSON_FIELDS = ["tips", "extraTips", "analytics"];
+
+const sameBet = (tip, data) => {
+  // A field the dump no longer carries is kept from the stored row by the
+  // upsert's null guard, so a missing fresh value is not a difference.
+  const textMatches = (stored, fresh) => !fresh || sameText(stored, fresh);
+  const missingFresh = (value) => value == null || (Array.isArray(value) && value.length === 0);
+
+  if (!DETAIL_TEXT_FIELDS.every((field) => textMatches(tip[field], data[field]))) return false;
+  if (!DETAIL_DECIMAL_FIELDS.every((field) => missingFresh(data[field]) || sameDecimals(tip[field], data[field]))) return false;
+  if (!DETAIL_JSON_FIELDS.every((field) => missingFresh(data[field]) || sameJson(tip[field], data[field]))) return false;
+  return true;
+};
+
+// The Nairobi window a dump day covers: [from, to).
+const dayWindow = (dayKey) => {
+  const start = Date.parse(`${dayKey}T00:00:00.000Z`) - BUSINESS_UTC_OFFSET_MS;
+  return { dayKey, from: new Date(start), to: new Date(start + DAY_MS) };
+};
+
+const inspectDumpDays = async (prisma, records) => {
+  const empty = { removed: [], repaired: [], hidden: [] };
+  const dayKeys = [...new Set(records.map((record) => record.dayKey).filter(Boolean))].sort();
+  if (dayKeys.length === 0) return { ...empty, checked: 0 };
+
+  const windows = dayKeys.map(dayWindow);
+  const byDay = new Map(windows.map((window) => [window.dayKey, records.filter((record) => record.dayKey === window.dayKey)]));
+  const idsByDay = new Map([...byDay].map(([dayKey, records]) => [dayKey, records.map((record) => record.id)]));
+
+  // One read of every row that belongs to, or might belong to, a dumped day, by
+  // the indexed scrapedAt column. A month of dumps is a couple of thousand rows.
+  //
+  // The window is one day wider on each side than the dumped days: a row filed
+  // a day off is exactly what needs re-dating, and a row outside the window
+  // would never be seen. Rows from adjacent days are only considered for a day
+  // when they carry one of that day's ids, or match a tip on that day that no
+  // row in the day itself accounts for.
+  const earliest = windows[0].from;
+  const latest = windows[windows.length - 1].to;
+  const stored = await prisma.tip.findMany({
+    where: {
+      scrapedAt: {
+        gte: new Date(earliest.getTime() - DAY_MS),
+        lt: new Date(latest.getTime() + DAY_MS),
+      },
+    },
+    include: { publications: true },
+  });
+
+  const report = { removed: [], repaired: [], hidden: [] };
+  const repairs = [];
+  const removedIds = [];
+
+  for (const window of windows) {
+    const expected = byDay.get(window.dayKey) || [];
+    const expectedById = new Map(expected.map((record) => [record.id, record]));
+    const expectedIds = new Set(idsByDay.get(window.dayKey));
+    const inWindow = (stamp) => stamp instanceof Date && stamp >= window.from && stamp < window.to;
+
+    // Rows dated inside the day, plus rows from the days around it that answer
+    // to this day's dump (a wrong stamp, or a duplicate of a tip it carries).
+    const claimedElsewhere = new Set(
+      windows.filter((other) => other !== window).flatMap((other) => idsByDay.get(other.dayKey)),
+    );
+    const inDay = stored.filter((tip) => inWindow(tip.scrapedAt) || (
+      expectedIds.has(tip.id) ||
+      (!claimedElsewhere.has(tip.id) && expected.some((record) =>
+        record.id !== tip.id && looksLikeSameBet(tip, record.data) && sameBet(tip, record.data)))
+    ));
+
+    for (const tip of inDay) {
+      const record = expectedById.get(tip.id);
+      const decided = settledOutcomes.has(tip.outcome);
+
+      if (!record) {
+        // Not this dumped tip. It is only removed when it is provably an older
+        // copy of one the dump serves under another id.
+        if (decided || tip.createdById || tip.publishedById) continue;
+        if (!expected.some((dumpRecord) => looksLikeSameBet(tip, dumpRecord.data) && sameBet(tip, dumpRecord.data))) continue;
+        removedIds.push(tip.id);
+        report.removed.push(tip);
+        continue;
+      }
+
+      // A row whose stamp is missing or outside the dump day is put on the dump
+      // day: scrapedAt is what the API buckets by, so a stray stamp is how a tip
+      // vanishes from the day it belongs to.
+      if (!inWindow(tip.scrapedAt)) {
+        repairs.push({ tip, dayKey: window.dayKey });
+        report.repaired.push(tip);
+      }
+
+      if (!decided && tip.status !== "CANCELLED" &&
+        !tip.publications.some((publication) => publication.status === "PUBLISHED")) {
+        report.hidden.push(tip);
+      }
+    }
+  }
+
+  return { ...report, checked: stored.length, repairs, removedIds };
+};
+
+const description = (tip) => `${tip.homeTeam && tip.awayTeam ? `${tip.homeTeam} v ${tip.awayTeam}` : tip.selection} (${tip.selection}, ${tip.id})`;
+
+// Print what the reconcile found, before anything is written. Quiet when the
+// database already agrees with the dumps, which is the normal case.
+const logReconciliation = ({ checked, removed, repaired, hidden }) => {
+  console.log(`Checked ${checked} live row(s) on the dumped days against the dumps.`);
+
+  for (const tip of removed) console.log(`   - remove duplicate: ${description(tip)}`);
+  for (const tip of repaired) console.log(`   - re-date to its dump day: ${description(tip)}`);
+  for (const tip of hidden) console.log(`   ! no PUBLISHED publication (invisible in the API): ${description(tip)}`);
+
+  if (removed.length + repaired.length + hidden.length === 0) {
+    console.log("   The database already matches the dumps for those days.");
+  }
 };
 
 const bootstrapAdmin = async (prisma, bcrypt) => {
@@ -325,6 +528,20 @@ const main = async () => {
   }
 
   if (process.argv.includes("--dry-run")) {
+    // The reconcile is a read-only check when nothing is written: connect only
+    // to report what the live rows look like against these dumps.
+    let prisma;
+    try {
+      require("dotenv").config({
+        path: process.env.SEED_ENV_FILE || path.resolve(__dirname, "../.env"),
+      });
+      prisma = new (require("@prisma/client").PrismaClient)();
+      logReconciliation(await inspectDumpDays(prisma, records));
+    } catch (error) {
+      console.warn(`   Reconciliation check skipped: ${error.message}`);
+    } finally {
+      await prisma?.$disconnect();
+    }
     console.log("Dry run complete; the database was not changed.");
     return;
   }
@@ -339,23 +556,49 @@ const main = async () => {
   const prisma = new PrismaClient();
 
   try {
+  // Check the live rows against the dumps before writing. Everything it finds
+  // is applied below, in the same transaction as the upserts.
+  const reconciliation = await inspectDumpDays(prisma, records);
+  logReconciliation(reconciliation);
+
   const productsBySlug = await seedProducts(prisma);
   await bootstrapAdmin(prisma, bcrypt);
 
-  // An id is derived from the dump file and the tip's position in it. A day
-  // scraped again after a carried fixture played can therefore hand the same id
-  // to a different tip, and two records sharing an id cannot be written in one
-  // transaction. Keep the newest dump's record for a colliding id and log the
-  // older one, which is already in the database from an earlier sync.
+  // A tip's id comes from the tip itself, so two records can only share one if
+  // they really are the same bet: a dump carried it twice, or a re-scrape left
+  // it in the file twice. Two upserts on one id cannot run in one transaction,
+  // so merge them here — the later record wins its fresh fields and keeps any
+  // field the earlier one already carries (a settlement is never dropped).
   const recordsById = new Map();
   for (const record of records) {
     const previous = recordsById.get(record.id);
-    if (previous) {
-      console.warn(
-        `Skipping ${previous.data.homeTeam || previous.data.selection}: its id is reused by a newer dump record.`
-      );
+    if (!previous) {
+      recordsById.set(record.id, record);
+      continue;
     }
-    recordsById.set(record.id, record);
+
+    console.warn(
+      `Merging ${record.data.homeTeam || record.data.selection}: it appears twice in the dumps.`
+    );
+
+    // Keep the settlement from whichever copy decided the tip, so a duplicate
+    // copy of a settled tip cannot reset it to pending.
+    const settledCopy = settledOutcomes.has(previous.data.outcome)
+      ? previous.data
+      : settledOutcomes.has(record.data.outcome) ? record.data : null;
+
+    const base = { ...previous.data, ...record.data };
+    recordsById.set(record.id, {
+      ...record,
+      data: settledCopy
+        ? {
+            ...base,
+            status: "SETTLED",
+            outcome: settledCopy.outcome,
+            result: settledCopy.result,
+          }
+        : base,
+    });
   }
   const uniqueRecords = Array.from(recordsById.values());
 
@@ -371,7 +614,15 @@ const main = async () => {
   const publicationIds = uniqueRecords.map(({ id }) => id);
   const existingTips = await prisma.tip.findMany({
     where: { id: { in: publicationIds } },
-    select: { id: true, status: true, outcome: true, result: true, settledAt: true, publishedAt: true },
+    // The detail columns are selected too: a re-scrape can redeliver them as
+    // null, and the update below keeps the copy the API already serves rather
+    // than letting a card that lost its detail on the site lose it here.
+    select: {
+      id: true, status: true, outcome: true, result: true, settledAt: true, publishedAt: true,
+      kickoff: true, odds: true, stakeUnits: true, previewTitle: true, preview: true,
+      verdict: true, tips: true, extraTips: true, analytics: true, detailsUrl: true,
+      confidenceIndex: true, predictedScore: true,
+    },
   });
   const existingTipsById = new Map(existingTips.map((tip) => [tip.id, tip]));
 
@@ -416,11 +667,26 @@ const main = async () => {
     const existingTip = existingTipsById.get(id);
     const update = { ...data };
 
-    if (existingTip && settledOutcomes.has(existingTip.outcome) && existingTip.settledAt) {
+    // A dump that has lost a detail (the site rolled the card's preview off, a
+    // later scrape could not read its odds) does not erase what is already
+    // stored. Only a real value replaces a stored one. Arrays count as missing
+    // when they arrive empty: the dump carries no nested selections for a card,
+    // not a card whose selections were withdrawn.
+    if (existingTip) {
+      for (const [field, value] of Object.entries(update)) {
+        const missing = value === null || (Array.isArray(value) && value.length === 0);
+        if (missing && existingTip[field] != null) update[field] = existingTip[field];
+      }
+    }
+
+    if (existingTip && settledOutcomes.has(existingTip.outcome)) {
+      // The row is settled and settled history is not the dump's to undo. A
+      // scrape that sees the fixture again, or one that no longer marks it,
+      // cannot reopen it; `settlement reset` is the deliberate way to do that.
       update.status = existingTip.status;
       update.outcome = existingTip.outcome;
       update.result = existingTip.result;
-      update.settledAt = existingTip.settledAt;
+      update.settledAt = existingTip.settledAt || new Date();
     } else if (settledOutcomes.has(data.outcome)) {
       // The dump carries a real settlement result. Honour it as recorded
       // instead of rewriting it to WON for baseline reporting.
@@ -453,6 +719,9 @@ const main = async () => {
       create: {
         ...data,
         id,
+        // A settled tip from the dumps is created settled. Anything else is
+        // published here: every tip in a dump is something the site had live,
+        // even one the scraper could not read a result for.
         status: settledOutcomes.has(data.outcome) ? "SETTLED" : "PUBLISHED",
         publishedAt,
       },
@@ -489,6 +758,19 @@ const main = async () => {
 
   await prisma.$transaction(operations);
 
+  // Rows the dumps do not answer for, and rows whose day was wrong. Both are
+  // part of making the dumps the truth, so they are applied in the same pass.
+  // Each removed tip takes its publications with it (TipPublication cascades).
+  if (reconciliation.removedIds.length > 0) {
+    await prisma.tip.deleteMany({ where: { id: { in: reconciliation.removedIds }}});
+  }
+  if (reconciliation.repairs.length > 0) {
+    await prisma.$transaction(reconciliation.repairs.map(({ tip, dayKey }) => prisma.tip.update({
+      where: { id: tip.id },
+      data: { scrapedAt: publishStampForDay(dayKey, tip.scrapedAt) },
+    })));
+  }
+
   console.log(
     `Publications: ${createdPublications} created, ${restoredPublications} restored, ` +
     `${retiredPublications} retired.`
@@ -511,9 +793,11 @@ const main = async () => {
   }
 
   // Statistics count published tips via Tip.status, so a pending row that now
-  // has a publication must be flipped or the dashboard under-reports.
+  // has a publication must be flipped or the dashboard under-reports. Only a
+  // pending row is touched: a settled row was published long ago, and sweeping
+  // it here would drag yesterday's results into today's published count.
   await prisma.tip.updateMany({
-    where: { id: { in: publicationIds }, status: "PENDING" },
+    where: { id: { in: publicationIds }, status: "PENDING", outcome: "PENDING" },
     data: { status: "PUBLISHED" },
   });
 
@@ -556,6 +840,11 @@ module.exports = {
   getTipId,
   getDumpDay,
   alignScrapedAt,
+  publishStampForDay,
+  looksLikeSameBet,
+  sameBet,
+  dayWindow,
+  inspectDumpDays,
 };
 
 if (require.main === module) {

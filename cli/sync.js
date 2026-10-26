@@ -126,6 +126,35 @@ function findMissingDate(target) {
   return null;
 }
 
+// The same fixture, market and selection listed twice in one dump. The seed and
+// the dumps key a tip on exactly this, so a duplicate is a mistake upstream.
+function findDuplicateTips(directory) {
+  if (!fs.existsSync(directory)) return [];
+
+  const duplicates = [];
+  for (const fileName of fs.readdirSync(directory).filter((file) => /^freetips-.*\.json$/i.test(file))) {
+    let tips;
+    try {
+      tips = JSON.parse(fs.readFileSync(path.join(directory, fileName), "utf8"));
+    } catch {
+      continue; // the seed reports an unreadable dump with the file name
+    }
+    if (!Array.isArray(tips)) continue;
+
+    const counts = new Map();
+    for (const tip of tips) {
+      if (!tip || typeof tip !== "object") continue;
+      const key = `${tip.homeTeam || ""}|${tip.awayTeam || ""}|${tip.selection || ""}|${tip.market || ""}`;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    for (const [key, count] of counts) {
+      if (count > 1) duplicates.push({ fileName, key, count });
+    }
+  }
+
+  return duplicates;
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const target = targets[args.target];
@@ -176,7 +205,27 @@ function main() {
   }
 
   // 2. Validate the dumps before touching the database so a malformed file
-  // cannot half-apply an import.
+  // cannot half-apply an import. The seed then reconciles every row on the
+  // dumped days against the dumps: a stale duplicate (a row scraped under the
+  // older position-based id) is removed, a row filed on the wrong day is
+  // re-dated, and any live row with no publication is named. A day holds well
+  // under 100 tips, so the check is a few hundred rows.
+  //
+  // A dump that lists the same tip twice would land on one row, so the second
+  // copy would silently disappear. That is a scrape bug, not a database fact,
+  // so refuse to sync until it is fixed: a dump that contradicts itself is not
+  // a truth yet.
+  const duplicates = findDuplicateTips(dumpDirectory);
+  if (duplicates.length > 0) {
+    console.error(`❌ ${duplicates.length} tip(s) appear twice in their own dump:`);
+    for (const { fileName, key, count } of duplicates) {
+      console.error(`     ${fileName}: ${key} (${count} copies)`);
+    }
+    console.error("   They would collapse onto one row. Remove the duplicate from the dump, then re-run.");
+    process.exitCode = 1;
+    return;
+  }
+
   const command = args.dryRun ? ["--dry-run"] : [];
   const result = spawnSync(process.execPath, [seedScript, ...command], {
     stdio: "inherit",
@@ -202,4 +251,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { parseArgs, readEnvValue, describeDatabase, findMissingDate, targets };
+module.exports = { parseArgs, readEnvValue, describeDatabase, findMissingDate, findDuplicateTips, targets };
